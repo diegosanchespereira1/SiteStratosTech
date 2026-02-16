@@ -318,6 +318,13 @@ async function serveStatic(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const ms = Date.now() - start;
+    // eslint-disable-next-line no-console
+    console.log(`${req.method} ${req.url} → ${res.statusCode} (${ms}ms)`);
+  });
+
   try {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
 
@@ -348,5 +355,9 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   // eslint-disable-next-line no-console
   console.log(`Servidor: http://${HOST}:${PORT}`);
+  // eslint-disable-next-line no-console
+  console.log(`Supabase: ${hasSupabaseConfig() ? SUPABASE_URL : "nao configurado (fallback local)"}`);
+  // eslint-disable-next-line no-console
+  console.log(`SITE_ROOT: ${SITE_ROOT}`);
 });
 
