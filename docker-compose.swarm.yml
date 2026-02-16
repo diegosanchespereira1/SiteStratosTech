@@ -41,16 +41,16 @@ services:
           cpus: "0.25"
           memory: 128M
       labels:
-        # HTTPS - www.stratostech.com.br e stratostech.com.br
         - traefik.enable=true
+        # Router HTTPS
         - traefik.http.routers.sitestratostech.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
-        - traefik.http.routers.sitestratostech.entrypoints=web,websecure
-        - traefik.http.routers.sitestratostech.priority=1
+        - traefik.http.routers.sitestratostech.entrypoints=websecure
         - traefik.http.routers.sitestratostech.tls=true
         - traefik.http.routers.sitestratostech.tls.certresolver=letsencryptresolver
+        # Service (porta do container)
         - traefik.http.services.sitestratostech.loadbalancer.server.port=5173
-        - traefik.http.services.sitestratostech.loadbalancer.passHostHeader=1
-        # Redirect HTTP to HTTPS
+        - traefik.http.services.sitestratostech.loadbalancer.passHostHeader=true
+        # Router HTTP → redirect para HTTPS
         - traefik.http.routers.sitestratostech-http.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
         - traefik.http.routers.sitestratostech-http.entrypoints=web
         - traefik.http.routers.sitestratostech-http.middlewares=sitestratostech-redirect
