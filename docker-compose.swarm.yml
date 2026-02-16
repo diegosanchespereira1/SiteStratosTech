@@ -3,6 +3,7 @@ version: "3.8"
 services:
   web:
     image: polygonuser/sitestratostech:developer
+
     environment:
       PORT: "5173"
       HOST: "0.0.0.0"
@@ -23,7 +24,7 @@ services:
       - PolygonNetwork
 
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5173/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5173/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -32,8 +33,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints: []
       resources:
         limits:
           cpus: "1"
@@ -42,8 +41,9 @@ services:
           cpus: "0.25"
           memory: 128M
       labels:
+        # HTTPS - www.stratostech.com.br e stratostech.com.br
         - traefik.enable=true
-        - traefik.http.routers.sitestratostech.rule=Host(`www.stratostech.com.br`)
+        - traefik.http.routers.sitestratostech.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
         - traefik.http.routers.sitestratostech.entrypoints=web,websecure
         - traefik.http.routers.sitestratostech.priority=1
         - traefik.http.routers.sitestratostech.tls=true
@@ -51,7 +51,7 @@ services:
         - traefik.http.services.sitestratostech.loadbalancer.server.port=5173
         - traefik.http.services.sitestratostech.loadbalancer.passHostHeader=1
         # Redirect HTTP to HTTPS
-        - traefik.http.routers.sitestratostech-http.rule=Host(`www.stratostech.com.br`)
+        - traefik.http.routers.sitestratostech-http.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
         - traefik.http.routers.sitestratostech-http.entrypoints=web
         - traefik.http.routers.sitestratostech-http.middlewares=sitestratostech-redirect
         - traefik.http.middlewares.sitestratostech-redirect.redirectscheme.scheme=https
@@ -64,4 +64,3 @@ networks:
 
 volumes:
   sitestratostech-data:
-
