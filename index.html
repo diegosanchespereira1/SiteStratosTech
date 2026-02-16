@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Réplica Hero Stratos Tech</title>
+    <title>Stratos Tech | Em Breve</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles-home.css" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="page-bg"></div>
@@ -23,36 +23,46 @@
         </span>
         <span class="brand-wordmark">STRATOS TECH</span>
       </div>
-      <nav class="top-nav">
-        <a href="#">Soluções</a>
-        <a href="#">Preços</a>
-        <a href="#">Histórias</a>
-        <a href="#">Sobre nós</a>
-        <a href="#">Blog</a>
-        <a href="#">Suporte</a>
-      </nav>
-      <div class="header-actions">
-        <a class="btn btn-solid" href="#">Começar</a>
-        <a class="btn btn-outline" href="#">Agendar demo</a>
-      </div>
+      <span class="status-pill">Coming Soon</span>
     </header>
 
     <main class="hero-layout">
       <section class="hero-copy">
-        <h1>Uma plataforma.<br />Cada dispositivo inteligente.<br />Possibilidades infinitas.</h1>
+        <span class="eyebrow">Estamos quase no ar</span>
+        <h1>O novo site da Stratos Tech chega em breve.</h1>
         <p>
-          Unifique controle, segurança e gestão de energia em um ecossistema
-          adaptável — projetado para conforto, segurança e sustentabilidade.
+          Estamos finalizando os últimos detalhes. Cadastre seu nome e e-mail
+          para receber o aviso assim que o site estiver pronto.
         </p>
-        <div class="cta-row">
-          <a class="btn btn-solid large" href="#">Começar</a>
-          <a class="btn btn-outline large" href="#">Agendar demo</a>
-        </div>
-        <ul class="benefits">
-          <li>Teste grátis por 14 dias</li>
-          <li>Sem cartão de crédito</li>
-          <li>Cancele quando quiser</li>
-        </ul>
+
+        <form class="notify-form" action="#" method="post">
+          <div class="form-row">
+            <label for="nome">Nome</label>
+            <input
+              id="nome"
+              name="nome"
+              type="text"
+              placeholder="Digite seu nome"
+              autocomplete="name"
+              required
+            />
+          </div>
+          <div class="form-row">
+            <label for="email">E-mail</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Digite seu melhor e-mail"
+              autocomplete="email"
+              required
+            />
+          </div>
+          <button class="btn btn-solid submit-btn" type="submit">
+            Quero ser avisado
+          </button>
+          <small>Sem spam. Enviaremos apenas o aviso de lançamento.</small>
+        </form>
       </section>
 
       <section class="hero-visual" aria-label="Visual do ecossistema da plataforma">
@@ -78,19 +88,8 @@
         <div class="node n8">⚙</div>
       </section>
     </main>
-
-    <section class="trust">
-      <p>Confiado por líderes do setor – feito para todos.</p>
-      <div class="logos">
-        <span>AxisNet</span>
-        <span>Winova</span>
-        <span>Nestrix</span>
-        <span>VISSIONN</span>
-        <span>ecoffice</span>
-        <span>RevoLiving</span>
-        <span>Archtech Labs</span>
-        <span>Red Shield</span>
-      </div>
-    </section>
+    <footer class="coming-footer">
+      Lançamento previsto em breve • Stratos Tech
+    </footer>
   </body>
 </html>
