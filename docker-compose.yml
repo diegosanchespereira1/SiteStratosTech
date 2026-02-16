@@ -42,6 +42,7 @@ services:
           memory: 128M
       labels:
         - traefik.enable=true
+        - traefik.docker.network=PolygonNetwork
         # Router HTTPS
         - traefik.http.routers.sitestratostech.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
         - traefik.http.routers.sitestratostech.entrypoints=websecure
