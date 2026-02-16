@@ -1,1 +1,10 @@
 .DS_Store
+node_modules/
+.npm/
+.env
+.env.*
+!.env.example
+
+# Dados locais (cadastros)
+data/*
+!data/.gitkeep
