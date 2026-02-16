@@ -36,47 +36,36 @@ if [ "$DOCKERHUB_USER" == "seu-usuario" ]; then
   fi
 fi
 
-# Build
-echo -e "${GREEN}📦 Fazendo build da imagem...${NC}"
-docker build \
-  --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
-  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY="$VITE_SUPABASE_PUBLISHABLE_KEY" \
-  -t $DOCKERHUB_USER/$IMAGE_NAME:developer .
+# Build para linux/amd64 (servidor VPS) mesmo em Mac Apple Silicon.
+# Usa buildx com --push para build + push em um unico passo.
+PLATFORM="${PLATFORM:-linux/amd64}"
+FULL_TAG="$DOCKERHUB_USER/$IMAGE_NAME:developer"
 
-if [ $? -eq 0 ]; then
-  echo -e "${GREEN}✅ Build concluído com sucesso!${NC}"
-else
-  echo -e "${RED}❌ Erro no build${NC}"
-  exit 1
+echo -e "${GREEN}📦 Fazendo build da imagem (platform: $PLATFORM)...${NC}"
+
+# Verificar se está logado (necessario para --push)
+if ! docker info 2>/dev/null | grep -q "Username"; then
+  echo -e "${YELLOW}⚠️  Não está logado no Docker Hub${NC}"
+  echo "   Executando: docker login"
+  docker login
 fi
 
-# Perguntar se deseja fazer push
-read -p "Deseja fazer push para Docker Hub? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo -e "${GREEN}🚀 Fazendo push para Docker Hub...${NC}"
-  
-  # Verificar se está logado
-  if ! docker info | grep -q "Username"; then
-    echo -e "${YELLOW}⚠️  Não está logado no Docker Hub${NC}"
-    echo "   Executando: docker login"
-    docker login
-  fi
-  
-  docker push $DOCKERHUB_USER/$IMAGE_NAME:developer
-  
-  if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ Push concluído com sucesso!${NC}"
-    echo ""
-    echo "📝 Para usar no Portainer, a imagem já está configurada no docker-compose.swarm.yml:"
-    echo "   image: $DOCKERHUB_USER/$IMAGE_NAME:developer"
-  else
-    echo -e "${RED}❌ Erro no push${NC}"
-    exit 1
-  fi
+docker buildx build \
+  --platform "$PLATFORM" \
+  -t "$FULL_TAG" \
+  --push \
+  .
+
+if [ $? -eq 0 ]; then
+  echo -e "${GREEN}✅ Build + push concluídos com sucesso!${NC}"
+  echo ""
+  echo "📝 Imagem publicada: $FULL_TAG"
+  echo "   Plataforma: $PLATFORM"
+  echo ""
+  echo "   No Portainer, faça Pull and Redeploy da stack."
 else
-  echo -e "${YELLOW}ℹ️  Imagem buildada localmente: $DOCKERHUB_USER/$IMAGE_NAME:developer${NC}"
-  echo "   Para usar no servidor, faça push ou use build direto no servidor"
+  echo -e "${RED}❌ Erro no build/push${NC}"
+  exit 1
 fi
 
 echo ""
