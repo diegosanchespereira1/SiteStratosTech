@@ -43,9 +43,16 @@ services:
       labels:
         - traefik.enable=true
         - traefik.docker.network=PolygonNetwork
-        # Router unico (HTTP). Cloudflare cuida do SSL pro visitante.
+        # Router HTTPS (Traefik usa cert padrao/self-signed; Cloudflare Full aceita)
         - traefik.http.routers.sitestratostech.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
-        - traefik.http.routers.sitestratostech.entrypoints=web,websecure
+        - traefik.http.routers.sitestratostech.entrypoints=websecure
+        - traefik.http.routers.sitestratostech.tls=true
+        # Router HTTP → redirect HTTPS
+        - traefik.http.routers.sitestratostech-http.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
+        - traefik.http.routers.sitestratostech-http.entrypoints=web
+        - traefik.http.routers.sitestratostech-http.middlewares=sitestratostech-redirect
+        - traefik.http.middlewares.sitestratostech-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.sitestratostech-redirect.redirectscheme.permanent=true
         # Service
         - traefik.http.services.sitestratostech.loadbalancer.server.port=5173
         - traefik.http.services.sitestratostech.loadbalancer.passHostHeader=true
