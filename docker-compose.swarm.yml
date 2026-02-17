@@ -39,20 +39,13 @@ services:
           memory: 128M
       labels:
         - traefik.enable=true
+        # Router HTTP (Cloudflare Flexible conecta na porta 80)
         - traefik.http.routers.sitestratostech.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
-        - traefik.http.routers.sitestratostech.entrypoints=web,websecure
+        - traefik.http.routers.sitestratostech.entrypoints=web
         - traefik.http.routers.sitestratostech.priority=1
-        - traefik.http.routers.sitestratostech.tls=true
-        - traefik.http.routers.sitestratostech.tls.certresolver=letsencryptresolver
         - traefik.http.routers.sitestratostech.service=sitestratostech
         - traefik.http.services.sitestratostech.loadbalancer.server.port=5173
         - traefik.http.services.sitestratostech.loadbalancer.passHostHeader=1
-        # Redirect HTTP to HTTPS
-        - traefik.http.routers.sitestratostech-http.rule=Host(`www.stratostech.com.br`) || Host(`stratostech.com.br`)
-        - traefik.http.routers.sitestratostech-http.entrypoints=web
-        - traefik.http.routers.sitestratostech-http.middlewares=sitestratostech-redirect
-        - traefik.http.middlewares.sitestratostech-redirect.redirectscheme.scheme=https
-        - traefik.http.middlewares.sitestratostech-redirect.redirectscheme.permanent=true
 
     networks:
       - PolygonNetwork
