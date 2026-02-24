@@ -115,13 +115,20 @@
         var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
         g.src=BASE_URL+"/packs/js/sdk.js";
         g.async = true;
-        s.parentNode.insertBefore(g,s);
         g.onload=function(){
-          window.chatwootSDK.run({
-            websiteToken: 'pW7A7vZn12vmG3CmfMJdCN4B',
-            baseUrl: BASE_URL
-          })
-        }
+          if (window.chatwootSDK) {
+            window.chatwootSDK.run({
+              websiteToken: 'pW7A7vZn12vmG3CmfMJdCN4B',
+              baseUrl: BASE_URL
+            });
+          } else {
+            console.error("[Chatwoot] SDK não carregou.");
+          }
+        };
+        g.onerror=function(){
+          console.error("[Chatwoot] Falha ao carregar script de", BASE_URL);
+        };
+        s.parentNode.insertBefore(g,s);
       })(document,"script");
     </script>
   </body>
