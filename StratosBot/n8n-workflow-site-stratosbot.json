@@ -185,11 +185,11 @@
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
           "conditions": [
             {
               "id": "has-existing",
-              "leftValue": "={{ $json.existingId }}",
+              "leftValue": "={{ $json.existingId != null && $json.existingId !== '' ? String($json.existingId) : '' }}",
               "rightValue": "",
               "operator": { "type": "string", "operation": "notEmpty" }
             }
@@ -211,16 +211,20 @@
         "tableId": "stratosbot_site",
         "dataToSend": "defineBelow",
         "filterType": "manual",
-        "matchFields": "id",
-        "valueToMatch": "={{ $json.existingId }}",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.existingId }}" }
+          ]
+        },
         "fieldsUi": {
           "fieldValues": [
-            { "column": "conversation", "value": "={{ JSON.stringify($json.conversation) }}" },
-            { "column": "message", "value": "={{ $json.message }}" },
-            { "column": "reply", "value": "={{ $json.reply }}" },
-            { "column": "source", "value": "={{ $json.source }}" },
-            { "column": "channel", "value": "={{ $json.channel }}" },
-            { "column": "updated_at", "value": "={{ $json.updated_at }}" }
+            { "fieldId": "conversation", "fieldValue": "={{ JSON.stringify($json.conversation) }}" },
+            { "fieldId": "message", "fieldValue": "={{ $json.message }}" },
+            { "fieldId": "reply", "fieldValue": "={{ $json.reply }}" },
+            { "fieldId": "source", "fieldValue": "={{ $json.source }}" },
+            { "fieldId": "channel", "fieldValue": "={{ $json.channel }}" },
+            { "fieldId": "updated_at", "fieldValue": "={{ $json.updated_at }}" }
           ]
         }
       },
@@ -239,22 +243,22 @@
     },
     {
       "parameters": {
-        "operation": "insert",
+        "operation": "create",
         "schema": "public",
         "tableId": "stratosbot_site",
         "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
-            { "column": "session_id", "value": "={{ $json.sessionId }}" },
-            { "column": "event_type", "value": "chat_message" },
-            { "column": "role", "value": "user" },
-            { "column": "message", "value": "={{ $json.message }}" },
-            { "column": "reply", "value": "={{ $json.reply }}" },
-            { "column": "source", "value": "={{ $json.source }}" },
-            { "column": "channel", "value": "={{ $json.channel }}" },
-            { "column": "payload", "value": "={{ JSON.stringify({ message: $json.message, reply: $json.reply }) }}" },
-            { "column": "conversation", "value": "={{ JSON.stringify($json.conversation) }}" },
-            { "column": "updated_at", "value": "={{ $json.updated_at }}" }
+            { "fieldId": "session_id", "fieldValue": "={{ $json.sessionId }}" },
+            { "fieldId": "event_type", "fieldValue": "chat_message" },
+            { "fieldId": "role", "fieldValue": "user" },
+            { "fieldId": "message", "fieldValue": "={{ $json.message }}" },
+            { "fieldId": "reply", "fieldValue": "={{ $json.reply }}" },
+            { "fieldId": "source", "fieldValue": "={{ $json.source }}" },
+            { "fieldId": "channel", "fieldValue": "={{ $json.channel }}" },
+            { "fieldId": "payload", "fieldValue": "={{ JSON.stringify({ message: $json.message, reply: $json.reply }) }}" },
+            { "fieldId": "conversation", "fieldValue": "={{ JSON.stringify($json.conversation) }}" },
+            { "fieldId": "updated_at", "fieldValue": "={{ $json.updated_at }}" }
           ]
         }
       },

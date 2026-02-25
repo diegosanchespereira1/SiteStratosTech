@@ -337,19 +337,27 @@
 </script>
 <script>
 (function () {
+  document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+    var id = a.getAttribute('href').slice(1);
+    if (!id) return;
+    a.addEventListener('click', function (e) {
+      var el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
+    });
+  });
+})();
+</script>
+<script>
+(function () {
   var WEBHOOK_URL_PROD = "https://webhook.stratostech.com.br/webhook/site-stratosbot";
+  var WEBHOOK_URL_PROD_N8N = "https://n8n.stratostech.com.br/webhook/site-stratosbot";
   var WEBHOOK_URL_TEST = "https://n8n.stratostech.com.br/webhook-test/site-stratosbot";
-  var useTestWebhook = (function () {
-    try {
-      var host = (window.location && window.location.hostname) || "";
-      var proto = (window.location && window.location.protocol) || "";
-      if (host === "localhost" || host === "127.0.0.1") return true;
-      if (proto === "file:" || host === "") return true;
-      if (typeof URLSearchParams !== "undefined" && new URLSearchParams(window.location.search).get("webhook") === "test") return true;
-      if (localStorage.getItem("stratosbot_webhook_test") === "true") return true;
-    } catch (e) {}
-    return false;
-  })();
   var isLocalOrFile = (function () {
     try {
       var loc = window.location;
@@ -360,11 +368,24 @@
     } catch (e) {}
     return false;
   })();
-  var WEBHOOK_URL = useTestWebhook ? WEBHOOK_URL_TEST : WEBHOOK_URL_PROD;
+  var useTestWebhook = (function () {
+    try {
+      if (typeof URLSearchParams !== "undefined" && new URLSearchParams(window.location.search).get("webhook") === "prod") return false;
+      if (typeof URLSearchParams !== "undefined" && new URLSearchParams(window.location.search).get("webhook") === "test") return true;
+      if (localStorage.getItem("stratosbot_webhook_test") === "true") return true;
+      if (isLocalOrFile) return true;
+    } catch (e) {}
+    return false;
+  })();
+  var WEBHOOK_URL = useTestWebhook ? WEBHOOK_URL_TEST : (isLocalOrFile ? WEBHOOK_URL_PROD_N8N : WEBHOOK_URL_PROD);
   var messagesEl = document.getElementById("demo-chat-messages");
   var inputEl = document.getElementById("demo-chat-input");
   var sendBtn = document.getElementById("demo-chat-send");
-  if (!messagesEl || !inputEl || !sendBtn) return;
+  if (!messagesEl || !inputEl || !sendBtn) {
+    if (typeof console !== "undefined") console.warn("[StratosBot] Chat nao iniciado: elementos demo-chat-* nao encontrados.");
+    return;
+  }
+  if (typeof console !== "undefined") console.log("[StratosBot] Chat ok. Webhook:", WEBHOOK_URL);
 
   var chatContainer = document.querySelector("[data-purpose=\"chat-container\"]");
   if (chatContainer && (window.getComputedStyle(chatContainer).position === "static")) chatContainer.style.position = "relative";
@@ -375,7 +396,7 @@
       var badge = document.createElement("div");
       badge.className = "absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded bg-amber-500/90 text-black z-10";
       badge.textContent = "Webhook teste";
-      badge.title = "Usando " + WEBHOOK_URL_TEST;
+      badge.title = "Usando " + WEBHOOK_URL_TEST + ". Ative \"Listen for test event\" no n8n.";
       chatContainer.appendChild(badge);
     }
   } else if (isLocalOrFile) {
@@ -384,9 +405,7 @@
       localBadge.className = "absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded bg-sky-600/90 text-white z-10";
       var isFile = (window.location && window.location.protocol) === "file:";
       localBadge.textContent = isFile ? "Arquivo local" : "Local";
-      localBadge.title = isFile
-        ? "Aberto por file://. Chat usa webhook de produ\u00e7\u00e3o. CORS pode bloquear; use npx serve na pasta para testar."
-        : "Acesso local. Webhook: produ\u00e7\u00e3o.";
+      localBadge.title = "Webhook: n8n (produ\u00e7\u00e3o) para evitar CORS. Use ?webhook=test para modo teste no n8n.";
       chatContainer.appendChild(localBadge);
     }
   }
@@ -576,7 +595,10 @@
       })
       .catch(function (error) {
         typingBubble.remove();
-        createBubble("bot", "Nao foi possivel conectar ao webhook agora. Tente novamente em alguns segundos.");
+        var msg = "Nao foi possivel conectar ao webhook. Tente novamente.";
+        if (isLocalOrFile && useTestWebhook) msg += " Ative \"Listen for test event\" no n8n ou use ?webhook=prod na URL.";
+        else if (isLocalOrFile) msg += " Se for testar no n8n, use ?webhook=test na URL.";
+        createBubble("bot", msg);
         addToHistory("bot", "Erro ao conectar ao webhook.");
         console.error("[StratosBot Demo] Erro no webhook:", error);
       })
@@ -587,7 +609,10 @@
 
   async function sendMessage() {
     var message = inputEl.value.trim();
-    if (!message) return;
+    if (!message) {
+      if (typeof console !== "undefined") console.log("[StratosBot] sendMessage chamado com mensagem vazia (Enter ou clique sem texto).");
+      return;
+    }
 
     inputEl.value = "";
     inputEl.focus();
@@ -606,10 +631,11 @@
           leadStage = "awaiting_contact";
           saveLeadState();
           typingBubble.remove();
-          var askContact = "Perfeito, " + leadInfo.name + ". Me passe seu telefone ou e-mail para nosso vendedor entrar em contato.";
-          createBubble("bot", askContact);
-          addToHistory("bot", askContact, { system: "lead_capture" });
-          sendBtn.disabled = false;
+          // Envia o texto para o webhook (sem resposta local mock)
+          messageBuffer.push(message);
+          clearTimeout(flushTimer);
+          var looksComplete = message.length > 50 || /[.!?]$/.test(message);
+          flushTimer = setTimeout(flushBufferAndSend, looksComplete ? 400 : DEBOUNCE_MS);
           return;
         }
         if (leadStage === "awaiting_contact") {
@@ -619,10 +645,11 @@
           saveLeadState();
           if (!leadInfo.phone && !leadInfo.email) {
             typingBubble.remove();
-            var retryContact = "Nao consegui identificar telefone ou e-mail. Pode enviar novamente (ex: (11) 99999-9999 ou nome@email.com)?";
-            createBubble("bot", retryContact);
-            addToHistory("bot", retryContact, { system: "lead_capture" });
-            sendBtn.disabled = false;
+            // Mensagem nao e contato: envia para o webhook como mensagem normal (bolha do usuario ja foi criada acima)
+            messageBuffer.push(message);
+            clearTimeout(flushTimer);
+            var looksComplete = message.length > 50 || /[.!?]$/.test(message);
+            flushTimer = setTimeout(flushBufferAndSend, looksComplete ? 400 : DEBOUNCE_MS);
             return;
           }
           leadStage = "done";
@@ -644,7 +671,10 @@
         }
       } catch (e) {
         typingBubble.remove();
-        createBubble("bot", "Nao foi possivel conectar ao webhook agora. Tente novamente em alguns segundos.");
+        var msg = "Nao foi possivel conectar ao webhook. Tente novamente.";
+        if (isLocalOrFile && useTestWebhook) msg += " Ative \"Listen for test event\" no n8n ou use ?webhook=prod na URL.";
+        else if (isLocalOrFile) msg += " Para testar no n8n use ?webhook=test na URL.";
+        createBubble("bot", msg);
         sendBtn.disabled = false;
       }
       return;
@@ -663,11 +693,12 @@
 
   sendBtn.addEventListener("click", sendMessage);
   inputEl.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof console !== "undefined") console.log("[StratosBot] Enter pressionado, valor do input:", (inputEl.value || "").trim().length ? "tem texto" : "vazio");
+    sendMessage();
+  }, true);
 })();
 </script>
 <!-- Chatwoot: carrega o SDK no fim do body, após o DOM -->
