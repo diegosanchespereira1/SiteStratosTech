@@ -342,9 +342,21 @@
   var useTestWebhook = (function () {
     try {
       var host = (window.location && window.location.hostname) || "";
-      if (host === "localhost" || host === "127.0.0.1") return false;
+      var proto = (window.location && window.location.protocol) || "";
+      if (host === "localhost" || host === "127.0.0.1") return true;
+      if (proto === "file:" || host === "") return true;
       if (typeof URLSearchParams !== "undefined" && new URLSearchParams(window.location.search).get("webhook") === "test") return true;
       if (localStorage.getItem("stratosbot_webhook_test") === "true") return true;
+    } catch (e) {}
+    return false;
+  })();
+  var isLocalOrFile = (function () {
+    try {
+      var loc = window.location;
+      var host = (loc && loc.hostname) || "";
+      var proto = (loc && loc.protocol) || "";
+      if (host === "localhost" || host === "127.0.0.1") return true;
+      if (proto === "file:" || host === "") return true;
     } catch (e) {}
     return false;
   })();
@@ -354,16 +366,28 @@
   var sendBtn = document.getElementById("demo-chat-send");
   if (!messagesEl || !inputEl || !sendBtn) return;
 
+  var chatContainer = document.querySelector("[data-purpose=\"chat-container\"]");
+  if (chatContainer && (window.getComputedStyle(chatContainer).position === "static")) chatContainer.style.position = "relative";
+
   if (useTestWebhook) {
-    var chatContainer = document.querySelector("[data-purpose=\"chat-container\"]");
     if (chatContainer) {
       chatContainer.setAttribute("data-webhook", "test");
       var badge = document.createElement("div");
       badge.className = "absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded bg-amber-500/90 text-black z-10";
       badge.textContent = "Webhook teste";
       badge.title = "Usando " + WEBHOOK_URL_TEST;
-      if (window.getComputedStyle(chatContainer).position === "static") chatContainer.style.position = "relative";
       chatContainer.appendChild(badge);
+    }
+  } else if (isLocalOrFile) {
+    if (chatContainer) {
+      var localBadge = document.createElement("div");
+      localBadge.className = "absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded bg-sky-600/90 text-white z-10";
+      var isFile = (window.location && window.location.protocol) === "file:";
+      localBadge.textContent = isFile ? "Arquivo local" : "Local";
+      localBadge.title = isFile
+        ? "Aberto por file://. Chat usa webhook de produ\u00e7\u00e3o. CORS pode bloquear; use npx serve na pasta para testar."
+        : "Acesso local. Webhook: produ\u00e7\u00e3o.";
+      chatContainer.appendChild(localBadge);
     }
   }
 

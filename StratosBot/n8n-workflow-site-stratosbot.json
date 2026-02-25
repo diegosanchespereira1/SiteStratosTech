@@ -174,21 +174,7 @@
     },
     {
       "parameters": {
-        "mode": "combine",
-        "combinationMode": "mergeByPosition",
-        "options": {
-          "includeUnpaired": true
-        }
-      },
-      "id": "merge-formatar-buscar-001",
-      "name": "Merge Formatar + Buscar",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
-      "position": [80, 320]
-    },
-    {
-      "parameters": {
-        "jsCode": "const formatar = { sessionId: $json.sessionId, message: $json.message, reply: $json.reply, source: $json.source, channel: $json.channel };\nconst existing = ($json.id != null) ? { id: $json.id, conversation: $json.conversation } : null;\nconst existingConv = Array.isArray(existing?.conversation) ? existing.conversation : [];\nconst turn = { role: 'user', message: formatar.message, reply: formatar.reply, at: new Date().toISOString() };\nconst conversation = [...existingConv, turn].slice(-100);\nreturn [{ json: {\n  sessionId: formatar.sessionId,\n  conversation,\n  message: formatar.message,\n  reply: formatar.reply,\n  source: formatar.source,\n  channel: formatar.channel,\n  updated_at: new Date().toISOString(),\n  existingId: existing?.id ?? null\n}}];"
+        "jsCode": "const formatar = $('Formatar Resposta').first().json;\nlet existing = null;\ntry { const b = $('Buscar sessão').first(); if (b && b.json) existing = b.json; } catch (e) {}\nconst existingConv = Array.isArray(existing?.conversation) ? existing.conversation : [];\nconst turn = { role: 'user', message: formatar.message, reply: formatar.reply, at: new Date().toISOString() };\nconst conversation = [...existingConv, turn].slice(-100);\nreturn [{ json: {\n  sessionId: formatar.sessionId,\n  conversation,\n  message: formatar.message,\n  reply: formatar.reply,\n  source: formatar.source,\n  channel: formatar.channel,\n  updated_at: new Date().toISOString(),\n  existingId: existing?.id ?? null\n}}];"
       },
       "id": "c3d4e5f6-3456-6cgd-b568-f3fe0g4g7dh6",
       "name": "Montar conversation",
@@ -232,6 +218,8 @@
             { "column": "conversation", "value": "={{ JSON.stringify($json.conversation) }}" },
             { "column": "message", "value": "={{ $json.message }}" },
             { "column": "reply", "value": "={{ $json.reply }}" },
+            { "column": "source", "value": "={{ $json.source }}" },
+            { "column": "channel", "value": "={{ $json.channel }}" },
             { "column": "updated_at", "value": "={{ $json.updated_at }}" }
           ]
         }
@@ -488,7 +476,7 @@
             "index": 0
           },
           {
-            "node": "Merge Formatar + Buscar",
+            "node": "Montar conversation",
             "type": "main",
             "index": 0
           }
@@ -499,20 +487,9 @@
       "main": [
         [
           {
-            "node": "Merge Formatar + Buscar",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge Formatar + Buscar": {
-      "main": [
-        [
-          {
             "node": "Montar conversation",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
