@@ -237,53 +237,19 @@
 </div>
 </div>
 <!-- Chat Body -->
-<div class="p-4 sm:p-6 h-[320px] sm:h-[380px] md:h-[400px] overflow-y-auto space-y-4 sm:space-y-6 flex flex-col">
+<div class="p-4 sm:p-6 h-[320px] sm:h-[380px] md:h-[400px] overflow-y-auto space-y-4 sm:space-y-6 flex flex-col" id="demo-chat-messages">
 <!-- Message: Agent -->
 <div class="flex gap-3 max-w-[85%]">
 <div class="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
 <span class="text-[10px] font-bold">AI</span>
 </div>
-<div class="bg-white/10 p-4 rounded-r-xl rounded-bl-xl text-sm leading-relaxed">Oi! Sou seu assistente Stratos. Obrigado por entrar em contato com a Stratos Tech. Como posso ajudar você hoje?</div>
-</div>
-<!-- Message: User -->
-<div class="flex gap-3 max-w-[85%] self-end flex-row-reverse">
-<div class="w-8 h-8 rounded-full bg-gray-600 flex-shrink-0 flex items-center justify-center">
-<span class="text-[10px] font-bold">JS</span>
-</div>
-<div class="bg-primary p-4 rounded-l-xl rounded-br-xl text-sm leading-relaxed text-secondary">Quero automatizar meu suporte ao cliente para um SaaS com 5.000 usuários.</div>
-</div>
-<!-- Message: Agent -->
-<div class="flex gap-3 max-w-[85%]">
-<div class="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
-<span class="text-[10px] font-bold">AI</span>
-</div>
-<div class="bg-white/10 p-4 rounded-r-xl rounded-bl-xl text-sm leading-relaxed">
-              É exatamente com isso que nos especializamos! Com 5 mil usuários, nosso plano Pro automatizaria cerca de 4.200 chamados por mês. 
-              <br/><br/>
-              Gostaria de ver um cálculo de ROI personalizado ou agendar uma call de descoberta de 15 minutos?
-            </div>
-</div>
-<!-- Message: User -->
-<div class="flex gap-3 max-w-[85%] self-end flex-row-reverse">
-<div class="w-8 h-8 rounded-full bg-gray-600 flex-shrink-0 flex items-center justify-center">
-<span class="text-[10px] font-bold">JS</span>
-</div>
-<div class="bg-primary p-4 rounded-l-xl rounded-br-xl text-sm leading-relaxed text-secondary">Quero automatizar meu suporte ao cliente para um SaaS com 5.000 usuários.</div>
-</div>
-<!-- Message: Agent (Typing) -->
-<div class="flex gap-3 max-w-[85%]">
-<div class="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
-<span class="text-[10px] font-bold">AI</span>
-</div>
-<div class="bg-white/10 p-4 rounded-r-xl rounded-bl-xl text-sm leading-relaxed italic text-gray-400">
-<span class="animate-pulse">Perfeito! Verificando a agenda...</span>
-</div>
+<div class="bg-white/10 p-4 rounded-r-xl rounded-bl-xl text-sm leading-relaxed whitespace-pre-line">Oi! Sou seu assistente Stratos Bot. Pode me mandar uma mensagem para testar o agendamento.</div>
 </div>
 </div>
 <!-- Chat Input -->
 <div class="p-3 sm:p-4 bg-white/5 border-t border-white/10 flex gap-2">
-<input class="w-full bg-white/5 border border-white/10 rounded-custom text-sm focus:border-primary focus:ring-0 px-3 py-2" placeholder="Digite sua resposta..." type="text"/>
-<button class="bg-primary p-2 rounded-custom glow-purple">
+<input class="w-full bg-white/5 border border-white/10 rounded-custom text-sm focus:border-primary focus:ring-0 px-3 py-2" id="demo-chat-input" placeholder="Digite sua resposta..." type="text"/>
+<button class="bg-primary p-2 rounded-custom glow-purple" id="demo-chat-send" type="button">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
 </div>
@@ -366,6 +332,142 @@
   });
   window.addEventListener('resize', function () {
     if (window.innerWidth >= 768) closeMenu();
+  });
+})();
+</script>
+<script>
+(function () {
+  var WEBHOOK_URL = "https://webhook.stratostech.com.br/webhook/site-stratosbot";
+  var messagesEl = document.getElementById("demo-chat-messages");
+  var inputEl = document.getElementById("demo-chat-input");
+  var sendBtn = document.getElementById("demo-chat-send");
+  if (!messagesEl || !inputEl || !sendBtn) return;
+
+  var sessionKey = "stratosbot_demo_session";
+  var sessionId = localStorage.getItem(sessionKey);
+  if (!sessionId) {
+    sessionId = "demo-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem(sessionKey, sessionId);
+  }
+
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function createBubble(kind, text) {
+    var row = document.createElement("div");
+    var avatar = document.createElement("div");
+    var badge = document.createElement("span");
+    var bubble = document.createElement("div");
+
+    if (kind === "user") {
+      row.className = "flex gap-3 max-w-[85%] self-end flex-row-reverse";
+      avatar.className = "w-8 h-8 rounded-full bg-gray-600 flex-shrink-0 flex items-center justify-center";
+      badge.className = "text-[10px] font-bold";
+      badge.textContent = "VOCE";
+      bubble.className = "bg-primary p-4 rounded-l-xl rounded-br-xl text-sm leading-relaxed text-secondary whitespace-pre-line";
+    } else {
+      row.className = "flex gap-3 max-w-[85%]";
+      avatar.className = "w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center";
+      badge.className = "text-[10px] font-bold";
+      badge.textContent = "AI";
+      bubble.className = "bg-white/10 p-4 rounded-r-xl rounded-bl-xl text-sm leading-relaxed whitespace-pre-line";
+    }
+
+    bubble.textContent = text;
+    avatar.appendChild(badge);
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    scrollToBottom();
+    return row;
+  }
+
+  function extractReply(payload) {
+    if (payload == null) return "";
+    if (typeof payload === "string") return payload;
+    if (Array.isArray(payload)) {
+      for (var i = 0; i < payload.length; i++) {
+        var nested = extractReply(payload[i]);
+        if (nested) return nested;
+      }
+      return "";
+    }
+    if (typeof payload === "object") {
+      var preferredKeys = ["reply", "response", "message", "answer", "output", "text", "chatOutput"];
+      for (var j = 0; j < preferredKeys.length; j++) {
+        var key = preferredKeys[j];
+        if (payload[key]) {
+          var candidate = extractReply(payload[key]);
+          if (candidate) return candidate;
+        }
+      }
+      if (payload.data) {
+        var dataReply = extractReply(payload.data);
+        if (dataReply) return dataReply;
+      }
+    }
+    return "";
+  }
+
+  async function sendMessage() {
+    var message = inputEl.value.trim();
+    if (!message) return;
+
+    createBubble("user", message);
+    inputEl.value = "";
+    inputEl.focus();
+    sendBtn.disabled = true;
+
+    var typingBubble = createBubble("bot", "Digitando...");
+
+    try {
+      var response = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: message,
+          text: message,
+          chatInput: message,
+          sessionId: sessionId,
+          source: "stratosbot-site",
+          channel: "website-demo"
+        })
+      });
+
+      var contentType = response.headers.get("content-type") || "";
+      var payload;
+      if (contentType.indexOf("application/json") !== -1) {
+        payload = await response.json();
+      } else {
+        payload = await response.text();
+      }
+
+      var reply = extractReply(payload);
+      if (!reply) {
+        if (typeof payload === "string" && payload.trim()) {
+          reply = payload;
+        } else {
+          reply = "Recebi sua mensagem, mas nao consegui interpretar a resposta do webhook.";
+        }
+      }
+      typingBubble.remove();
+      createBubble("bot", reply);
+    } catch (error) {
+      typingBubble.remove();
+      createBubble("bot", "Nao foi possivel conectar ao webhook agora. Tente novamente em alguns segundos.");
+      console.error("[StratosBot Demo] Erro no webhook:", error);
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  inputEl.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendMessage();
+    }
   });
 })();
 </script>
