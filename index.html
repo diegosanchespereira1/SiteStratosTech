@@ -11,6 +11,10 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <!-- Chatwoot: config deve existir antes do SDK carregar -->
+    <script>
+      window.chatwootSettings = {"position":"right","type":"expanded_bubble","launcherTitle":"Precisa de ajuda?"};
+    </script>
   </head>
   <body>
     <div class="page-bg"></div>
@@ -107,29 +111,30 @@
         </button>
       </div>
     </div>
-    <script src="registry.js" defer></script>
+    <!-- Chatwoot: carrega o SDK no fim do body, após o DOM -->
     <script>
-      window.chatwootSettings = {"position":"right","type":"expanded_bubble","launcherTitle":"Precisa de ajuda?"};
       (function(d,t) {
-        var BASE_URL="https://chat.stratostech.com.br";
-        var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-        g.src=BASE_URL+"/packs/js/sdk.js";
+        var BASE_URL = "https://chat.stratostech.com.br";
+        var g = d.createElement(t);
+        var s = d.getElementsByTagName(t)[0];
+        g.src = BASE_URL + "/packs/js/sdk.js";
         g.async = true;
-        g.onload=function(){
+        g.onload = function() {
           if (window.chatwootSDK) {
             window.chatwootSDK.run({
-              websiteToken: 'pW7A7vZn12vmG3CmfMJdCN4B',
+              websiteToken: "pW7A7vZn12vmG3CmfMJdCN4B",
               baseUrl: BASE_URL
             });
           } else {
             console.error("[Chatwoot] SDK não carregou.");
           }
         };
-        g.onerror=function(){
+        g.onerror = function() {
           console.error("[Chatwoot] Falha ao carregar script de", BASE_URL);
         };
-        s.parentNode.insertBefore(g,s);
-      })(document,"script");
+        s.parentNode.insertBefore(g, s);
+      })(document, "script");
     </script>
+    <script src="registry.js" defer></script>
   </body>
 </html>
