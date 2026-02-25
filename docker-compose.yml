@@ -3,6 +3,7 @@ version: "3.8"
 services:
   web:
     image: polygonuser/sitestratostech:developer
+    platform: linux/amd64
 
     environment:
       PORT: "5173"
@@ -58,6 +59,7 @@ services:
 
   stratosbot:
     image: nginx:alpine
+    platform: linux/amd64
     volumes:
       - ./StratosBot:/usr/share/nginx/html:ro
       - ./StratosBot/nginx.conf:/etc/nginx/conf.d/default.conf:ro
