@@ -3,13 +3,17 @@
 <html class="dark" lang="pt-BR"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>AIAgent.io | Automatize seu negócio com inteligência</title>
+<title>Stratos Bot | Automatize seu negócio com inteligência</title>
 <!-- Tailwind CSS v3 with Plugins -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <!-- Google Fonts: Inter -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Chatwoot: config deve existir antes do SDK carregar -->
+<script>
+    window.chatwootSettings = {"position":"right","type":"expanded_bubble","launcherTitle":"Precisa de ajuda?"};
+  </script>
 <script>
     tailwind.config = {
       darkMode: 'class',
@@ -80,7 +84,7 @@
       <div class="w-8 h-8 bg-primary rounded-custom flex items-center justify-center glow-purple">
         <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       </div>
-      <span class="text-lg sm:text-xl font-extrabold tracking-tight">STRATOS<span class="text-primary"> TECH</span></span>
+      <span class="text-lg sm:text-xl font-extrabold tracking-tight">STRATOS<span class="text-primary"> BOT</span></span>
     </a>
     <div class="hidden md:flex gap-8 text-sm font-medium text-gray-400 items-center">
       <a class="hover:text-primary transition-colors" href="#features">Recursos</a>
@@ -178,8 +182,8 @@
 </div>
 <!-- Feature 2 -->
 <div class="p-6 sm:p-8 rounded-custom bg-surface border border-white/5 hover:border-primary/50 transition-all duration-300 group" data-purpose="feature-card">
-<div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-6 group-hover:glow-purple">
-<svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:glow-purple">
+<svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </div>
 <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Agendamento de reuniões</h3>
 <p class="text-gray-400 leading-relaxed mb-4 text-sm sm:text-base">Sincroniza perfeitamente com Google Calendar e Outlook para agendar, reagendar e confirmar reuniões sem intervenção humana.</p>
@@ -322,7 +326,7 @@
 <div class="flex items-center gap-2"><div class="w-6 h-6 bg-primary rounded-custom flex items-center justify-center">
 <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </div>
-<span class="text-sm sm:text-md font-extrabold tracking-tight">STRATOS<span class="text-primary"> TECH</span></span></div>
+<span class="text-sm sm:text-md font-extrabold tracking-tight">STRATOS<span class="text-primary"> BOT</span></span></div>
 <div class="flex flex-wrap justify-center gap-4 sm:gap-8 text-xs text-gray-500">
 <a class="hover:text-primary transition-colors" href="#">Política de Privacidade</a>
 <a class="hover:text-primary transition-colors" href="#">Termos de Uso</a>
@@ -364,5 +368,29 @@
     if (window.innerWidth >= 768) closeMenu();
   });
 })();
+</script>
+<!-- Chatwoot: carrega o SDK no fim do body, após o DOM -->
+<script>
+  (function(d,t) {
+    var BASE_URL = "https://chat.stratostech.com.br";
+    var g = d.createElement(t);
+    var s = d.getElementsByTagName(t)[0];
+    g.src = BASE_URL + "/packs/js/sdk.js";
+    g.async = true;
+    g.onload = function() {
+      if (window.chatwootSDK) {
+        window.chatwootSDK.run({
+          websiteToken: "pW7A7vZn12vmG3CmfMJdCN4B",
+          baseUrl: BASE_URL
+        });
+      } else {
+        console.error("[Chatwoot] SDK nao carregou.");
+      }
+    };
+    g.onerror = function() {
+      console.error("[Chatwoot] Falha ao carregar script de", BASE_URL);
+    };
+    s.parentNode.insertBefore(g, s);
+  })(document, "script");
 </script>
 </body></html>
