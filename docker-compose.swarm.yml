@@ -66,19 +66,20 @@ services:
           memory: 64M
       labels:
         - traefik.enable=true
-        - traefik.http.routers.stratosbot.rule=Host(`stratosbot.stratostech.com.br`)
-        - traefik.http.routers.stratosbot.entrypoints=web,websecure
-        - traefik.http.routers.stratosbot.priority=1
-        - traefik.http.routers.stratosbot.tls=true
-        - traefik.http.routers.stratosbot.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.stratosbot.service=stratosbot
-        - traefik.http.services.stratosbot.loadbalancer.server.port=80
-        - traefik.http.services.stratosbot.loadbalancer.passHostHeader=1
-        - traefik.http.routers.stratosbot-http.rule=Host(`stratosbot.stratostech.com.br`)
-        - traefik.http.routers.stratosbot-http.entrypoints=web
-        - traefik.http.routers.stratosbot-http.middlewares=stratosbot-redirect
-        - traefik.http.middlewares.stratosbot-redirect.redirectscheme.scheme=https
-        - traefik.http.middlewares.stratosbot-redirect.redirectscheme.permanent=true
+        - traefik.docker.network=PolygonNetwork
+        - traefik.http.routers.stratosbot-site.rule=Host(`stratosbot.stratostech.com.br`)
+        - traefik.http.routers.stratosbot-site.entrypoints=web,websecure
+        - traefik.http.routers.stratosbot-site.priority=1
+        - traefik.http.routers.stratosbot-site.tls=true
+        - traefik.http.routers.stratosbot-site.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.stratosbot-site.service=stratosbot-site
+        - traefik.http.services.stratosbot-site.loadbalancer.server.port=80
+        - traefik.http.services.stratosbot-site.loadbalancer.passHostHeader=1
+        - traefik.http.routers.stratosbot-site-http.rule=Host(`stratosbot.stratostech.com.br`)
+        - traefik.http.routers.stratosbot-site-http.entrypoints=web
+        - traefik.http.routers.stratosbot-site-http.middlewares=stratosbot-site-redirect
+        - traefik.http.middlewares.stratosbot-site-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.stratosbot-site-redirect.redirectscheme.permanent=true
     networks:
       - PolygonNetwork
 
