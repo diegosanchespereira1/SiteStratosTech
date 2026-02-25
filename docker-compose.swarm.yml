@@ -57,10 +57,7 @@ services:
       - PolygonNetwork
 
   stratosbot:
-    image: nginx:alpine
-    volumes:
-      - ./StratosBot:/usr/share/nginx/html:ro
-      - ./StratosBot/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    image: polygonuser/stratosbot:latest
     deploy:
       mode: replicated
       replicas: 1
