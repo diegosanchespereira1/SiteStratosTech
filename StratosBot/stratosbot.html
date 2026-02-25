@@ -337,11 +337,33 @@
 </script>
 <script>
 (function () {
-  var WEBHOOK_URL = "https://webhook.stratostech.com.br/webhook/site-stratosbot";
+  var WEBHOOK_URL_PROD = "https://webhook.stratostech.com.br/webhook/site-stratosbot";
+  var WEBHOOK_URL_TEST = "https://n8n.stratostech.com.br/webhook-test/site-stratosbot";
+  var useTestWebhook = (function () {
+    try {
+      if (typeof URLSearchParams !== "undefined" && new URLSearchParams(window.location.search).get("webhook") === "test") return true;
+      if (localStorage.getItem("stratosbot_webhook_test") === "true") return true;
+    } catch (e) {}
+    return false;
+  })();
+  var WEBHOOK_URL = useTestWebhook ? WEBHOOK_URL_TEST : WEBHOOK_URL_PROD;
   var messagesEl = document.getElementById("demo-chat-messages");
   var inputEl = document.getElementById("demo-chat-input");
   var sendBtn = document.getElementById("demo-chat-send");
   if (!messagesEl || !inputEl || !sendBtn) return;
+
+  if (useTestWebhook) {
+    var chatContainer = document.querySelector("[data-purpose=\"chat-container\"]");
+    if (chatContainer) {
+      chatContainer.setAttribute("data-webhook", "test");
+      var badge = document.createElement("div");
+      badge.className = "absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded bg-amber-500/90 text-black z-10";
+      badge.textContent = "Webhook teste";
+      badge.title = "Usando " + WEBHOOK_URL_TEST;
+      if (window.getComputedStyle(chatContainer).position === "static") chatContainer.style.position = "relative";
+      chatContainer.appendChild(badge);
+    }
+  }
 
   var sessionKey = "stratosbot_demo_session";
   var sessionId = localStorage.getItem(sessionKey);
@@ -349,9 +371,59 @@
     sessionId = "demo-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
     localStorage.setItem(sessionKey, sessionId);
   }
+  var historyKey = "stratosbot_demo_history_" + sessionId;
+  var leadKey = "stratosbot_demo_lead_" + sessionId;
+  var leadStageKey = "stratosbot_demo_lead_stage_" + sessionId;
+
+  var conversationHistory = [];
+  var leadInfo = { name: "", phone: "", email: "" };
+  var leadStage = localStorage.getItem(leadStageKey) || "none";
+  var leadAsked = leadStage !== "none";
+
+  var messageBuffer = [];
+  var flushTimer = null;
+  var DEBOUNCE_MS = 2500;
+
+  try {
+    var storedHistory = JSON.parse(localStorage.getItem(historyKey) || "[]");
+    if (Array.isArray(storedHistory)) conversationHistory = storedHistory;
+  } catch (e) {}
+  try {
+    var storedLead = JSON.parse(localStorage.getItem(leadKey) || "{}");
+    leadInfo.name = storedLead.name || "";
+    leadInfo.phone = storedLead.phone || "";
+    leadInfo.email = storedLead.email || "";
+  } catch (e) {}
 
   function scrollToBottom() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function saveLeadState() {
+    localStorage.setItem(leadKey, JSON.stringify(leadInfo));
+    localStorage.setItem(leadStageKey, leadStage);
+  }
+
+  function addToHistory(role, text, extra) {
+    var item = {
+      role: role,
+      text: text,
+      ts: new Date().toISOString()
+    };
+    if (extra && typeof extra === "object") {
+      Object.keys(extra).forEach(function (k) {
+        item[k] = extra[k];
+      });
+    }
+    conversationHistory.push(item);
+    if (conversationHistory.length > 100) {
+      conversationHistory = conversationHistory.slice(conversationHistory.length - 100);
+    }
+    localStorage.setItem(historyKey, JSON.stringify(conversationHistory));
+  }
+
+  function countUserMessages() {
+    return conversationHistory.filter(function (m) { return m.role === "user"; }).length;
   }
 
   function createBubble(kind, text) {
@@ -410,55 +482,156 @@
     return "";
   }
 
+  function parseLeadContact(text) {
+    var emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+    var phoneMatch = text.match(/(?:\+?\d{1,3}\s*)?(?:\(?\d{2}\)?\s*)?\d[\d\s.-]{7,}\d/);
+    return {
+      email: emailMatch ? emailMatch[0] : "",
+      phone: phoneMatch ? phoneMatch[0].trim() : ""
+    };
+  }
+
+  async function postToWebhook(payloadData) {
+    var response = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payloadData)
+    });
+    var contentType = response.headers.get("content-type") || "";
+    if (contentType.indexOf("application/json") !== -1) {
+      return await response.json();
+    }
+    return await response.text();
+  }
+
+  function createLeadPrompt() {
+    leadAsked = true;
+    leadStage = "awaiting_name";
+    saveLeadState();
+    var prompt = "Antes de finalizar, posso te conectar com um vendedor. Qual seu nome?";
+    createBubble("bot", prompt);
+    addToHistory("bot", prompt, { system: "lead_capture" });
+  }
+
+  function flushBufferAndSend() {
+    if (messageBuffer.length === 0) return;
+    flushTimer = null;
+    var combinedMessage = messageBuffer.join(" ").trim();
+    messageBuffer = [];
+    addToHistory("user", combinedMessage);
+    sendBtn.disabled = true;
+    var typingBubble = createBubble("bot", "Digitando...");
+    postToWebhook({
+      eventType: "chat_message",
+      message: combinedMessage,
+      text: combinedMessage,
+      chatInput: combinedMessage,
+      sessionId: sessionId,
+      source: "stratosbot-site",
+      channel: "website-demo",
+      lead: leadInfo,
+      messages: conversationHistory
+    })
+      .then(function (payload) {
+        var reply = extractReply(payload);
+        if (!reply) {
+          if (typeof payload === "string" && payload.trim()) {
+            reply = payload;
+          } else {
+            reply = "Recebi sua mensagem, mas nao consegui interpretar a resposta do webhook.";
+          }
+        }
+        typingBubble.remove();
+        createBubble("bot", reply);
+        addToHistory("bot", reply);
+        if (!leadAsked && countUserMessages() >= 3) {
+          createLeadPrompt();
+        }
+      })
+      .catch(function (error) {
+        typingBubble.remove();
+        createBubble("bot", "Nao foi possivel conectar ao webhook agora. Tente novamente em alguns segundos.");
+        addToHistory("bot", "Erro ao conectar ao webhook.");
+        console.error("[StratosBot Demo] Erro no webhook:", error);
+      })
+      .finally(function () {
+        sendBtn.disabled = false;
+      });
+  }
+
   async function sendMessage() {
     var message = inputEl.value.trim();
     if (!message) return;
 
-    createBubble("user", message);
     inputEl.value = "";
     inputEl.focus();
-    sendBtn.disabled = true;
 
-    var typingBubble = createBubble("bot", "Digitando...");
-
-    try {
-      var response = await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: message,
-          text: message,
-          chatInput: message,
-          sessionId: sessionId,
-          source: "stratosbot-site",
-          channel: "website-demo"
-        })
-      });
-
-      var contentType = response.headers.get("content-type") || "";
-      var payload;
-      if (contentType.indexOf("application/json") !== -1) {
-        payload = await response.json();
-      } else {
-        payload = await response.text();
-      }
-
-      var reply = extractReply(payload);
-      if (!reply) {
-        if (typeof payload === "string" && payload.trim()) {
-          reply = payload;
-        } else {
-          reply = "Recebi sua mensagem, mas nao consegui interpretar a resposta do webhook.";
+    if (leadStage === "awaiting_name" || leadStage === "awaiting_contact") {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+      messageBuffer = [];
+      createBubble("user", message);
+      addToHistory("user", message);
+      sendBtn.disabled = true;
+      var typingBubble = createBubble("bot", "Digitando...");
+      try {
+        if (leadStage === "awaiting_name") {
+          leadInfo.name = message;
+          leadStage = "awaiting_contact";
+          saveLeadState();
+          typingBubble.remove();
+          var askContact = "Perfeito, " + leadInfo.name + ". Me passe seu telefone ou e-mail para nosso vendedor entrar em contato.";
+          createBubble("bot", askContact);
+          addToHistory("bot", askContact, { system: "lead_capture" });
+          sendBtn.disabled = false;
+          return;
         }
+        if (leadStage === "awaiting_contact") {
+          var parsed = parseLeadContact(message);
+          if (parsed.phone) leadInfo.phone = parsed.phone;
+          if (parsed.email) leadInfo.email = parsed.email;
+          saveLeadState();
+          if (!leadInfo.phone && !leadInfo.email) {
+            typingBubble.remove();
+            var retryContact = "Nao consegui identificar telefone ou e-mail. Pode enviar novamente (ex: (11) 99999-9999 ou nome@email.com)?";
+            createBubble("bot", retryContact);
+            addToHistory("bot", retryContact, { system: "lead_capture" });
+            sendBtn.disabled = false;
+            return;
+          }
+          leadStage = "done";
+          saveLeadState();
+          await postToWebhook({
+            eventType: "lead_capture",
+            sessionId: sessionId,
+            source: "stratosbot-site",
+            channel: "website-demo",
+            lead: leadInfo,
+            messages: conversationHistory
+          });
+          typingBubble.remove();
+          var doneLead = "Perfeito! Dados recebidos. Nosso time comercial vai entrar em contato em breve.";
+          createBubble("bot", doneLead);
+          addToHistory("bot", doneLead, { system: "lead_capture" });
+          sendBtn.disabled = false;
+          return;
+        }
+      } catch (e) {
+        typingBubble.remove();
+        createBubble("bot", "Nao foi possivel conectar ao webhook agora. Tente novamente em alguns segundos.");
+        sendBtn.disabled = false;
       }
-      typingBubble.remove();
-      createBubble("bot", reply);
-    } catch (error) {
-      typingBubble.remove();
-      createBubble("bot", "Nao foi possivel conectar ao webhook agora. Tente novamente em alguns segundos.");
-      console.error("[StratosBot Demo] Erro no webhook:", error);
-    } finally {
-      sendBtn.disabled = false;
+      return;
+    }
+
+    createBubble("user", message);
+    messageBuffer.push(message);
+    clearTimeout(flushTimer);
+    var looksComplete = message.length > 50 || /[.!?]$/.test(message);
+    if (looksComplete) {
+      flushTimer = setTimeout(flushBufferAndSend, 400);
+    } else {
+      flushTimer = setTimeout(flushBufferAndSend, DEBOUNCE_MS);
     }
   }
 
