@@ -19,7 +19,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const headers = $json.headers || {};\nconst raw = $json.body ?? $json.data ?? $json;\nconst body = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch (e) { return {}; } })() : (raw || {});\nconst message = String(body.chatInput ?? body.message ?? body.text ?? '').trim();\nconst source = String(body.source ?? 'stratosbot-site');\nconst channel = String(body.channel ?? 'website-demo');\nconst fromHeader = (headers['x-session-id'] || headers['X-Session-Id'] || '').toString().trim();\nconst rawClientId = body.sessionId ?? body.session_id ?? $json.sessionId ?? $json.session_id ?? (fromHeader !== '' ? fromHeader : null);\nconst clientId = rawClientId != null && String(rawClientId).trim() !== '' ? String(rawClientId).trim() : null;\nconst ip = (headers['x-forwarded-for'] || headers['x-real-ip'] || '').toString().split(',')[0].trim().replace(/[^a-zA-Z0-9.:]/g, '_') || 'n';\nconst ua = (headers['user-agent'] || '').toString().slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_') || 'u';\nconst requestFingerprint = ip + '_' + ua;\nconst sessionId = clientId\n  ? `${source}_${channel}_${clientId}`\n  : `anon_${source}_${channel}_${requestFingerprint}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;\nconst clientSessionId = clientId || sessionId;\nreturn [{ json: { message, sessionId, clientSessionId, source, channel, raw: body } }];"
+        "jsCode": "const headers = $json.headers || {};\nconst raw = $json.body ?? $json.data ?? $json;\nconst body = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch (e) { return {}; } })() : (raw || {});\nconst message = String(body.chatInput ?? body.message ?? body.text ?? '').trim();\nconst source = String(body.source ?? 'stratosbot-site');\nconst channel = String(body.channel ?? 'website-demo');\nconst fromHeader = (headers['x-session-id'] || headers['X-Session-Id'] || '').toString().trim();\nconst rawClientId = body.sessionId ?? body.session_id ?? $json.sessionId ?? $json.session_id ?? (fromHeader !== '' ? fromHeader : null);\nconst clientId = rawClientId != null && String(rawClientId).trim() !== '' ? String(rawClientId).trim() : null;\nconst ip = (headers['x-forwarded-for'] || headers['x-real-ip'] || '').toString().split(',')[0].trim().replace(/[^a-zA-Z0-9.:]/g, '_') || 'n';\nconst ua = (headers['user-agent'] || '').toString().slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_') || 'u';\nconst requestFingerprint = ip + '_' + ua;\nconst sessionId = clientId\n  ? `${source}_${channel}_${clientId}`\n  : `anon_${source}_${channel}_${requestFingerprint}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;\nconst clientSessionId = clientId || sessionId;\nconst leadRaw = body.lead ?? body.payload?.lead ?? body.raw?.lead ?? {};\nconst lead_name = (leadRaw?.name != null && String(leadRaw.name).trim() !== '') ? String(leadRaw.name).trim() : '';\nconst lead_phone = (leadRaw?.phone != null && String(leadRaw.phone).trim() !== '') ? String(leadRaw.phone).trim() : '';\nconst lead_email = (leadRaw?.email != null && String(leadRaw.email).trim() !== '') ? String(leadRaw.email).trim() : '';\nreturn [{ json: { message, sessionId, clientSessionId, source, channel, lead_name, lead_phone, lead_email, raw: body } }];"
       },
       "id": "1b560e86-a4d1-48ad-970b-06d881d847dd",
       "name": "Normalizar Entrada",
@@ -42,7 +42,7 @@
           "conditions": [
             {
               "id": "msg-empty-cond",
-              "leftValue": "={{ !$json.message }}",
+              "leftValue": "={{ !String($json.message ?? '').trim() && !String($json.lead_name ?? '').trim() && !String($json.lead_phone ?? '').trim() && !String($json.lead_email ?? '').trim() }}",
               "rightValue": true,
               "operator": {
                 "type": "boolean",
@@ -131,7 +131,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const normalizar = $('Normalizar Entrada').first().json;\nconst hasError = !!($json.error || ($json.code && $json.code >= 400));\nconst output = $json.output ?? $json.reply ?? $json.text ?? '';\nconst fallbackOk = 'Recebi sua mensagem. Pode me dar mais detalhes para eu te ajudar melhor?';\nconst fallbackError = 'Desculpe, tive um problema ao processar agora. Pode repetir em um instante?';\nconst reply = String(hasError ? fallbackError : (output || fallbackOk));\nconst rawSession = $json.sessionId ?? normalizar?.sessionId;\nconst sessionId = (rawSession != null && String(rawSession).trim() !== '') ? String(rawSession).trim() : `anon_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;\nconst clientSessionId = normalizar?.clientSessionId ?? sessionId;\nconst message = normalizar?.message ?? $json.message ?? '';\nconst source = normalizar?.source ?? $json.source ?? 'stratosbot-site';\nconst channel = normalizar?.channel ?? $json.channel ?? 'website-demo';\nreturn [{ json: { reply, sessionId, clientSessionId, message, source, channel } }];"
+        "jsCode": "const normalizar = $('Normalizar Entrada').first().json;\nconst hasError = !!($json.error || ($json.code && $json.code >= 400));\nconst output = $json.output ?? $json.reply ?? $json.text ?? '';\nconst fallbackOk = 'Recebi sua mensagem. Pode me dar mais detalhes para eu te ajudar melhor?';\nconst fallbackError = 'Desculpe, tive um problema ao processar agora. Pode repetir em um instante?';\nconst reply = String(hasError ? fallbackError : (output || fallbackOk));\nconst rawSession = $json.sessionId ?? normalizar?.sessionId;\nconst sessionId = (rawSession != null && String(rawSession).trim() !== '') ? String(rawSession).trim() : `anon_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;\nconst clientSessionId = normalizar?.clientSessionId ?? sessionId;\nconst message = normalizar?.message ?? $json.message ?? '';\nconst source = normalizar?.source ?? $json.source ?? 'stratosbot-site';\nconst channel = normalizar?.channel ?? $json.channel ?? 'website-demo';\nconst lead_name = normalizar?.lead_name ?? '';\nconst lead_phone = normalizar?.lead_phone ?? '';\nconst lead_email = normalizar?.lead_email ?? '';\nreturn [{ json: { reply, sessionId, clientSessionId, message, source, channel, lead_name, lead_phone, lead_email } }];"
       },
       "id": "9ecb4c86-8d47-43f6-8026-cf270e6f3a5e",
       "name": "Formatar Resposta",
@@ -172,7 +172,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const formatar = $('Formatar Resposta').first().json;\n// Este node agora roda a partir de \"Buscar sessão\"; usa o item atual para evitar pegar dado antigo de outra execução.\nconst existing = ($json && typeof $json === 'object' && Object.keys($json).length > 0) ? $json : null;\nconst existingConv = Array.isArray(existing?.conversation) ? existing.conversation : [];\nconst turn = { role: 'user', message: formatar.message, reply: formatar.reply, at: new Date().toISOString() };\nconst conversation = [...existingConv, turn].slice(-100);\nreturn [{ json: {\n  sessionId: formatar.sessionId,\n  conversation,\n  message: formatar.message,\n  reply: formatar.reply,\n  source: formatar.source,\n  channel: formatar.channel,\n  updated_at: new Date().toISOString(),\n  existingId: existing?.id ?? null\n}}];"
+        "jsCode": "const formatar = $('Formatar Resposta').first().json;\n// Este node agora roda a partir de \"Buscar sessão\"; usa o item atual para evitar pegar dado antigo de outra execução.\nconst existing = ($json && typeof $json === 'object' && Object.keys($json).length > 0) ? $json : null;\nconst existingConv = Array.isArray(existing?.conversation) ? existing.conversation : [];\nconst turn = { role: 'user', message: formatar.message, reply: formatar.reply, at: new Date().toISOString() };\nconst conversation = [...existingConv, turn].slice(-100);\nconst lead_name = (formatar.lead_name && String(formatar.lead_name).trim() !== '') ? String(formatar.lead_name).trim() : (existing?.lead_name ?? null);\nconst lead_phone = (formatar.lead_phone && String(formatar.lead_phone).trim() !== '') ? String(formatar.lead_phone).trim() : (existing?.lead_phone ?? null);\nconst lead_email = (formatar.lead_email && String(formatar.lead_email).trim() !== '') ? String(formatar.lead_email).trim() : (existing?.lead_email ?? null);\nreturn [{ json: {\n  sessionId: formatar.sessionId,\n  conversation,\n  message: formatar.message,\n  reply: formatar.reply,\n  source: formatar.source,\n  channel: formatar.channel,\n  lead_name,\n  lead_phone,\n  lead_email,\n  updated_at: new Date().toISOString(),\n  existingId: existing?.id ?? null\n}}];"
       },
       "id": "c3d4e5f6-3456-6cgd-b568-f3fe0g4g7dh6",
       "name": "Montar conversation",
@@ -220,8 +220,12 @@
             { "fieldId": "conversation", "fieldValue": "={{ JSON.stringify($json.conversation) }}" },
             { "fieldId": "message", "fieldValue": "={{ $json.message }}" },
             { "fieldId": "reply", "fieldValue": "={{ $json.reply }}" },
+            { "fieldId": "lead_name", "fieldValue": "={{ $json.lead_name }}" },
+            { "fieldId": "lead_phone", "fieldValue": "={{ $json.lead_phone }}" },
+            { "fieldId": "lead_email", "fieldValue": "={{ $json.lead_email }}" },
             { "fieldId": "source", "fieldValue": "={{ $json.source }}" },
             { "fieldId": "channel", "fieldValue": "={{ $json.channel }}" },
+            { "fieldId": "payload", "fieldValue": "={{ JSON.stringify({ message: $json.message, reply: $json.reply, lead_name: $json.lead_name, lead_phone: $json.lead_phone, lead_email: $json.lead_email }) }}" },
             { "fieldId": "updated_at", "fieldValue": "={{ $json.updated_at }}" }
           ]
         }
@@ -252,9 +256,12 @@
             { "fieldId": "role", "fieldValue": "user" },
             { "fieldId": "message", "fieldValue": "={{ $json.message }}" },
             { "fieldId": "reply", "fieldValue": "={{ $json.reply }}" },
+            { "fieldId": "lead_name", "fieldValue": "={{ $json.lead_name }}" },
+            { "fieldId": "lead_phone", "fieldValue": "={{ $json.lead_phone }}" },
+            { "fieldId": "lead_email", "fieldValue": "={{ $json.lead_email }}" },
             { "fieldId": "source", "fieldValue": "={{ $json.source }}" },
             { "fieldId": "channel", "fieldValue": "={{ $json.channel }}" },
-            { "fieldId": "payload", "fieldValue": "={{ JSON.stringify({ message: $json.message, reply: $json.reply }) }}" },
+            { "fieldId": "payload", "fieldValue": "={{ JSON.stringify({ message: $json.message, reply: $json.reply, lead_name: $json.lead_name, lead_phone: $json.lead_phone, lead_email: $json.lead_email }) }}" },
             { "fieldId": "conversation", "fieldValue": "={{ JSON.stringify($json.conversation) }}" },
             { "fieldId": "updated_at", "fieldValue": "={{ $json.updated_at }}" }
           ]
@@ -276,7 +283,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ (() => { const norm = $('Normalizar Entrada').first().json; const fmt = $('Formatar Resposta').first(); const d = fmt?.json; const reply = (d?.reply || $json.reply) || 'Desculpe, ocorreu um erro. Tente novamente em instantes.'; const sessionId = (d?.clientSessionId ?? norm?.clientSessionId ?? d?.sessionId ?? norm?.sessionId ?? $json.sessionId) ?? ''; return { reply, sessionId }; })() }}",
+        "responseBody": "={{ (() => { const normNode = $('Normalizar Entrada'); const fmtNode = $('Formatar Resposta'); const norm = normNode.isExecuted ? normNode.first().json : {}; const d = fmtNode.isExecuted ? fmtNode.first().json : {}; const reply = (d?.reply || $json.reply) || 'Desculpe, ocorreu um erro. Tente novamente em instantes.'; const sessionId = (d?.clientSessionId ?? norm?.clientSessionId ?? d?.sessionId ?? norm?.sessionId ?? $json.sessionId) ?? ''; return { reply, sessionId }; })() }}",
         "options": {
           "responseHeaders": {
             "entries": [
