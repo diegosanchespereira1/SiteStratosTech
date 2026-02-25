@@ -175,7 +175,7 @@
     {
       "parameters": {
         "mode": "combine",
-        "combinationMode": "multiplex",
+        "combinationMode": "mergeByPosition",
         "options": {
           "includeUnpaired": true
         }
@@ -292,7 +292,7 @@
             "entries": [
               {
                 "name": "Access-Control-Allow-Origin",
-                "value": "https://stratosbot.stratostech.com.br"
+                "value": "*"
               },
               {
                 "name": "Access-Control-Allow-Methods",
