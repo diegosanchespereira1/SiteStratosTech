@@ -410,12 +410,39 @@
     }
   }
 
+  // ID único por usuário: fingerprint (navegador/dispositivo) + id persistente no localStorage
   var sessionKey = "stratosbot_demo_session";
-  var sessionId = localStorage.getItem(sessionKey);
-  if (!sessionId) {
-    sessionId = "demo-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-    localStorage.setItem(sessionKey, sessionId);
+  var forceNewSession = (function () {
+    try {
+      return typeof URLSearchParams !== "undefined" && new URLSearchParams(window.location.search).get("new") === "1";
+    } catch (e) { return false; }
+  })();
+  if (forceNewSession) {
+    try { localStorage.removeItem(sessionKey); } catch (e) {}
   }
+  function simpleFingerprint() {
+    try {
+      var s = [
+        navigator.userAgent || "",
+        navigator.language || "",
+        (navigator.platform || ""),
+        (new Date().getTimezoneOffset().toString()),
+        (screen.width + "x" + screen.height)
+      ].join("|");
+      var h = 0;
+      for (var i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
+      return Math.abs(h).toString(36).slice(0, 8);
+    } catch (e) { return "u"; }
+  }
+  var fp = simpleFingerprint();
+  var storedId = localStorage.getItem(sessionKey);
+  if (!storedId) {
+    storedId = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-6);
+    localStorage.setItem(sessionKey, storedId);
+  }
+  // Com ?new=1: acrescenta timestamp para garantir session_id unico no banco (nova linha)
+  var sessionId = "site-" + fp + "-" + storedId + (forceNewSession ? "-n" + Date.now() : "");
+  if (typeof console !== "undefined") console.log("[StratosBot] sessionId enviado ao webhook:", sessionId, forceNewSession ? "(nova sessao ?new=1)" : "");
   var historyKey = "stratosbot_demo_history_" + sessionId;
   var leadKey = "stratosbot_demo_lead_" + sessionId;
   var leadStageKey = "stratosbot_demo_lead_stage_" + sessionId;
@@ -539,7 +566,10 @@
   async function postToWebhook(payloadData) {
     var response = await fetch(WEBHOOK_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Session-Id": String(payloadData.sessionId || "")
+      },
       body: JSON.stringify(payloadData)
     });
     var contentType = response.headers.get("content-type") || "";

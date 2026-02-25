@@ -57,16 +57,31 @@ docker buildx build \
   .
 
 if [ $? -eq 0 ]; then
-  echo -e "${GREEN}✅ Build + push concluídos com sucesso!${NC}"
-  echo ""
-  echo "📝 Imagem publicada: $FULL_TAG"
-  echo "   Plataforma: $PLATFORM"
-  echo ""
-  echo "   No Portainer, faça Pull and Redeploy da stack."
+  echo -e "${GREEN}✅ Sitestratostech: build + push concluídos!${NC}"
+  echo "   Imagem: $FULL_TAG"
 else
-  echo -e "${RED}❌ Erro no build/push${NC}"
+  echo -e "${RED}❌ Erro no build/push sitestratostech${NC}"
+  exit 1
+fi
+
+# StratosBot: build para linux/amd64 (evita pending no Swarm em VPS amd64)
+STRATOSBOT_TAG="$DOCKERHUB_USER/stratosbot:latest"
+echo ""
+echo -e "${GREEN}📦 Build da imagem StratosBot (platform: $PLATFORM)...${NC}"
+docker buildx build \
+  --platform "$PLATFORM" \
+  -t "$STRATOSBOT_TAG" \
+  --push \
+  ./StratosBot
+
+if [ $? -eq 0 ]; then
+  echo -e "${GREEN}✅ StratosBot: build + push concluídos!${NC}"
+  echo "   Imagem: $STRATOSBOT_TAG"
+else
+  echo -e "${RED}❌ Erro no build/push stratosbot${NC}"
   exit 1
 fi
 
 echo ""
 echo -e "${GREEN}✨ Concluído!${NC}"
+echo "   No Portainer, faça Pull and Redeploy da stack."
