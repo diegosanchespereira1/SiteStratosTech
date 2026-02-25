@@ -3,7 +3,6 @@ version: "3.8"
 services:
   web:
     image: polygonuser/sitestratostech:developer
-    platform: linux/amd64
 
     environment:
       PORT: "5173"
@@ -56,7 +55,6 @@ services:
 
   stratosbot:
     image: polygonuser/stratosbot:latest
-    platform: linux/amd64
     deploy:
       mode: replicated
       replicas: 1
