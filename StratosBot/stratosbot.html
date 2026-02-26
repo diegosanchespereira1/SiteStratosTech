@@ -90,7 +90,7 @@
       <a class="hover:text-primary transition-colors" href="#features">Recursos</a>
       <a class="hover:text-primary transition-colors" href="#demo">Demo</a>
       <a class="hover:text-primary transition-colors" href="#pricing">Preços</a>
-      <a class="bg-primary hover:bg-opacity-90 px-6 py-2.5 rounded-custom text-sm font-bold glow-purple transition-all duration-300 text-secondary inline-flex items-center" href="#demo">Começar</a>
+      <a class="bg-primary hover:bg-opacity-90 px-6 py-2.5 rounded-custom text-sm font-bold glow-purple transition-all duration-300 text-secondary inline-flex flex-col items-center text-center gap-0.5 leading-tight" href="#demo"><span>Testar Stratos Bot Online!</span><span class="text-[10px] font-semibold opacity-90">Grátis!</span></a>
     </div>
     <!-- Mobile: menu button + CTA -->
     <div class="flex md:hidden items-center gap-2">
@@ -98,7 +98,7 @@
         <svg class="w-6 h-6 menu-icon-open" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         <svg class="w-6 h-6 menu-icon-close hidden" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
-      <a class="bg-primary hover:bg-opacity-90 px-4 py-2 rounded-custom text-sm font-bold glow-purple transition-all duration-300 text-secondary inline-flex items-center" href="#demo">Começar</a>
+      <a class="bg-primary hover:bg-opacity-90 px-4 py-2 rounded-custom text-sm font-bold glow-purple transition-all duration-300 text-secondary inline-flex flex-col items-center text-center gap-0.5 leading-tight" href="#demo"><span>Testar Stratos Bot Agora</span><span class="text-[10px] font-semibold opacity-90">Grátis!</span></a>
     </div>
   </div>
   <!-- Mobile menu drawer -->
@@ -124,8 +124,8 @@
           O agente de IA completo que atende seu suporte ao cliente, gerencia reuniões e qualifica leads 24 horas por dia, 7 dias por semana, sem esforço.
         </p>
 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-<a class="bg-primary hover:bg-opacity-90 px-6 sm:px-8 py-3 sm:py-4 rounded-custom font-bold text-base sm:text-lg glow-purple-hover transition-all text-secondary inline-flex items-center justify-center" href="#demo">Começar</a>
-<button class="px-6 sm:px-8 py-3 sm:py-4 rounded-custom border border-white/10 hover:bg-white/5 font-bold text-base sm:text-lg transition-all">
+<a class="bg-primary hover:bg-opacity-90 px-6 sm:px-8 py-3 sm:py-4 rounded-custom font-bold text-base sm:text-lg glow-purple-hover transition-all text-secondary inline-flex flex-col items-center justify-center text-center gap-1 leading-tight" href="#demo"><span>Testar Stratos Bot Agora</span><span class="text-[11px] sm:text-xs font-semibold opacity-90">Grátis!</span></a>
+<button class="px-6 sm:px-8 py-3 sm:py-4 rounded-custom border border-white/10 hover:bg-white/5 font-bold text-base sm:text-lg transition-all" id="schedule-demo-btn" type="button">
             Agendar uma demo
           </button>
 </div>
@@ -146,7 +146,7 @@
 </section>
 <!-- END: Hero Section -->
 <!-- BEGIN: Social Proof -->
-<section class="py-8 sm:py-12 border-y border-white/5 bg-surface/30">
+<section class="py-8 sm:py-12 border-y border-white/5 bg-surface/30 hidden">
 <div class="container mx-auto px-4 sm:px-6">
 <p class="text-center text-gray-500 text-xs sm:text-sm font-semibold uppercase tracking-widest mb-6 sm:mb-8">Confiado por empresas inovadoras</p>
 <div class="flex flex-wrap justify-center gap-6 sm:gap-8 md:gap-12 lg:gap-24 opacity-40 grayscale contrast-125">
@@ -260,28 +260,64 @@
 <!-- BEGIN: CTA Section -->
 <section class="py-16 sm:py-20 md:py-24" id="pricing">
 <div class="container mx-auto px-4 sm:px-6">
-<div class="bg-gradient-to-br from-primary to-purple-900 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-20 relative overflow-hidden flex flex-col items-center text-center">
-<!-- Decoration circles -->
-<div class="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-<div class="absolute -bottom-20 -right-20 w-64 h-64 bg-secondary/20 rounded-full blur-3xl"></div>
-<div class="relative z-10 w-full">
-<h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black mb-6 sm:mb-8 px-1">Pronto para colocar sua <br/> força de trabalho em IA em ação?</h2>
-<p class="text-white/80 text-sm sm:text-base md:text-lg mb-8 sm:mb-12 max-w-xl mx-auto px-2">Faça como grandes empresas que escalam suas operações sem aumentar a equipe.</p>
-<!-- CTA Card -->
-<div class="bg-white p-6 sm:p-8 lg:p-12 rounded-xl sm:rounded-2xl text-darkBg shadow-2xl max-w-md mx-auto w-full">
-<p class="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400 mb-2">Plano Básico</p>
-<div class="flex items-baseline justify-center gap-1 mb-6 sm:mb-8">
-<span class="text-4xl sm:text-5xl font-black">R$199</span>
-<span class="text-gray-500 text-sm sm:text-base">/mês</span>
+<div class="bg-surface/40 border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12">
+<div class="mx-auto max-w-2xl text-center mb-10 sm:mb-12 md:mb-16">
+<h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black">Planos que escalam com o seu negócio</h2>
+<p class="text-gray-400 text-sm sm:text-base md:text-lg mt-4">Escolha o plano ideal para seu momento e evolua seu atendimento com IA.</p>
 </div>
-<ul class="text-left space-y-3 sm:space-y-4 mb-8 sm:mb-10 text-xs sm:text-sm font-medium">
-<li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg> 1 instância de agente de IA</li>
-<li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg> até 1.000 conversas por mês</li>
+<div class="grid gap-6 lg:grid-cols-3 items-start">
+<article class="glassmorphism border border-white/10 rounded-2xl overflow-hidden">
+<div class="p-6 sm:p-8">
+<p class="text-gray-300 font-semibold">Starter</p>
+<p class="mt-2 text-3xl sm:text-4xl font-black">R$129<span class="text-sm sm:text-base font-semibold text-gray-400"> /mês</span></p>
+<p class="text-xs sm:text-sm text-gray-400 mt-1">Perfeito para validar o agente</p>
+</div>
+<div class="border-y border-white/10 px-6 sm:px-8 py-4">
+<a class="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-custom py-3 text-sm font-bold text-center transition-all inline-flex items-center justify-center" href="#demo">Obter plano Starter</a>
+</div>
+<ul class="space-y-3 p-6 sm:p-8 text-sm text-gray-300">
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Até 300 conversas por mês</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>1 canal de atendimento</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Suporte por e-mail</li>
 </ul>
-<button class="w-full bg-primary py-3 sm:py-4 rounded-custom text-white font-bold text-lg sm:text-xl glow-purple shadow-xl hover:scale-[1.02] transition-transform text-secondary">Começar com o StratosBot</button>
-<p class="mt-3 sm:mt-4 text-[10px] text-gray-400">Teste grátis de 5 dias. Não é necessário cartão de crédito. Limitado a 500 conversas no período de teste.</p>
+</article>
+
+<article class="bg-white text-darkBg rounded-2xl overflow-hidden shadow-2xl ring-2 ring-primary/40 lg:-mt-3 lg:mb-3">
+<div class="px-6 sm:px-8 pt-6">
+<span class="inline-flex px-3 py-1 rounded-full bg-primary/20 text-secondary text-[11px] font-bold uppercase tracking-wider">Mais escolhido</span>
 </div>
+<div class="p-6 sm:p-8 pt-4">
+<p class="text-gray-700 font-semibold">Pro</p>
+<p class="mt-2 text-3xl sm:text-4xl font-black">R$199<span class="text-sm sm:text-base font-semibold text-gray-500"> /mês</span></p>
+<p class="text-xs sm:text-sm text-gray-500 mt-1">Para operações em crescimento</p>
 </div>
+<div class="border-y border-gray-200 px-6 sm:px-8 py-4">
+<a class="w-full bg-primary hover:bg-opacity-90 rounded-custom py-3 text-sm font-bold text-center transition-all inline-flex items-center justify-center text-secondary" href="#demo">Obter plano Pro</a>
+</div>
+<ul class="space-y-3 p-6 sm:p-8 text-sm text-gray-700">
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Até 1.000 conversas por mês</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>1 instância de agente de IA</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Integração com WhatsApp e site</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Suporte prioritário</li>
+</ul>
+</article>
+
+<article class="glassmorphism border border-white/10 rounded-2xl overflow-hidden">
+<div class="p-6 sm:p-8">
+<p class="text-gray-300 font-semibold">Max</p>
+<p class="mt-2 text-3xl sm:text-4xl font-black">R$499<span class="text-sm sm:text-base font-semibold text-gray-400"> /mês</span></p>
+<p class="text-xs sm:text-sm text-gray-400 mt-1">Para times com alto volume</p>
+</div>
+<div class="border-y border-white/10 px-6 sm:px-8 py-4">
+<a class="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-custom py-3 text-sm font-bold text-center transition-all inline-flex items-center justify-center" href="#demo">Obter plano Max</a>
+</div>
+<ul class="space-y-3 p-6 sm:p-8 text-sm text-gray-300">
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Até 5.000 conversas por mês</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Até 3 agentes simultâneos</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Relatórios avançados</li>
+<li class="flex items-start gap-2"><svg class="w-4 h-4 text-primary mt-0.5 shrink-0" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>Onboarding dedicado</li>
+</ul>
+</article>
 </div>
 </div>
 </section>
@@ -298,7 +334,7 @@
 <a class="hover:text-primary transition-colors" href="#">Termos de Uso</a>
 <a class="hover:text-primary transition-colors" href="#">Documentação</a>
 </div>
-<p class="text-xs text-gray-600">© 2023 Stratos Tech Inc. Todos os direitos reservados.</p>
+<p class="text-xs text-gray-600">© 2026 Stratos Tech Inc. Todos os direitos reservados.</p>
 </div>
 </footer>
 <!-- END: Footer -->
@@ -906,5 +942,50 @@
     };
     s.parentNode.insertBefore(g, s);
   })(document, "script");
+</script>
+<script>
+  (function() {
+    var scheduleBtn = document.getElementById("schedule-demo-btn");
+    if (!scheduleBtn) return;
+
+    function fallbackToDemoSection() {
+      var demoSection = document.getElementById("demo");
+      if (demoSection && typeof demoSection.scrollIntoView === "function") {
+        demoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.location.hash = "#demo";
+      }
+    }
+
+    function openChatwootOrFallback() {
+      var maxAttempts = 12;
+      var attempts = 0;
+
+      function tryOpenWidget() {
+        attempts += 1;
+        if (window.$chatwoot && typeof window.$chatwoot.toggle === "function") {
+          window.$chatwoot.toggle("open");
+          return true;
+        }
+        return false;
+      }
+
+      if (tryOpenWidget()) return;
+
+      var retryTimer = setInterval(function() {
+        if (tryOpenWidget()) {
+          clearInterval(retryTimer);
+          return;
+        }
+
+        if (attempts >= maxAttempts) {
+          clearInterval(retryTimer);
+          fallbackToDemoSection();
+        }
+      }, 300);
+    }
+
+    scheduleBtn.addEventListener("click", openChatwootOrFallback);
+  })();
 </script>
 </body></html>
