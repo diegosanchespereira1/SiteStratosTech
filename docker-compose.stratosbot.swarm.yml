@@ -1,8 +1,14 @@
+# StratosBot stack (Swarm) – frontend SaaS + landing.
+# Portainer: defina no stack SUPABASE_URL e SUPABASE_ANON_KEY para o onboarding.
+# Ver docs/DEPLOY_STRATOSBOT_SWARM.md
 version: "3.8"
 
 services:
   stratosbot:
     image: ${STRATOSBOT_IMAGE:-polygonuser/stratosbot:latest}
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
     deploy:
       mode: replicated
       replicas: 1
