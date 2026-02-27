@@ -145,13 +145,26 @@
               </label>
               <label class="text-xs font-medium block">
                 Senha
-                <input
-                  type="password"
-                  id="auth-password-login"
-                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
-                  placeholder="••••••••"
-                  required
-                />
+                <div class="mt-1 relative">
+                  <input
+                    type="password"
+                    id="auth-password-login"
+                    class="w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm pr-9"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="auth-password-login-toggle"
+                    class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-200"
+                    aria-label="Mostrar ou ocultar senha"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                </div>
               </label>
               <div class="flex items-center justify-end">
                 <span class="text-[11px] text-gray-400" title="Funcionalidade futura para fluxo de redefinição de senha.">
@@ -219,14 +232,27 @@
               </label>
               <label class="text-xs font-medium block">
                 Senha
-                <input
-                  type="password"
-                  id="auth-password-signup"
-                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
-                  placeholder="mínimo 6 caracteres"
-                  minlength="6"
-                  required
-                />
+                <div class="mt-1 relative">
+                  <input
+                    type="password"
+                    id="auth-password-signup"
+                    class="w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm pr-9"
+                    placeholder="mínimo 6 caracteres"
+                    minlength="6"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="auth-password-signup-toggle"
+                    class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-200"
+                    aria-label="Mostrar ou ocultar senha"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                </div>
               </label>
               <label class="text-xs font-medium block">
                 Nome da empresa
@@ -1612,10 +1638,11 @@
       var apiBase = document.getElementById("api-base");
       if (apiBase) apiBase.value = runtimeConfig.baseUrl;
       setText("token-state", "Token: da sessão (preenchido automaticamente)");
-      await ensureTenant();
-      await callLogSession();
+      // Mostra o app imediatamente; tarefas de backend rodam em background.
       showOnboarding();
       render();
+      ensureTenant().catch(function () {});
+      callLogSession().catch(function () {});
     }
 
     (function init() {
@@ -1649,6 +1676,19 @@
 
     document.getElementById("auth-tab-signup").addEventListener("click", function () { switchAuthTab(true); });
     document.getElementById("auth-tab-login").addEventListener("click", function () { switchAuthTab(false); });
+
+    function setupPasswordToggle(inputId, toggleId) {
+      var input = document.getElementById(inputId);
+      var toggle = document.getElementById(toggleId);
+      if (!input || !toggle) return;
+      toggle.addEventListener("click", function () {
+        var isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+      });
+    }
+
+    setupPasswordToggle("auth-password-login", "auth-password-login-toggle");
+    setupPasswordToggle("auth-password-signup", "auth-password-signup-toggle");
 
     document.getElementById("auth-form-login").addEventListener("submit", async function (e) {
       e.preventDefault();
