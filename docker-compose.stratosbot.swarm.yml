@@ -1,5 +1,5 @@
 # StratosBot stack (Swarm) – frontend SaaS + landing.
-# Portainer: defina no stack SUPABASE_URL e SUPABASE_ANON_KEY para o onboarding.
+# Onboarding: crie no Portainer os secrets SUPABASE_URL e SUPABASE_ANON_KEY (Secrets > Add secret).
 # Ver docs/DEPLOY_STRATOSBOT_SWARM.md
 version: "3.8"
 
@@ -9,6 +9,9 @@ services:
     environment:
       SUPABASE_URL: ${SUPABASE_URL:-}
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+    secrets:
+      - SUPABASE_URL
+      - SUPABASE_ANON_KEY
     deploy:
       mode: replicated
       replicas: 1
@@ -39,3 +42,9 @@ networks:
   PolygonNetwork:
     external: true
     name: PolygonNetwork
+
+secrets:
+  SUPABASE_URL:
+    external: true
+  SUPABASE_ANON_KEY:
+    external: true
