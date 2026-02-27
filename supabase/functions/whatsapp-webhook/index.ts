@@ -12,8 +12,30 @@ serve(async (req: Request) => {
     return jsonResponse(405, { ok: false, error: "Method not allowed" });
   }
 
-  // Evolution API v2 não envia headers customizados; não exigir assinatura. A URL do webhook é a proteção.
-  // (Se no futuro usar Evolution v1 ou proxy que envie x-webhook-signature, pode-se reativar a checagem.)
+  // Proteção do webhook Evolution:
+  // - Se EVOLUTION_WEBHOOK_SECRET estiver definido, exigir que a URL tenha o formato:
+  //   /functions/v1/whatsapp-webhook/<SEGREDO>
+  //   onde <SEGREDO> corresponde exatamente ao valor da env.
+  // - Se EVOLUTION_WEBHOOK_SECRET estiver em branco, aceitar todas as chamadas (uso apenas para desenvolvimento).
+  try {
+    const expectedSecret = (Deno.env.get("EVOLUTION_WEBHOOK_SECRET") ?? "").trim();
+    if (expectedSecret) {
+      const url = new URL(req.url);
+      const segments = url.pathname.split("/").filter(Boolean);
+      const lastSegment = segments[segments.length - 1] ?? "";
+
+      const hasFunctionSegment = segments.includes("whatsapp-webhook");
+      const providedSecret = decodeURIComponent(lastSegment);
+
+      if (!hasFunctionSegment || !providedSecret || providedSecret !== expectedSecret) {
+        console.warn("whatsapp-webhook: tentativa de webhook nao autorizada ou segredo invalido.");
+        return jsonResponse(401, { ok: false, error: "Evolution webhook nao autorizado" });
+      }
+    }
+  } catch (e) {
+    console.error("whatsapp-webhook: erro ao validar segredo", (e as Error).message);
+    return jsonResponse(500, { ok: false, error: "Falha na validacao do webhook" });
+  }
 
   try {
     const payload = await req.json().catch(() => ({} as Record<string, unknown>));

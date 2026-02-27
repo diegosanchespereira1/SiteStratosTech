@@ -67,7 +67,11 @@ serve(async (req: Request) => {
     const instanceKey = `tenant_${tenantId.replace(/-/g, "")}`;
     // URL do webhook: SUPABASE_URL nos secrets ou origem da própria requisição (evita webhook não configurado)
     const baseSupabase = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/+$/, "") || new URL(req.url).origin;
-    const webhookUrl = `${baseSupabase}/functions/v1/whatsapp-webhook`;
+    const webhookSecret = (Deno.env.get("EVOLUTION_WEBHOOK_SECRET") ?? "").trim();
+    const baseWebhookUrl = `${baseSupabase}/functions/v1/whatsapp-webhook`;
+    const webhookUrl = webhookSecret
+      ? `${baseWebhookUrl}/${encodeURIComponent(webhookSecret)}`
+      : baseWebhookUrl;
 
     // 1) Criar ou garantir instância na Evolution.
     const createResp = await fetch(`${baseUrl}/instance/create`, {

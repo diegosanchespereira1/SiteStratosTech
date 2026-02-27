@@ -59,9 +59,9 @@ Use o arquivo `supabase/functions/.env.example` como referência; copie para `.e
 ### Evolution API (WhatsApp)
 - `EVOLUTION_API_BASE_URL` – URL base da Evolution (sem barra no final). Ex.: `https://evolution.seudominio.com`
 - `EVOLUTION_API_KEY` – API Key da Evolution (header `apikey` nas chamadas da Edge Function)
-- `EVOLUTION_WEBHOOK_SECRET` – **Evolution API v2 não envia headers no webhook** ([doc](https://doc.evolution-api.com/v2/api-reference/webhook/set)); deixe **vazio**. Só defina se usar v1 ou outro cliente que envie `x-webhook-signature`.
+- `EVOLUTION_WEBHOOK_SECRET` – segredo compartilhado do webhook da Evolution. Quando definido, o backend passa a exigir que o webhook seja chamado em uma URL no formato `/functions/v1/whatsapp-webhook/SEGREDO`, e o `whatsapp-connect` já configura automaticamente essa URL ao criar/conectar a instância. Se deixar vazio, **qualquer origem** que conheça a URL sem o sufixo conseguirá chamar o webhook (não recomendado em produção).
 
-**Na Evolution:** configurar apenas a **URL** do webhook: `https://<PROJECT_REF>.supabase.co/functions/v1/whatsapp-webhook` (sem header). Guia: [docs/EVOLUTION_INTEGRACAO.md](../docs/EVOLUTION_INTEGRACAO.md).
+**Na Evolution:** em uso normal, o webhook é configurado automaticamente pela `whatsapp-connect` com a URL correta (incluindo o sufixo do segredo quando `EVOLUTION_WEBHOOK_SECRET` estiver definido). Para configuração manual, use a URL `https://<PROJECT_REF>.supabase.co/functions/v1/whatsapp-webhook/SEU_SEGREDO`. Guia: [docs/EVOLUTION_INTEGRACAO.md](../docs/EVOLUTION_INTEGRACAO.md).
 
 ### n8n (opcional para forwarding)
 - `N8N_INGRESS_WEBHOOK_URL` – **Produção:** `https://webhook.stratostech.com.br/webhook/stratosbotsaas` (mensagens inbound Evolution → n8n).

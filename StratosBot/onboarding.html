@@ -88,37 +88,183 @@
 
   <main class="max-w-5xl mx-auto px-4 py-8 space-y-6">
     <!-- Porta de entrada: login e cadastro (visível quando não há sessão) -->
-    <section id="auth-gate" class="card rounded-xl p-6 max-w-md mx-auto space-y-6">
-      <h1 class="text-xl font-bold text-center">Onboarding Self-Service</h1>
-      <p class="text-sm muted text-center">Entre com sua conta ou cadastre-se para configurar seu tenant.</p>
-      <div class="flex border-b border-white/10">
-        <button type="button" id="auth-tab-login" class="flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-[#76e1b5]">Entrar</button>
-        <button type="button" id="auth-tab-signup" class="flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-white">Cadastrar</button>
+    <section id="auth-gate" class="card rounded-xl p-0 max-w-2xl mx-auto overflow-hidden">
+      <div class="grid md:grid-cols-2">
+        <!-- Lado visual (inspirado no login-04 do shadcn/ui) -->
+        <div class="hidden md:flex flex-col justify-between bg-gradient-to-b from-[#1f163f] to-[#120c28] p-6 text-sm">
+          <div class="space-y-2">
+            <p class="text-xs uppercase tracking-wide text-[#76e1b5]">StratosBot SaaS</p>
+            <h1 class="text-xl font-bold leading-tight">Bem-vindo de volta</h1>
+            <p class="text-xs text-gray-300">
+              Faça login para continuar o onboarding, configurar WhatsApp e publicar seu agente.
+            </p>
+          </div>
+          <div class="space-y-1 text-xs text-gray-400">
+            <p>• Login seguro via Supabase Auth.</p>
+            <p>• Tenant, instância WhatsApp e assinatura vinculados automaticamente ao seu usuário.</p>
+          </div>
+        </div>
+
+        <!-- Lado do formulário -->
+        <div class="p-6 space-y-4">
+          <div class="space-y-1 text-center md:text-left">
+            <h2 class="text-lg font-semibold">Acesse sua conta</h2>
+            <p class="text-xs muted">Use e-mail e senha para entrar. Se ainda não tiver conta, você pode se cadastrar abaixo.</p>
+          </div>
+
+          <!-- Abas lógicas (mantendo IDs para o JS) -->
+          <div class="flex justify-center gap-3 text-xs">
+            <button
+              type="button"
+              id="auth-tab-login"
+              class="px-3 py-1 rounded-full border border-transparent text-[#76e1b5]"
+            >
+              Entrar
+            </button>
+            <button
+              type="button"
+              id="auth-tab-signup"
+              class="px-3 py-1 rounded-full border border-transparent text-gray-400 hover:text-white"
+            >
+              Cadastrar
+            </button>
+          </div>
+
+          <!-- Form login (layout inspirado no login-04) -->
+          <form id="auth-form-login" class="space-y-3 mt-2">
+            <div class="space-y-2">
+              <label class="text-xs font-medium block">
+                E-mail
+                <input
+                  type="email"
+                  id="auth-email-login"
+                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+                  placeholder="voce@empresa.com"
+                  required
+                />
+              </label>
+              <label class="text-xs font-medium block">
+                Senha
+                <input
+                  type="password"
+                  id="auth-password-login"
+                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+                  placeholder="••••••••"
+                  required
+                />
+              </label>
+              <div class="flex items-center justify-end">
+                <span class="text-[11px] text-gray-400" title="Funcionalidade futura para fluxo de redefinição de senha.">
+                  Esqueceu a senha?
+                </span>
+              </div>
+            </div>
+            <p id="auth-error-login" class="text-xs err hidden"></p>
+            <button
+              type="submit"
+              id="auth-btn-login"
+              class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#76e1b5] text-[#1c1437] text-sm font-semibold py-2.5"
+            >
+              Entrar
+            </button>
+
+            <div class="relative my-2">
+              <div class="border-t border-white/10"></div>
+              <span class="absolute inset-0 flex items-center justify-center">
+                <span class="bg-[#050010] px-2 text-[11px] text-gray-400">Ou continue com</span>
+              </span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 text-[11px]">
+              <button
+                type="button"
+                class="border border-white/10 rounded-md py-1.5 text-gray-300 hover:bg-white/5"
+                title="Exemplo visual – autenticação social não está habilitada neste MVP."
+              >
+                Google
+              </button>
+              <button
+                type="button"
+                class="border border-white/10 rounded-md py-1.5 text-gray-300 hover:bg-white/5"
+                title="Exemplo visual – autenticação social não está habilitada neste MVP."
+              >
+                Apple
+              </button>
+              <button
+                type="button"
+                class="border border-white/10 rounded-md py-1.5 text-gray-300 hover:bg-white/5"
+                title="Exemplo visual – autenticação social não está habilitada neste MVP."
+              >
+                Meta
+              </button>
+            </div>
+
+            <p class="text-[11px] text-center text-gray-500 mt-2">
+              Ao continuar, você concorda com os termos de uso e política de privacidade do serviço.
+            </p>
+          </form>
+
+          <!-- Form signup (mantido, mas com layout alinhado ao modelo) -->
+          <form id="auth-form-signup" class="space-y-3 mt-2 hidden">
+            <div class="space-y-2">
+              <label class="text-xs font-medium block">
+                E-mail
+                <input
+                  type="email"
+                  id="auth-email-signup"
+                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+                  placeholder="voce@empresa.com"
+                  required
+                />
+              </label>
+              <label class="text-xs font-medium block">
+                Senha
+                <input
+                  type="password"
+                  id="auth-password-signup"
+                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+                  placeholder="mínimo 6 caracteres"
+                  minlength="6"
+                  required
+                />
+              </label>
+              <label class="text-xs font-medium block">
+                Nome da empresa
+                <input
+                  type="text"
+                  id="auth-company-signup"
+                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+                  placeholder="Minha Empresa"
+                  required
+                />
+              </label>
+            </div>
+            <p id="auth-error-signup" class="text-xs err hidden"></p>
+            <button
+              type="submit"
+              id="auth-btn-signup"
+              class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#76e1b5] text-[#1c1437] text-sm font-semibold py-2.5"
+            >
+              Criar conta
+            </button>
+            <p class="text-[11px] text-center text-gray-500 mt-1">
+              Já tem conta?
+              <button
+                type="button"
+                id="auth-tab-login-secondary"
+                class="underline text-[#76e1b5]"
+                onclick="document.getElementById('auth-tab-login')?.click();"
+              >
+                Entrar
+              </button>
+            </p>
+          </form>
+
+          <p id="auth-gate-config-warn" class="text-[11px] muted text-center hidden">
+            Defina <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> em <code>config.js</code> para usar login.
+          </p>
+        </div>
       </div>
-      <form id="auth-form-login" class="space-y-3">
-        <label class="text-sm block">E-mail
-          <input type="email" id="auth-email-login" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="seu@email.com" required />
-        </label>
-        <label class="text-sm block">Senha
-          <input type="password" id="auth-password-login" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="••••••••" required />
-        </label>
-        <p id="auth-error-login" class="text-sm err hidden"></p>
-        <button type="submit" id="auth-btn-login" class="btn-primary w-full py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Entrar</button>
-      </form>
-      <form id="auth-form-signup" class="space-y-3 hidden">
-        <label class="text-sm block">E-mail
-          <input type="email" id="auth-email-signup" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="seu@email.com" required />
-        </label>
-        <label class="text-sm block">Senha
-          <input type="password" id="auth-password-signup" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="••••••••" minlength="6" required />
-        </label>
-        <label class="text-sm block">Nome da empresa
-          <input type="text" id="auth-company-signup" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="Minha Empresa" required />
-        </label>
-        <p id="auth-error-signup" class="text-sm err hidden"></p>
-        <button type="submit" id="auth-btn-signup" class="btn-primary w-full py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Cadastrar</button>
-      </form>
-      <p id="auth-gate-config-warn" class="text-xs muted text-center hidden">Defina <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> em config.js para usar login.</p>
     </section>
 
     <div id="onboarding-app" class="space-y-6 hidden">
