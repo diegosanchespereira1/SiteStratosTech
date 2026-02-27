@@ -1,6 +1,10 @@
-(() => {
-  function $(sel, root = document) {
-    return root.querySelector(sel);
+/**
+ * Inicializa o formulário de registro (notify-form).
+ * @param {Document} root - Documento/root (default: document)
+ */
+export function initRegistry(root = document) {
+  function $(sel, el = root) {
+    return el.querySelector(sel);
   }
 
   const form = $(".notify-form");
@@ -26,14 +30,14 @@
   function openModal(message) {
     if (!modal || !modalMsg || !modalClose) {
       // Fallback simples caso o markup do modal nao exista.
-      alert(message);
+      if (typeof root.defaultView?.alert === "function") root.defaultView.alert(message);
       return;
     }
-    lastFocused = document.activeElement;
+    lastFocused = root.activeElement;
     modalMsg.textContent = message;
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
+    root.body.classList.add("modal-open");
     modalClose.focus();
   }
 
@@ -41,7 +45,7 @@
     if (!modal) return;
     modal.hidden = true;
     modal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
+    root.body.classList.remove("modal-open");
     if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
   }
 
@@ -53,7 +57,7 @@
 
   modalClose?.addEventListener("click", closeModal);
 
-  document.addEventListener("keydown", (e) => {
+  root.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (!modal || modal.hidden) return;
     closeModal();
@@ -107,5 +111,8 @@
       }
     }
   });
-})();
+}
 
+if (typeof document !== "undefined") {
+  initRegistry(document);
+}

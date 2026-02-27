@@ -1,7 +1,10 @@
 {
   "mcpServers": {
-    "supabase-stratosbot": {
-      "url": "https://mcp.supabase.com/mcp?project_ref=wvorocyjfokfbmzqsiti"
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=eefnsjulakraiwcehrkt",
+      "headers": {
+        "Authorization": "Bearer sbp_885d7ab7c5731c133a1fa6b40fecdc3fc87d3607"
+      }
     }
   }
 }

@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "test": "deno test --import-map=import_map.test.json _shared/*.test.ts",
+    "test:coverage": "deno test --import-map=import_map.test.json --coverage=cov _shared/*.test.ts && deno coverage cov --lcov --output=cov.lcov"
+  },
+  "compilerOptions": {
+    "strict": true
+  }
+}

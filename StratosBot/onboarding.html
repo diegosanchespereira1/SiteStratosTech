@@ -1,0 +1,1586 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stratos Bot | Onboarding SaaS</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <style>
+    body { background: #0a0a0c; color: #e5e7eb; }
+    .card { background: rgba(22,22,26,0.8); border: 1px solid rgba(255,255,255,.08); }
+    .ok { color: #76e1b5; }
+    .muted { color: #9ca3af; }
+    .warn { color: #fbbf24; }
+    .err { color: #f87171; }
+    .pill { font-size: 12px; border-radius: 999px; padding: 2px 10px; border: 1px solid rgba(255,255,255,.18); }
+    .simulate-typing-dots span { animation: simulate-bounce 1.4s ease-in-out infinite both; }
+    .simulate-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .simulate-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes simulate-bounce { 0%, 80%, 100% { transform: scale(0.85); opacity: 0.6; } 40% { transform: scale(1.1); opacity: 1; } }
+
+    /* Botões: hover, active e loading */
+    button:not(:disabled) {
+      cursor: pointer;
+      transition: opacity 0.15s ease, filter 0.15s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    }
+    button:not(:disabled):hover { opacity: 0.9; filter: brightness(1.05); }
+    button:not(:disabled):active { transform: scale(0.98); opacity: 0.95; }
+    /* Botões verdes (primary): hover bem visível – cor mais clara + glow forte */
+    button.btn-primary:not(:disabled):hover {
+      filter: brightness(1.2);
+      box-shadow: 0 0 20px rgba(118, 225, 181, 0.7), 0 0 40px rgba(118, 225, 181, 0.35);
+    }
+    button.btn-primary:not(:disabled):active {
+      box-shadow: 0 0 12px rgba(118, 225, 181, 0.5);
+    }
+    /* Executar: mesmo estilo dos demais verdes */
+    button.btn-executar:not(:disabled):hover {
+      filter: brightness(1.2);
+      box-shadow: 0 0 20px rgba(118, 225, 181, 0.7), 0 0 40px rgba(118, 225, 181, 0.35);
+    }
+    button.btn-executar:not(:disabled):active {
+      box-shadow: 0 0 12px rgba(118, 225, 181, 0.5);
+    }
+    button:disabled { cursor: not-allowed; opacity: 0.7; }
+    button.btn-loading { cursor: wait; pointer-events: none; }
+    button.btn-loading::after {
+      content: "";
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      margin-left: 0.5em;
+      vertical-align: -0.2em;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: btn-spin 0.6s linear infinite;
+    }
+    @keyframes btn-spin { to { transform: rotate(360deg); } }
+
+    /* Modal QR WhatsApp */
+    #whatsapp-qr-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+    }
+    #whatsapp-qr-modal.hidden { display: none; }
+    #whatsapp-qr-modal .modal-card {
+      max-width: 360px;
+      width: 90%;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-white/10">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="stratosbot.html" class="font-bold tracking-tight text-lg">STRATOS <span class="text-[#76e1b5]">BOT</span></a>
+      <div class="flex items-center gap-3">
+        <a href="stratosbot.html" class="text-sm text-gray-300 hover:text-white">Voltar ao site</a>
+        <button type="button" id="auth-sign-out" class="text-sm text-gray-400 hover:text-white hidden">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <!-- Porta de entrada: login e cadastro (visível quando não há sessão) -->
+    <section id="auth-gate" class="card rounded-xl p-6 max-w-md mx-auto space-y-6">
+      <h1 class="text-xl font-bold text-center">Onboarding Self-Service</h1>
+      <p class="text-sm muted text-center">Entre com sua conta ou cadastre-se para configurar seu tenant.</p>
+      <div class="flex border-b border-white/10">
+        <button type="button" id="auth-tab-login" class="flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-[#76e1b5]">Entrar</button>
+        <button type="button" id="auth-tab-signup" class="flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-white">Cadastrar</button>
+      </div>
+      <form id="auth-form-login" class="space-y-3">
+        <label class="text-sm block">E-mail
+          <input type="email" id="auth-email-login" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="seu@email.com" required />
+        </label>
+        <label class="text-sm block">Senha
+          <input type="password" id="auth-password-login" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="••••••••" required />
+        </label>
+        <p id="auth-error-login" class="text-sm err hidden"></p>
+        <button type="submit" id="auth-btn-login" class="btn-primary w-full py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Entrar</button>
+      </form>
+      <form id="auth-form-signup" class="space-y-3 hidden">
+        <label class="text-sm block">E-mail
+          <input type="email" id="auth-email-signup" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="seu@email.com" required />
+        </label>
+        <label class="text-sm block">Senha
+          <input type="password" id="auth-password-signup" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="••••••••" minlength="6" required />
+        </label>
+        <label class="text-sm block">Nome da empresa
+          <input type="text" id="auth-company-signup" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="Minha Empresa" required />
+        </label>
+        <p id="auth-error-signup" class="text-sm err hidden"></p>
+        <button type="submit" id="auth-btn-signup" class="btn-primary w-full py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Cadastrar</button>
+      </form>
+      <p id="auth-gate-config-warn" class="text-xs muted text-center hidden">Defina <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> em config.js para usar login.</p>
+    </section>
+
+    <div id="onboarding-app" class="space-y-6 hidden">
+    <section class="card rounded-xl p-5">
+      <h1 class="text-2xl font-bold">Onboarding Self-Service</h1>
+      <p class="muted mt-1">Configure pagamento, WhatsApp e agente sem suporte manual.</p>
+      <div class="mt-4">
+        <div class="w-full h-3 rounded-full bg-white/10 overflow-hidden">
+          <div id="progress-bar" class="h-full bg-[#76e1b5]" style="width:0%"></div>
+        </div>
+        <p id="progress-label" class="text-sm muted mt-2">0 de 6 etapas concluídas</p>
+      </div>
+    </section>
+
+    <section id="config-api-section" class="card rounded-xl p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Configuração da API</h2>
+      <p class="text-sm muted">URL e token são <strong>configuração da aplicação</strong> (config.js + login). Novos usuários não precisam preencher: ao fazer login, os valores são usados automaticamente. Na fase de testes a seção permanece visível.</p>
+      <div class="grid md:grid-cols-2 gap-3">
+        <label class="text-sm">Base API
+          <input id="api-base" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Preenchido automaticamente ao fazer login" readonly />
+        </label>
+        <label class="text-sm">Token
+          <input id="api-token" type="password" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Preenchido automaticamente pela sessão" readonly />
+        </label>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button id="save-config" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Salvar configuração no banco</button>
+        <button id="load-config-from-db" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Carregar do banco</button>
+      </div>
+      <p id="token-state" class="text-sm muted">Token: não configurado</p>
+      <p id="config-status" class="text-sm muted"></p>
+    </section>
+
+    <section id="steps" class="space-y-3"></section>
+
+    <section class="card rounded-xl p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Configuração do Agente</h2>
+      <div class="grid md:grid-cols-2 gap-3">
+        <label class="text-sm">Nome do agente
+          <input id="agent-name" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Assistente da sua empresa" />
+        </label>
+        <label class="text-sm">Tom
+          <select id="agent-tone" class="mt-1 w-full rounded bg-black/30 border border-white/10 text-inherit">
+            <option value="profissional">Profissional</option>
+            <option value="amigavel">Amigável</option>
+            <option value="formal">Formal</option>
+            <option value="tecnico">Técnico</option>
+            <option value="casual">Casual</option>
+            <option value="empatico">Empático</option>
+            <option value="direto">Direto / Objetivo</option>
+            <option value="consultivo">Consultivo</option>
+          </select>
+        </label>
+      </div>
+      <label class="text-sm block">Objetivo
+        <textarea id="agent-objective" class="mt-1 w-full rounded bg-black/30 border-white/10" rows="3" placeholder="Ex: qualificar leads e responder dúvidas frequentes"></textarea>
+      </label>
+      <label class="text-sm block">Diretrizes de resposta
+        <textarea id="agent-guidelines" class="mt-1 w-full rounded bg-black/30 border-white/10" rows="3" placeholder="Ex: responder em português, no máximo 3 frases"></textarea>
+      </label>
+      <div class="flex flex-wrap gap-2">
+        <button id="load-agent-config" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Carregar configuração</button>
+        <button id="save-agent-config" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Salvar configuração</button>
+      </div>
+      <p id="agent-config-status" class="text-sm muted"></p>
+    </section>
+
+    <section class="card rounded-xl p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Documento Guia</h2>
+      <p class="text-sm muted">Envie um TXT (MVP) com regras e contexto do seu atendimento.</p>
+      <input id="knowledge-file" type="file" accept=".txt,text/plain" class="block w-full text-sm" />
+      <div class="flex flex-wrap gap-2">
+        <button id="upload-knowledge" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Subir documento</button>
+        <button id="process-knowledge" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Processar documento</button>
+        <button id="list-knowledge" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Listar documentos</button>
+      </div>
+      <p id="knowledge-status" class="text-sm muted"></p>
+      <div id="knowledge-list" class="text-sm space-y-1"></div>
+    </section>
+
+    <section class="card rounded-xl p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Status da Conexão WhatsApp</h2>
+      <div class="flex flex-wrap gap-2 items-center">
+        <span id="wa-status-pill" class="pill muted" title="Estado atual conhecido da conexão Evolution ↔ WhatsApp para este tenant.">desconhecido</span>
+        <button id="refresh-whatsapp-status" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10" title="Consulta no backend o status salvo da instância WhatsApp (connected / connecting / disconnected / error).">Atualizar status</button>
+      </div>
+      <p id="whatsapp-status-text" class="text-sm muted">Clique em atualizar para consultar o backend.</p>
+      <div id="whatsapp-qr-container" class="hidden mt-4 p-4 rounded-lg bg-black/30 border border-white/10 text-center space-y-3">
+        <p class="text-sm" title="Fluxo padrão da Evolution: abra o WhatsApp → Aparelhos conectados → aponte a câmera para o QR desta instância gerada pela Evolution API.">Abra o WhatsApp no celular → Aparelhos conectados → Conectar um aparelho e escaneie o QR abaixo.</p>
+        <div class="flex justify-center">
+          <img id="whatsapp-qr-image" alt="QR Code WhatsApp" class="max-w-[220px] rounded border border-white/15" />
+        </div>
+        <p id="whatsapp-pairing-wrap" class="hidden text-sm muted" title="Algumas versões da Evolution permitem pareamento por código numérico em vez do QR.">Ou use o código de pareamento: <strong id="whatsapp-pairing-code"></strong></p>
+        <p class="text-xs muted" title="Enquanto o modal estiver aberto, o backend renova o QR periodicamente para evitar expiração.">O QR é renovado automaticamente enquanto o modal estiver aberto.</p>
+        <button type="button" id="refresh-whatsapp-status-from-qr" class="px-3 py-2 text-sm rounded border border-white/15 hover:bg-white/10" title="Depois de escanear o QR ou usar o código de pareamento, clique aqui para forçar a leitura do status atualizado no backend.">Atualizar status após escanear</button>
+      </div>
+    </section>
+
+    <section class="card rounded-xl p-5 space-y-3">
+      <button
+        id="whatsapp-config-toggle"
+        type="button"
+        class="w-full flex items-center justify-between gap-2 text-left"
+        aria-expanded="false"
+        title="Clique para ver as opções de eventos da Evolution (como na tela de Events) e o que cada uma faz."
+      >
+        <div class="space-y-1">
+          <h2 class="text-lg font-semibold">Configuração Evolution / WhatsApp (avançado)</h2>
+          <p class="text-xs muted">Espelho das opções de eventos da Evolution API (aba Events), para entender o que cada flag habilita/desabilita.</p>
+        </div>
+        <span id="whatsapp-config-toggle-icon" class="text-xs muted">Mostrar ▼</span>
+      </button>
+      <div id="whatsapp-config-body" class="space-y-4 hidden">
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold" title="Equivalente aos campos enabled, webhook_by_events e webhook_base64 na configuração de webhook da Evolution.">Opções do webhook (gerais)</h3>
+          <div class="space-y-1 text-xs">
+            <label class="flex items-start gap-2 cursor-default" title="Quando marcado como true na Evolution, o webhook desta instância passa a ser usado para enviar todos os eventos selecionados. Se false, nenhum evento é enviado.">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span><span class="font-semibold">Webhook ativado (<code>enabled</code>)</span> – liga ou desliga totalmente o envio de eventos para a URL configurada.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Quando true, a Evolution adiciona o nome do evento no final da URL (ex.: /webhook/messages-upsert), permitindo URLs diferentes por tipo de evento.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-semibold">Webhook por evento (<code>webhook_by_events</code>)</span> – cria uma URL específica para cada evento, derivada da URL base.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Quando habilitado, anexos/arquivos podem ser enviados em base64 dentro do payload do webhook, em vez de apenas links. Pode aumentar o tamanho do payload.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-semibold">Arquivos em base64 (<code>webhook_base64</code>)</span> – envia arquivos como base64 no corpo do webhook.</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold" title="Eventos principais usados pelo StratosBot e que normalmente você vai querer manter ativos na aba Events.">Eventos recomendados (bot e automação)</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs">
+            <label class="flex items-start gap-2 cursor-default" title="Envia o QR Code em base64 sempre que ele muda. Usado para exibir o QR na tela de conexão.">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">QRCODE_UPDATED</span> – QR Code atualizado para parear o WhatsApp.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Informa as mudanças de estado da conexão (open, connecting, disconnected, error). Atualiza o status WhatsApp no onboarding.">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CONNECTION_UPDATE</span> – mudanças na conexão WhatsApp.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Dispara quando uma nova mensagem chega. É o gatilho principal para o bot e para envio ao n8n.">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">MESSAGES_UPSERT</span> – novas mensagens recebidas.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Notifica quando uma mensagem existente é atualizada (por exemplo, editada ou marcada como lida).">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">MESSAGES_UPDATE</span> – atualização de mensagens.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Notifica quando mensagens são apagadas. Útil para manter o histórico sincronizado.">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">MESSAGES_DELETE</span> – exclusão de mensagens.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Dispara quando a API envia uma mensagem (saída). Permite auditar o que foi mandado para o contato.">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">SEND_MESSAGE</span> – mensagens enviadas pela API.</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold" title="Eventos adicionais disponíveis na aba Events da Evolution, úteis para monitorar contatos, chats e grupos.">Outros eventos disponíveis</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs">
+            <label class="flex items-start gap-2 cursor-default" title="Notifica quando a aplicação Evolution inicia. Útil para monitoramento.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">APPLICATION_STARTUP</span> – início da aplicação Evolution.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Envia a lista completa de mensagens carregadas (ocorre uma vez). Pode ser pesado em grandes históricos.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">MESSAGES_SET</span> – carga inicial de mensagens.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Carrega todos os contatos de uma vez.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CONTACTS_SET</span> – carga inicial de contatos.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Recarrega contatos com informações adicionais (também costuma ocorrer uma vez).">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CONTACTS_UPSERT</span> – atualização em massa de contatos.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Dispara quando um contato específico é atualizado (nome, foto, etc.).">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CONTACTS_UPDATE</span> – contato atualizado.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Indica presença/atividade do usuário (online, digitando, gravando, etc.).">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">PRESENCE_UPDATE</span> – status de presença (online / digitando).</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Envia a lista completa de chats carregados (ocorre uma vez).">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CHATS_SET</span> – carga inicial de chats.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Dispara quando um chat é atualizado (por exemplo, última mensagem, arquivado, etc.).">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CHATS_UPDATE</span> – chat atualizado.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Envia informações de novos chats criados ou detectados.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CHATS_UPSERT</span> – novos chats.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Notifica quando um chat é excluído.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">CHATS_DELETE</span> – exclusão de chats.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Notifica quando um grupo é criado ou sincronizado.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">GROUPS_UPSERT</span> – criação/atualização de grupos.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Informa alterações de metadados do grupo (nome, foto, descrição).">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">GROUPS_UPDATE</span> – grupo atualizado.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Notifica ações em participantes de grupos (add, remove, promote, demote).">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">GROUP_PARTICIPANTS_UPDATE</span> – mudanças em participantes do grupo.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-default" title="Informa quando o token JWT da instância é renovado, permitindo que sistemas externos atualizem credenciais se necessário.">
+              <input type="checkbox" disabled class="mt-0.5" />
+              <span><span class="font-mono font-semibold">NEW_TOKEN</span> – token JWT renovado.</span>
+            </label>
+          </div>
+        </div>
+
+        <p class="text-xs muted" title="Este painel é apenas explicativo: você ativa/desativa de verdade na aba Events da Evolution. Aqui mostramos os nomes e o efeito de cada opção.">
+          Este painel é um guia visual da tela <strong>Events</strong> da Evolution: marque/desmarque os eventos lá na Evolution,
+          usando esta descrição para entender o impacto de cada opção na automação e no histórico do WhatsApp.
+        </p>
+      </div>
+    </section>
+
+    <!-- Modal: QR Code WhatsApp (aparece ao clicar em Executar na etapa Conexão WhatsApp) -->
+    <div id="whatsapp-qr-modal" class="hidden" aria-modal="true" role="dialog" aria-labelledby="whatsapp-qr-modal-title">
+      <div class="modal-card card rounded-xl p-6 space-y-4 text-center">
+        <h2 id="whatsapp-qr-modal-title" class="text-lg font-bold">Conectar WhatsApp</h2>
+        <p class="text-sm muted">Abra o WhatsApp no celular → Aparelhos conectados → Conectar um aparelho e escaneie o QR abaixo.</p>
+        <div class="flex justify-center">
+          <img id="whatsapp-qr-modal-image" alt="QR Code WhatsApp" class="w-[220px] h-[220px] rounded border-2 border-white/20 bg-white" />
+        </div>
+        <p id="whatsapp-qr-modal-pairing-wrap" class="hidden text-sm muted">Ou use o código de pareamento: <strong id="whatsapp-qr-modal-pairing-code"></strong></p>
+        <p id="whatsapp-qr-modal-countdown" class="text-xs muted">Próxima atualização do QR em <span id="whatsapp-qr-countdown-sec">25</span>s</p>
+        <div class="flex flex-col gap-2">
+          <button type="button" id="whatsapp-qr-modal-close" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="card rounded-xl p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Readiness do Tenant</h2>
+      <div class="flex flex-wrap gap-2 items-center">
+        <span id="tenant-readiness-pill" class="pill muted">0%</span>
+        <button id="refresh-tenant-readiness" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Atualizar readiness</button>
+      </div>
+      <p id="tenant-readiness-status" class="text-sm muted">Use o botão para verificar o estado real do tenant no backend.</p>
+      <div id="tenant-next-actions" class="text-sm space-y-1"></div>
+    </section>
+
+    <section class="card rounded-xl p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Health Operacional</h2>
+      <div class="flex flex-wrap gap-2 items-center">
+        <span id="tenant-health-pill" class="pill muted">0</span>
+        <button id="refresh-tenant-health" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Atualizar health</button>
+        <button id="refresh-session-and-health" class="px-4 py-2 rounded border border-amber-500/50 hover:bg-amber-500/20 text-amber-200" title="Renova o token da sessão e consulta o health de novo (use se aparecer não autorizado)">Renovar sessão e atualizar</button>
+      </div>
+      <p id="tenant-health-status" class="text-sm muted">Sem diagnóstico recente.</p>
+      <div id="tenant-health-errors" class="text-sm space-y-1"></div>
+    </section>
+
+    <section class="card rounded-xl p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Simulação do Agente</h2>
+      <label class="text-sm block">Mensagem de teste
+        <textarea id="simulate-message" class="mt-1 w-full rounded bg-black/30 border-white/10" rows="3" placeholder="Ex: Vocês atendem sábado?"></textarea>
+      </label>
+      <button id="simulate-agent" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Simular resposta</button>
+      <div class="rounded border border-white/10 p-3">
+        <p class="text-xs uppercase muted mb-1">Resposta simulada</p>
+        <p id="simulate-response" class="text-sm min-h-[1.5rem]">---</p>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <!-- config.js define window.SUPABASE_URL e window.SUPABASE_ANON_KEY (copie de config.example.js se não existir) -->
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    const STORAGE_KEY = "stratos_onboarding_v1";
+    const runtimeConfig = {
+      baseUrl: "",
+      token: "",
+    };
+
+    var supabaseAuthClient = null;
+    if (typeof window.SUPABASE_URL === "string" && window.SUPABASE_URL.trim() && typeof window.SUPABASE_ANON_KEY === "string" && window.SUPABASE_ANON_KEY.trim() && typeof supabase !== "undefined") {
+      supabaseAuthClient = supabase.createClient(window.SUPABASE_URL.trim(), window.SUPABASE_ANON_KEY.trim());
+    }
+
+    function showAuthGate() {
+      var gate = document.getElementById("auth-gate");
+      var app = document.getElementById("onboarding-app");
+      var signOutBtn = document.getElementById("auth-sign-out");
+      if (gate) gate.classList.remove("hidden");
+      if (app) app.classList.add("hidden");
+      if (signOutBtn) signOutBtn.classList.add("hidden");
+    }
+
+    function showOnboarding() {
+      var gate = document.getElementById("auth-gate");
+      var app = document.getElementById("onboarding-app");
+      var signOutBtn = document.getElementById("auth-sign-out");
+      if (gate) gate.classList.add("hidden");
+      if (app) app.classList.remove("hidden");
+      if (signOutBtn) signOutBtn.classList.remove("hidden");
+    }
+
+    function setButtonLoading(btn, loading, loadingLabel) {
+      if (!btn) return;
+      if (loading) {
+        btn.disabled = true;
+        btn.classList.add("btn-loading");
+        btn.dataset.originalText = btn.textContent;
+        btn.textContent = loadingLabel || "Carregando…";
+      } else {
+        btn.disabled = false;
+        btn.classList.remove("btn-loading");
+        btn.textContent = btn.dataset.originalText || btn.textContent;
+      }
+    }
+    const steps = [
+      { code: "company_profile", label: "Perfil da empresa", desc: "Nome, segmento e objetivo do agente." },
+      { code: "billing", label: "Pagamento", desc: "Ativar assinatura no Stripe." },
+      { code: "whatsapp_connection", label: "Conexão WhatsApp", desc: "Conectar instância pela Evolution API." },
+      { code: "agent_config", label: "Configuração do agente", desc: "Tom de voz e regras de resposta." },
+      { code: "knowledge_upload", label: "Documento guia", desc: "Upload do arquivo com instruções do agente." },
+      { code: "publish", label: "Publicar", desc: "Validar e ativar resposta automática." }
+    ];
+
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch { return {}; }
+    }
+
+    function saveState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function isPublishReady(state) {
+      return Boolean(
+        state.billing &&
+        state.whatsapp_connection &&
+        state.agent_config &&
+        state.knowledge_upload
+      );
+    }
+
+    function authHeaders() {
+      const headers = { "Content-Type": "application/json" };
+      if (runtimeConfig.token) headers["Authorization"] = `Bearer ${runtimeConfig.token}`;
+      return headers;
+    }
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function setSimulateResponseTyping() {
+      const el = document.getElementById("simulate-response");
+      if (!el) return;
+      el.innerHTML = '<span class="inline-flex items-center gap-1"><span>Stratos bot está digitando</span><span class="simulate-typing-dots inline-flex gap-0.5"><span>.</span><span>.</span><span>.</span></span></span>';
+    }
+
+    async function safeJson(res) {
+      try { return await res.json(); }
+      catch { return {}; }
+    }
+
+    var FETCH_TIMEOUT_MS = 28000;
+
+    function fetchWithTimeout(url, options, timeoutMs) {
+      var t = timeoutMs || FETCH_TIMEOUT_MS;
+      var ctrl = new AbortController();
+      var id = setTimeout(function () { ctrl.abort(); }, t);
+      return fetch(url, { ...options, signal: ctrl.signal }).finally(function () { clearTimeout(id); });
+    }
+
+    async function syncStepsFromBackend() {
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) return false;
+      try {
+        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/onboarding-status`, {
+          method: "GET",
+          headers: authHeaders()
+        });
+        const data = await safeJson(res);
+        if (!data.ok || !Array.isArray(data.steps)) return false;
+        const next = {};
+        for (const step of data.steps) {
+          if (step && typeof step.stepCode === "string") {
+            next[step.stepCode] = step.status === "completed";
+          }
+        }
+        saveState(next);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function persistStepToBackend(stepCode, completed) {
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) return;
+      await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/onboarding-status`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          stepCode,
+          status: completed ? "completed" : "pending"
+        })
+      }).catch(() => {});
+    }
+
+    async function setStep(stepCode, completed, syncRemote = true) {
+      const state = loadState();
+      state[stepCode] = completed;
+      saveState(state);
+      render();
+      if (syncRemote) {
+        await persistStepToBackend(stepCode, completed);
+      }
+    }
+
+    async function runAction(stepCode) {
+      if (typeof console !== "undefined" && console.log) console.log("[Onboarding] runAction:", stepCode, "baseUrl:", !!runtimeConfig.baseUrl, "token:", !!runtimeConfig.token);
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        alert("Faça login para usar o onboarding. A URL e o token são preenchidos automaticamente pela aplicação.");
+        return;
+      }
+
+      var runBtn = document.querySelector("#steps button[data-step=\"" + stepCode + "\"][data-action=\"run\"]");
+      if (runBtn?.classList.contains("btn-loading")) return;
+      setButtonLoading(runBtn, true, "Carregando…");
+      const base = runtimeConfig.baseUrl.replace(/\/+$/, "");
+      try {
+        if (stepCode === "billing") {
+          const res = await fetchWithTimeout(base + "/create-checkout-session", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({
+              planCode: "starter",
+              successUrl: window.location.href,
+              cancelUrl: window.location.href
+            })
+          });
+          const data = await safeJson(res);
+          if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+          else throw new Error(data.error || "Checkout não retornou URL.");
+          return;
+        }
+
+        if (stepCode === "whatsapp_connection") {
+          var res = await fetchWithTimeout(base + "/whatsapp-connect", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({})
+          });
+          var data = await safeJson(res);
+          if (!res.ok && res.status === 401) {
+            throw new Error("Não autorizado (401). Use o token da sessão Supabase (faça login) ou defina SUPABASE_URL e SUPABASE_ANON_KEY nesta página para preenchimento automático.");
+          }
+          if (!res.ok && res.status === 502) {
+            throw new Error(data.error || "Evolution API indisponível (502). Verifique no Supabase se EVOLUTION_API_BASE_URL e EVOLUTION_API_KEY estão corretos e se a Evolution está online.");
+          }
+          if (!data.ok) throw new Error(data.error || "Falha ao conectar WhatsApp.");
+          if ((data.status || "").toLowerCase() === "connected") {
+            stopQrRefreshAndCloseModal();
+            hideWhatsappQr();
+            renderWhatsappStatus("connected");
+            await setStep("whatsapp_connection", true, true);
+            return;
+          }
+          showWhatsappQr(data.qrCode, data.pairingCode);
+          renderWhatsappStatus(data.status || "connecting");
+          return;
+        }
+
+        if (stepCode === "publish") {
+          const state = loadState();
+          if (!isPublishReady(state)) {
+            alert("Para publicar, conclua: pagamento, conexão WhatsApp, configuração do agente e documento guia.");
+            return;
+          }
+          const res = await fetchWithTimeout(base + "/publish-agent", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({})
+          });
+          const data = await safeJson(res);
+          if (!data.ok) {
+            const missing = Array.isArray(data.missing) ? ` Faltando: ${data.missing.join(", ")}.` : "";
+            throw new Error((data.error || "Falha ao publicar.") + missing);
+          }
+          await setStep("publish", true, true);
+          alert("Agente publicado com sucesso.");
+        }
+      } catch (err) {
+        var msg = err.message || "Falha na ação.";
+        if (err.name === "AbortError") msg = "A requisição demorou muito e foi cancelada. Verifique a conexão e a Evolution API.";
+        alert(msg);
+      } finally {
+        setButtonLoading(runBtn, false);
+        if (runBtn) runBtn.textContent = runBtn.dataset.originalText || "Executar";
+      }
+    }
+
+    function render() {
+      const state = loadState();
+      const wrap = document.getElementById("steps");
+      wrap.innerHTML = "";
+
+      let done = 0;
+      for (const step of steps) {
+        const isDone = !!state[step.code];
+        if (isDone) done++;
+
+        const row = document.createElement("div");
+        row.className = "card rounded-xl p-4 flex items-center justify-between gap-3";
+        const publishLocked = step.code === "publish" && !isPublishReady(state);
+        const whatsappDone = step.code === "whatsapp_connection" && isDone;
+        const runDisabled = publishLocked || whatsappDone;
+        const runButtonLabel = publishLocked ? "Bloqueado" : (whatsappDone ? "Concluída" : "Executar");
+        row.innerHTML = `
+          <div>
+            <p class="font-semibold">${step.label}</p>
+            <p class="text-sm muted">${step.desc}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm ${isDone ? "ok" : "muted"}">${isDone ? "Concluída" : "Pendente"}</span>
+            <button data-step="${step.code}" data-action="toggle" class="px-3 py-2 text-sm rounded border border-white/15 hover:bg-white/10">
+              ${isDone ? "Desmarcar" : "Concluir"}
+            </button>
+            ${(step.code === "billing" || step.code === "whatsapp_connection" || step.code === "publish")
+              ? `<button data-step="${step.code}" data-action="run" ${runDisabled ? "disabled" : ""} class="btn-executar btn-primary px-3 py-2 text-sm rounded ${runDisabled ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-[#76e1b5] text-[#1c1437]"} font-semibold">${runButtonLabel}</button>`
+              : ""}
+          </div>
+        `;
+        wrap.appendChild(row);
+      }
+
+      const pct = Math.round((done / steps.length) * 100);
+      document.getElementById("progress-bar").style.width = `${pct}%`;
+      document.getElementById("progress-label").textContent = `${done} de ${steps.length} etapas concluídas`;
+    }
+
+    var qrRefreshIntervalId = null;
+    var qrStatusPollIntervalId = null;
+    var qrCountdownIntervalId = null;
+    var qrCountdownSec = 25;
+
+    function stopQrRefreshAndCloseModal() {
+      if (qrRefreshIntervalId) { clearInterval(qrRefreshIntervalId); qrRefreshIntervalId = null; }
+      if (qrStatusPollIntervalId) { clearInterval(qrStatusPollIntervalId); qrStatusPollIntervalId = null; }
+      if (qrCountdownIntervalId) { clearInterval(qrCountdownIntervalId); qrCountdownIntervalId = null; }
+      var modal = document.getElementById("whatsapp-qr-modal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    function updateQrInModalAndSection(qrCode, pairingCode) {
+      var modalImg = document.getElementById("whatsapp-qr-modal-image");
+      var sectionImg = document.getElementById("whatsapp-qr-image");
+      var src = qrCode && (qrCode.startsWith("data:") ? qrCode : "data:image/png;base64," + qrCode);
+      if (modalImg) modalImg.src = src || "";
+      if (sectionImg) sectionImg.src = src || "";
+      var pairingWrap = document.getElementById("whatsapp-qr-modal-pairing-wrap");
+      var pairingEl = document.getElementById("whatsapp-qr-modal-pairing-code");
+      if (pairingCode && pairingWrap && pairingEl) {
+        pairingEl.textContent = pairingCode;
+        pairingWrap.classList.remove("hidden");
+      } else if (pairingWrap) pairingWrap.classList.add("hidden");
+      var sectionPairingWrap = document.getElementById("whatsapp-pairing-wrap");
+      var sectionPairingEl = document.getElementById("whatsapp-pairing-code");
+      if (pairingCode && sectionPairingWrap && sectionPairingEl) {
+        sectionPairingEl.textContent = pairingCode;
+        sectionPairingWrap.classList.remove("hidden");
+      } else if (sectionPairingWrap) sectionPairingWrap.classList.add("hidden");
+    }
+
+    function showWhatsappQr(qrCode, pairingCode) {
+      var container = document.getElementById("whatsapp-qr-container");
+      var img = document.getElementById("whatsapp-qr-image");
+      if (!container || !img) return;
+      if (qrCode) {
+        img.src = qrCode.startsWith("data:") ? qrCode : "data:image/png;base64," + qrCode;
+        container.classList.remove("hidden");
+      } else {
+        container.classList.add("hidden");
+      }
+      var pairingWrap = document.getElementById("whatsapp-pairing-wrap");
+      var pairingEl = document.getElementById("whatsapp-pairing-code");
+      if (pairingCode && pairingWrap && pairingEl) {
+        pairingEl.textContent = pairingCode;
+        pairingWrap.classList.remove("hidden");
+      } else if (pairingWrap) pairingWrap.classList.add("hidden");
+
+      var modal = document.getElementById("whatsapp-qr-modal");
+      if (!modal || !qrCode) return;
+      stopQrRefreshAndCloseModal();
+      updateQrInModalAndSection(qrCode, pairingCode);
+      var modalImg = document.getElementById("whatsapp-qr-modal-image");
+      if (modalImg) modalImg.src = qrCode.startsWith("data:") ? qrCode : "data:image/png;base64," + qrCode;
+      modal.classList.remove("hidden");
+
+      qrCountdownSec = 25;
+      var countdownEl = document.getElementById("whatsapp-qr-countdown-sec");
+      if (countdownEl) countdownEl.textContent = "25";
+
+      qrCountdownIntervalId = setInterval(function () {
+        qrCountdownSec--;
+        if (countdownEl) countdownEl.textContent = String(qrCountdownSec);
+        if (qrCountdownSec <= 0) qrCountdownSec = 25;
+      }, 1000);
+
+      qrRefreshIntervalId = setInterval(async function () {
+        if (!runtimeConfig.baseUrl || !runtimeConfig.token) return;
+        try {
+          var res = await fetchWithTimeout(runtimeConfig.baseUrl.replace(/\/+$/, "") + "/whatsapp-connect", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({})
+          });
+          var data = await safeJson(res);
+          if ((data.status || "").toLowerCase() === "connected") {
+            stopQrRefreshAndCloseModal();
+            hideWhatsappQr();
+            renderWhatsappStatus("connected");
+            await setStep("whatsapp_connection", true, true);
+            return;
+          }
+          if (data.ok && (data.status || "").toLowerCase() === "expired") {
+            var countdownEl = document.getElementById("whatsapp-qr-countdown-sec");
+            if (countdownEl) countdownEl.textContent = "Atualizando…";
+            return;
+          }
+          if (data.ok && data.qrCode) {
+            updateQrInModalAndSection(data.qrCode, data.pairingCode);
+            qrCountdownSec = 25;
+            var el = document.getElementById("whatsapp-qr-countdown-sec");
+            if (el) el.textContent = "25";
+          }
+        } catch (e) {}
+      }, 25000);
+
+      qrStatusPollIntervalId = setInterval(async function () {
+        if (!runtimeConfig.baseUrl || !runtimeConfig.token) return;
+        try {
+          var res = await fetch(runtimeConfig.baseUrl.replace(/\/+$/, "") + "/whatsapp-status", { method: "GET", headers: authHeaders() });
+          var data = await safeJson(res);
+          if (data.ok && (data.status || "").toLowerCase() === "connected") {
+            stopQrRefreshAndCloseModal();
+            hideWhatsappQr();
+            renderWhatsappStatus("connected");
+            await setStep("whatsapp_connection", true, true);
+          }
+        } catch (e) {}
+      }, 8000);
+    }
+
+    function hideWhatsappQr() {
+      stopQrRefreshAndCloseModal();
+      var container = document.getElementById("whatsapp-qr-container");
+      if (container) container.classList.add("hidden");
+    }
+
+    function renderWhatsappStatus(status) {
+      const pill = document.getElementById("wa-status-pill");
+      const text = document.getElementById("whatsapp-status-text");
+      const normalized = String(status || "unknown").toLowerCase();
+      if (normalized === "connected") hideWhatsappQr();
+      pill.textContent = normalized;
+      pill.className = "pill";
+      if (normalized === "connected") {
+        pill.classList.add("ok");
+        text.textContent = "WhatsApp conectado com sucesso.";
+        return;
+      }
+      if (normalized === "connecting") {
+        pill.classList.add("warn");
+        text.textContent = "Conexão em andamento. Aguarde o pareamento.";
+        return;
+      }
+      if (normalized === "error") {
+        pill.classList.add("err");
+        text.textContent = "Erro na conexão. Tente reconectar.";
+        return;
+      }
+      pill.classList.add("muted");
+      text.textContent = "WhatsApp desconectado.";
+    }
+
+    document.addEventListener("click", async (event) => {
+      var target = event.target instanceof HTMLElement ? event.target.closest("button[data-step][data-action]") : null;
+      if (!target) return;
+      var step = target.getAttribute("data-step");
+      var action = target.getAttribute("data-action");
+      if (!step || !action) return;
+
+      if (action === "toggle") {
+        if (target.classList.contains("btn-loading")) return;
+        setButtonLoading(target, true, "Salvando…");
+        try {
+          const state = loadState();
+          await setStep(step, !state[step], true);
+        } finally {
+          var toggleBtn = document.querySelector("#steps button[data-step=\"" + step + "\"][data-action=\"toggle\"]");
+          setButtonLoading(toggleBtn, false);
+        }
+        return;
+      }
+      if (action === "run") {
+        if (target.disabled || target.classList.contains("btn-loading")) return;
+        if (typeof console !== "undefined" && console.log) console.log("[Onboarding] Executando etapa:", step);
+        await runAction(step);
+      }
+    });
+
+    async function loadAgentConfig() {
+      const btn = document.getElementById("load-agent-config");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("agent-config-status", "Configure primeiro a Base API.");
+        return;
+      }
+      setButtonLoading(btn, true, "Carregando…");
+      try {
+      const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/agent-config`, {
+        method: "GET",
+        headers: authHeaders()
+      });
+      const data = await safeJson(res);
+      if (!data.ok) {
+        setText("agent-config-status", data.error || "Falha ao carregar configuração.");
+        return;
+      }
+      const config = data.config || {};
+      const validTones = ["profissional", "amigavel", "formal", "tecnico", "casual", "empatico", "direto", "consultivo"];
+      const tone = (config.tone || "profissional").toLowerCase().trim();
+      const toneValue = validTones.includes(tone) ? tone : "profissional";
+      document.getElementById("agent-name").value = config.assistant_name || "";
+      document.getElementById("agent-tone").value = toneValue;
+      document.getElementById("agent-objective").value = config.objective || "";
+      document.getElementById("agent-guidelines").value = config.response_guidelines || "";
+      setText("agent-config-status", "Configuração carregada.");
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function saveAgentConfig() {
+      const btn = document.getElementById("save-agent-config");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("agent-config-status", "Configure primeiro a Base API.");
+        return;
+      }
+      const body = {
+        assistantName: document.getElementById("agent-name").value.trim() || "Assistente",
+        tone: document.getElementById("agent-tone").value.trim() || "profissional",
+        objective: document.getElementById("agent-objective").value.trim(),
+        responseGuidelines: document.getElementById("agent-guidelines").value.trim(),
+        active: true
+      };
+      setButtonLoading(btn, true, "Salvando…");
+      try {
+      const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/agent-config`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(body)
+      });
+      const data = await safeJson(res);
+      if (!data.ok) {
+        setText("agent-config-status", data.error || "Falha ao salvar configuração.");
+        return;
+      }
+      await setStep("agent_config", true, true);
+      setText("agent-config-status", "Configuração salva com sucesso.");
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function toBase64(file) {
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function uploadKnowledge() {
+      const btn = document.getElementById("upload-knowledge");
+      if (btn?.classList.contains("btn-loading")) return;
+      const originalText = btn?.textContent;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("knowledge-status", "Configure primeiro a Base API.");
+        return;
+      }
+      const input = document.getElementById("knowledge-file");
+      const file = input.files && input.files[0];
+      if (!file) {
+        setText("knowledge-status", "Selecione um arquivo TXT.");
+        return;
+      }
+      setButtonLoading(btn, true, "Enviando…");
+      try {
+        const fileBase64 = await toBase64(file);
+        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/knowledge-upload`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            fileName: file.name,
+            mimeType: file.type || "text/plain",
+            fileBase64
+          })
+        });
+        const data = await safeJson(res);
+        if (!data.ok) {
+          setText("knowledge-status", data.error || "Falha no upload.");
+          return;
+        }
+        localStorage.setItem("stratos_last_knowledge_id", data.file?.id || "");
+        setText("knowledge-status", `Upload concluído. ID: ${data.file?.id || "n/a"}`);
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function processKnowledge() {
+      const btn = document.getElementById("process-knowledge");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("knowledge-status", "Configure primeiro a Base API.");
+        return;
+      }
+      const knowledgeFileId = localStorage.getItem("stratos_last_knowledge_id") || "";
+      if (!knowledgeFileId) {
+        setText("knowledge-status", "Faça o upload primeiro para obter knowledgeFileId.");
+        return;
+      }
+      setButtonLoading(btn, true, "Processando…");
+      try {
+        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/knowledge-process`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ knowledgeFileId })
+        });
+        const data = await safeJson(res);
+        if (!data.ok) {
+          setText("knowledge-status", data.error || "Falha ao processar.");
+          return;
+        }
+        await setStep("knowledge_upload", true, true);
+        setText("knowledge-status", `Processado com sucesso. Chunks: ${data.chunkCount ?? 0}`);
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function listKnowledge() {
+      const btn = document.getElementById("list-knowledge");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("knowledge-status", "Configure primeiro a Base API.");
+        return;
+      }
+      setButtonLoading(btn, true, "Listando…");
+      try {
+      const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/knowledge-list`, {
+        method: "GET",
+        headers: authHeaders()
+      });
+      const data = await safeJson(res);
+      if (!data.ok) {
+        setText("knowledge-status", data.error || "Falha ao listar documentos.");
+        return;
+      }
+      const list = document.getElementById("knowledge-list");
+      list.innerHTML = "";
+      const files = Array.isArray(data.files) ? data.files : [];
+      if (files.length === 0) {
+        list.innerHTML = `<p class="muted">Nenhum documento encontrado.</p>`;
+      } else {
+        for (const file of files) {
+          const row = document.createElement("div");
+          row.className = "rounded border border-white/10 p-2";
+          row.textContent = `${file.file_name} | status: ${file.status} | id: ${file.id}`;
+          list.appendChild(row);
+        }
+      }
+      setText("knowledge-status", "Lista atualizada.");
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function simulateAgent() {
+      const btn = document.getElementById("simulate-agent");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("simulate-response", "Configure primeiro a Base API.");
+        return;
+      }
+      const message = document.getElementById("simulate-message").value.trim();
+      if (!message) {
+        setText("simulate-response", "Digite uma mensagem para simular.");
+        return;
+      }
+      if (btn) setButtonLoading(btn, true, "Simulando…");
+      setSimulateResponseTyping();
+      try {
+        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/agent-simulate`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ message })
+        });
+        const data = await safeJson(res);
+        if (!res.ok) {
+          const statusMsg = res.status ? `[${res.status}] ` : "";
+          const err = (data && typeof data.error === "string" ? data.error : null) || "Falha na simulação.";
+          setText("simulate-response", statusMsg + err + (res.status === 401 ? " Faça login novamente ou cadastre-se." : ""));
+          return;
+        }
+        if (!data.ok) {
+          setText("simulate-response", (data && typeof data.error === "string" ? data.error : "Falha na simulação."));
+          return;
+        }
+        setText("simulate-response", data.reply || "---");
+      } catch (err) {
+        setText("simulate-response", "Erro: " + (err?.message || String(err)));
+      } finally {
+        if (btn) setButtonLoading(btn, false);
+      }
+    }
+
+    async function refreshWhatsappStatus() {
+      const btn = document.getElementById("refresh-whatsapp-status");
+      const btnQr = document.getElementById("refresh-whatsapp-status-from-qr");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("whatsapp-status-text", "Configure primeiro a Base API.");
+        return;
+      }
+      setButtonLoading(btn, true, "Atualizando…");
+      setButtonLoading(btnQr, true, "Atualizando…");
+      try {
+      const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/whatsapp-status`, {
+        method: "GET",
+        headers: authHeaders()
+      });
+      const data = await safeJson(res);
+      if (!data.ok) {
+        setText("whatsapp-status-text", data.error || "Falha ao consultar status.");
+        return;
+      }
+      renderWhatsappStatus(data.status || "unknown");
+      if (data.status === "connected") {
+        await setStep("whatsapp_connection", true, true);
+      }
+      } finally {
+        setButtonLoading(btn, false);
+        setButtonLoading(document.getElementById("refresh-whatsapp-status-from-qr"), false);
+      }
+    }
+
+    async function refreshTenantReadiness() {
+      const btn = document.getElementById("refresh-tenant-readiness");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("tenant-readiness-status", "Configure primeiro a Base API.");
+        return;
+      }
+      setButtonLoading(btn, true, "Atualizando…");
+      try {
+      const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/tenant-readiness`, {
+        method: "GET",
+        headers: authHeaders()
+      });
+      const data = await safeJson(res);
+
+      if (!data.ok) {
+        var msg = (typeof data.error === "string" && data.error) ? data.error : "Falha ao consultar readiness.";
+        if (res.status === 404) msg = "Endpoint não encontrado (404). Publique a Edge Function tenant-readiness no Supabase.";
+        else if (res.status === 401 && msg === "Falha ao consultar readiness.") msg = "Não autorizado (401). Faça login novamente ou verifique se sua conta tem empresa (tenant) vinculada.";
+        setText("tenant-readiness-status", msg);
+        return;
+      }
+
+      const percent = Number(data.percent ?? 0);
+      const pill = document.getElementById("tenant-readiness-pill");
+      pill.textContent = `${percent}%`;
+      pill.className = "pill";
+      if (percent >= 100) pill.classList.add("ok");
+      else if (percent >= 60) pill.classList.add("warn");
+      else pill.classList.add("muted");
+
+      const checklist = data.checklist || {};
+      const state = loadState();
+      for (const key of Object.keys(checklist)) {
+        state[key] = Boolean(checklist[key]);
+      }
+      saveState(state);
+      render();
+
+      const nextWrap = document.getElementById("tenant-next-actions");
+      nextWrap.innerHTML = "";
+      const nextActions = Array.isArray(data.nextActions) ? data.nextActions : [];
+      if (nextActions.length === 0) {
+        nextWrap.innerHTML = `<p class="ok">Tudo pronto. Tenant habilitado para operar.</p>`;
+      } else {
+        nextActions.forEach((action) => {
+          const line = document.createElement("p");
+          line.className = "muted";
+          line.textContent = `- ${action}`;
+          nextWrap.appendChild(line);
+        });
+      }
+
+      setText("tenant-readiness-status", `Checklist: ${data.completedCount ?? 0}/${data.total ?? 5} concluídos.`);
+      } catch (err) {
+        setText("tenant-readiness-status", "Erro de rede ou de conexão: " + (err?.message || String(err)));
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function refreshTenantHealth() {
+      const btn = document.getElementById("refresh-tenant-health");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("tenant-health-status", "Configure primeiro a Base API.");
+        return;
+      }
+      setButtonLoading(btn, true, "Atualizando…");
+      try {
+        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/tenant-health`, {
+          method: "GET",
+          headers: authHeaders()
+        });
+        const data = await safeJson(res);
+        if (!res.ok) {
+          let msg = data?.error;
+          if (!msg) {
+            if (res.status === 401) msg = "Não autorizado. Clique em \"Renovar sessão e atualizar\" abaixo ou saia e entre na página de novo.";
+            else if (res.status === 403) msg = "Acesso negado.";
+            else msg = `Erro do servidor (${res.status}).`;
+          }
+          setText("tenant-health-status", msg);
+          return;
+        }
+        if (!data.ok) {
+          const errMsg = data.error || "Falha ao consultar health.";
+          const hint = (errMsg.toLowerCase().includes("autorizado") || errMsg.toLowerCase().includes("tenant"))
+            ? " Clique em \"Renovar sessão e atualizar\" ou saia e entre na página de novo."
+            : "";
+          setText("tenant-health-status", errMsg + hint);
+          return;
+        }
+
+        const score = Number(data.score ?? 0);
+        const pill = document.getElementById("tenant-health-pill");
+        pill.textContent = `${score}`;
+        pill.className = "pill";
+        if (score >= 85) pill.classList.add("ok");
+        else if (score >= 60) pill.classList.add("warn");
+        else pill.classList.add("err");
+
+        const status = data.status || {};
+        setText(
+          "tenant-health-status",
+          `Tenant: ${status.tenant || "unknown"} | Automação: ${status.automationEnabled ? "on" : "off"} | WhatsApp: ${status.whatsapp || "unknown"} | Assinatura: ${status.subscription || "inactive"}`
+        );
+
+        const errorsWrap = document.getElementById("tenant-health-errors");
+        errorsWrap.innerHTML = "";
+        const errors = Array.isArray(data?.diagnostics?.recentErrors) ? data.diagnostics.recentErrors : [];
+        if (errors.length === 0) {
+          errorsWrap.innerHTML = `<p class="ok">Sem erros críticos recentes.</p>`;
+        } else {
+          errors.forEach((item) => {
+            const row = document.createElement("p");
+            row.className = "err";
+            row.textContent = `- ${item.source}: ${item.message || item.event}`;
+            errorsWrap.appendChild(row);
+          });
+        }
+      } catch (err) {
+        setText("tenant-health-status", "Erro de rede ou conexão: " + (err?.message || String(err)));
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function refreshSessionAndHealth() {
+      const btn = document.getElementById("refresh-session-and-health");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!supabaseAuthClient) {
+        setText("tenant-health-status", "Login não disponível (config.js sem SUPABASE_URL/ANON_KEY). Faça login na página.");
+        return;
+      }
+      setButtonLoading(btn, true, "Renovando…");
+      try {
+        const { data, error } = await supabaseAuthClient.auth.refreshSession();
+        if (error) {
+          setText("tenant-health-status", "Sessão expirada ou inválida. Faça login novamente.");
+          return;
+        }
+        if (data?.session?.access_token) {
+          runtimeConfig.token = data.session.access_token;
+          const apiBase = document.getElementById("api-base");
+          if (apiBase && typeof window.SUPABASE_URL === "string") runtimeConfig.baseUrl = window.SUPABASE_URL.trim().replace(/\/+$/, "") + "/functions/v1";
+          setText("tenant-health-status", "Sessão renovada. Consultando health…");
+          await refreshTenantHealth();
+        } else {
+          setText("tenant-health-status", "Nenhuma sessão ativa. Faça login.");
+        }
+      } catch (err) {
+        setText("tenant-health-status", "Erro ao renovar sessão: " + (err?.message || String(err)));
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function saveConfigToDatabase() {
+      const saveBtn = document.getElementById("save-config");
+      if (saveBtn?.classList.contains("btn-loading")) return;
+      const baseUrl = document.getElementById("api-base").value.trim();
+      const token = document.getElementById("api-token").value.trim();
+      if (!baseUrl) {
+        setText("config-status", "Informe a Base API para salvar.");
+        return;
+      }
+      if (!token && !runtimeConfig.token) {
+        setText("config-status", "Informe o token ao menos uma vez para autenticar e salvar.");
+        return;
+      }
+
+      setButtonLoading(saveBtn, true, "Salvando…");
+      setText("config-status", "Salvando...");
+      runtimeConfig.baseUrl = baseUrl;
+      if (token) runtimeConfig.token = token;
+
+      try {
+        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/tenant-api-config`, {
+          method: "PUT",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            apiBaseUrl: baseUrl,
+            apiToken: token || undefined,
+          }),
+        });
+        const data = await safeJson(res);
+        if (!data.ok) {
+          setText("config-status", data.error || "Falha ao salvar configuração no banco.");
+          return;
+        }
+
+        // Do not keep token visible in UI.
+        const tokenInput = document.getElementById("api-token");
+        tokenInput.value = "";
+        tokenInput.placeholder = data?.config?.tokenMasked
+          ? `Token salvo (${data.config.tokenMasked})`
+          : "Token salvo no banco";
+        setText("token-state", data?.config?.hasToken
+          ? `Token: salvo (${data.config.tokenMasked || "****"})`
+          : "Token: não configurado");
+
+        setText("config-status", "Configuração salva no banco. Token ocultado no navegador.");
+        const ok = await syncStepsFromBackend();
+        if (ok) render();
+      } catch (err) {
+        setText("config-status", "Erro ao salvar: " + (err?.message || "verifique a URL e a conexão."));
+      } finally {
+        setButtonLoading(document.getElementById("save-config"), false);
+      }
+    }
+
+    async function loadConfigFromDatabase() {
+      const loadBtn = document.getElementById("load-config-from-db");
+      if (loadBtn?.classList.contains("btn-loading")) return;
+      const baseUrl = document.getElementById("api-base").value.trim();
+      const token = document.getElementById("api-token").value.trim();
+      if (!baseUrl) {
+        setText("config-status", "Informe a Base API para carregar configuração.");
+        return;
+      }
+      if (!token && !runtimeConfig.token) {
+        setText("config-status", "Informe token para autenticar a leitura no banco.");
+        return;
+      }
+
+      setButtonLoading(loadBtn, true, "Carregando…");
+      setText("config-status", "Carregando...");
+      runtimeConfig.baseUrl = baseUrl;
+      if (token) runtimeConfig.token = token;
+
+      try {
+        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/tenant-api-config`, {
+          method: "GET",
+          headers: authHeaders(),
+        });
+        const data = await safeJson(res);
+        if (!data.ok) {
+          setText("config-status", data.error || "Falha ao carregar configuração do banco.");
+          return;
+        }
+
+        if (data?.config?.apiBaseUrl) {
+          runtimeConfig.baseUrl = data.config.apiBaseUrl;
+          document.getElementById("api-base").value = data.config.apiBaseUrl;
+        }
+
+        const tokenInput = document.getElementById("api-token");
+        tokenInput.value = "";
+        tokenInput.placeholder = data?.config?.hasToken
+          ? `Token já salvo (${data.config.tokenMasked || "****"})`
+          : "Nenhum token salvo";
+        setText("token-state", data?.config?.hasToken
+          ? `Token: salvo (${data.config.tokenMasked || "****"})`
+          : "Token: não configurado");
+
+        setText("config-status", "Configuração carregada do banco. Token não é exibido por segurança.");
+        const ok = await syncStepsFromBackend();
+        if (ok) render();
+      } catch (err) {
+        setText("config-status", "Erro ao carregar: " + (err?.message || "verifique a URL e a conexão."));
+      } finally {
+        setButtonLoading(loadBtn, false);
+      }
+    }
+
+    async function initSupabaseAuth() {
+      const url = typeof window.SUPABASE_URL === "string" ? window.SUPABASE_URL.trim() : "";
+      const anon = typeof window.SUPABASE_ANON_KEY === "string" ? window.SUPABASE_ANON_KEY.trim() : "";
+      if (!url || !anon || typeof supabase === "undefined") return;
+      try {
+        const client = supabase.createClient(url, anon);
+        const { data: { session } } = await client.auth.getSession();
+        if (session?.access_token) {
+          runtimeConfig.token = session.access_token;
+          runtimeConfig.baseUrl = url.replace(/\/+$/, "") + "/functions/v1";
+          const input = document.getElementById("api-base");
+          if (input) input.value = runtimeConfig.baseUrl;
+          setText("token-state", "Token: da sessão (preenchido automaticamente)");
+          setText("config-status", "URL e token da aplicação em uso. Não é necessário preencher.");
+        }
+      } catch (e) { /* ignora se falhar */ }
+    }
+
+    document.getElementById("save-config").addEventListener("click", saveConfigToDatabase);
+    document.getElementById("load-config-from-db").addEventListener("click", loadConfigFromDatabase);
+
+    document.getElementById("load-agent-config").addEventListener("click", loadAgentConfig);
+    document.getElementById("save-agent-config").addEventListener("click", saveAgentConfig);
+    document.getElementById("upload-knowledge").addEventListener("click", uploadKnowledge);
+    document.getElementById("process-knowledge").addEventListener("click", processKnowledge);
+    document.getElementById("list-knowledge").addEventListener("click", listKnowledge);
+    document.getElementById("simulate-agent").addEventListener("click", simulateAgent);
+    document.getElementById("refresh-whatsapp-status").addEventListener("click", refreshWhatsappStatus);
+    document.getElementById("refresh-whatsapp-status-from-qr").addEventListener("click", refreshWhatsappStatus);
+    const waConfigToggle = document.getElementById("whatsapp-config-toggle");
+    const waConfigBody = document.getElementById("whatsapp-config-body");
+    const waConfigIcon = document.getElementById("whatsapp-config-toggle-icon");
+    if (waConfigToggle && waConfigBody) {
+      waConfigToggle.addEventListener("click", function () {
+        const isHidden = waConfigBody.classList.contains("hidden");
+        waConfigBody.classList.toggle("hidden", !isHidden);
+        waConfigToggle.setAttribute("aria-expanded", String(isHidden));
+        if (waConfigIcon) {
+          waConfigIcon.textContent = isHidden ? "Esconder ▲" : "Mostrar ▼";
+        }
+      });
+    }
+
+    document.getElementById("whatsapp-qr-modal-close").addEventListener("click", function () {
+      stopQrRefreshAndCloseModal();
+    });
+    document.getElementById("whatsapp-qr-modal").addEventListener("click", function (e) {
+      if (e.target && e.target.id === "whatsapp-qr-modal") stopQrRefreshAndCloseModal();
+    });
+    document.getElementById("refresh-tenant-readiness").addEventListener("click", refreshTenantReadiness);
+    document.getElementById("refresh-tenant-health").addEventListener("click", refreshTenantHealth);
+    document.getElementById("refresh-session-and-health").addEventListener("click", refreshSessionAndHealth);
+
+    function switchAuthTab(toSignup) {
+      var tabLogin = document.getElementById("auth-tab-login");
+      var tabSignup = document.getElementById("auth-tab-signup");
+      var formLogin = document.getElementById("auth-form-login");
+      var formSignup = document.getElementById("auth-form-signup");
+      if (tabLogin && tabSignup) {
+        tabLogin.classList.toggle("border-[#76e1b5]", !toSignup);
+        tabLogin.classList.toggle("border-transparent", toSignup);
+        tabLogin.classList.toggle("text-[#76e1b5]", !toSignup);
+        tabLogin.classList.toggle("text-gray-400", toSignup);
+        tabSignup.classList.toggle("border-[#76e1b5]", toSignup);
+        tabSignup.classList.toggle("border-transparent", !toSignup);
+        tabSignup.classList.toggle("text-[#76e1b5]", toSignup);
+        tabSignup.classList.toggle("text-gray-400", !toSignup);
+      }
+      if (formLogin) formLogin.classList.toggle("hidden", toSignup);
+      if (formSignup) formSignup.classList.toggle("hidden", !toSignup);
+      setText("auth-error-login", "");
+      setText("auth-error-signup", "");
+      var errLogin = document.getElementById("auth-error-login");
+      var errSignup = document.getElementById("auth-error-signup");
+      if (errLogin) errLogin.classList.add("hidden");
+      if (errSignup) errSignup.classList.add("hidden");
+    }
+
+    async function callLogSession() {
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) return;
+      try {
+        await fetch(runtimeConfig.baseUrl.replace(/\/+$/, "") + "/log-session", {
+          method: "POST",
+          headers: authHeaders(),
+        });
+      } catch (e) {}
+    }
+
+    async function ensureTenant() {
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) return;
+      try {
+        var res = await fetch(runtimeConfig.baseUrl.replace(/\/+$/, "") + "/provision-tenant", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ companyName: "Minha Empresa" })
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (data.ok) return;
+      } catch (e) { /* ignora */ }
+    }
+
+    async function onAuthSuccess() {
+      if (!supabaseAuthClient) return;
+      var { data: { session } } = await supabaseAuthClient.auth.getSession();
+      if (!session?.access_token) return;
+      runtimeConfig.token = session.access_token;
+      runtimeConfig.baseUrl = (typeof window.SUPABASE_URL === "string" ? window.SUPABASE_URL.trim() : "").replace(/\/+$/, "") + "/functions/v1";
+      var apiBase = document.getElementById("api-base");
+      if (apiBase) apiBase.value = runtimeConfig.baseUrl;
+      setText("token-state", "Token: da sessão (preenchido automaticamente)");
+      await ensureTenant();
+      await callLogSession();
+      showOnboarding();
+      render();
+    }
+
+    (function init() {
+      if (!supabaseAuthClient) {
+        showAuthGate();
+        var warn = document.getElementById("auth-gate-config-warn");
+        if (warn) warn.classList.remove("hidden");
+        render();
+        initSupabaseAuth();
+        return;
+      }
+      supabaseAuthClient.auth.getSession().then(async function (result) {
+        if (result.data?.session) {
+          runtimeConfig.token = result.data.session.access_token;
+          runtimeConfig.baseUrl = (typeof window.SUPABASE_URL === "string" ? window.SUPABASE_URL.trim() : "").replace(/\/+$/, "") + "/functions/v1";
+          var apiBase = document.getElementById("api-base");
+          if (apiBase) apiBase.value = runtimeConfig.baseUrl;
+          setText("token-state", "Token: da sessão (preenchido automaticamente)");
+          await ensureTenant();
+          showOnboarding();
+          initSupabaseAuth();
+        } else {
+          showAuthGate();
+        }
+        render();
+      }).catch(function () {
+        showAuthGate();
+        render();
+      });
+    })();
+
+    document.getElementById("auth-tab-signup").addEventListener("click", function () { switchAuthTab(true); });
+    document.getElementById("auth-tab-login").addEventListener("click", function () { switchAuthTab(false); });
+
+    document.getElementById("auth-form-login").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var email = document.getElementById("auth-email-login").value.trim();
+      var password = document.getElementById("auth-password-login").value;
+      var errEl = document.getElementById("auth-error-login");
+      var btn = document.getElementById("auth-btn-login");
+      setText("auth-error-login", "");
+      if (errEl) errEl.classList.add("hidden");
+      if (!supabaseAuthClient) {
+        setText("auth-error-login", "Configure config.js com SUPABASE_URL e SUPABASE_ANON_KEY.");
+        if (errEl) errEl.classList.remove("hidden");
+        return;
+      }
+      setButtonLoading(btn, true, "Entrando…");
+      try {
+        var { data, error } = await supabaseAuthClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        await onAuthSuccess();
+      } catch (err) {
+        setText("auth-error-login", err.message || "Falha ao entrar.");
+        if (errEl) errEl.classList.remove("hidden");
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    });
+
+    document.getElementById("auth-form-signup").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var email = document.getElementById("auth-email-signup").value.trim();
+      var password = document.getElementById("auth-password-signup").value;
+      var companyName = document.getElementById("auth-company-signup").value.trim() || "Minha Empresa";
+      var errEl = document.getElementById("auth-error-signup");
+      var btn = document.getElementById("auth-btn-signup");
+      setText("auth-error-signup", "");
+      if (errEl) errEl.classList.add("hidden");
+      if (!supabaseAuthClient) {
+        setText("auth-error-signup", "Configure config.js com SUPABASE_URL e SUPABASE_ANON_KEY.");
+        if (errEl) errEl.classList.remove("hidden");
+        return;
+      }
+      setButtonLoading(btn, true, "Cadastrando…");
+      try {
+        var { data, error } = await supabaseAuthClient.auth.signUp({ email, password });
+        if (error) throw error;
+        if (!data?.session) {
+          setText("auth-error-signup", "Cadastro feito. Confirme seu e-mail e depois entre na aba Entrar.");
+          if (errEl) errEl.classList.remove("hidden");
+          setButtonLoading(btn, false);
+          return;
+        }
+        var baseUrl = (typeof window.SUPABASE_URL === "string" ? window.SUPABASE_URL.trim() : "").replace(/\/+$/, "") + "/functions/v1";
+        runtimeConfig.token = data.session.access_token;
+        runtimeConfig.baseUrl = baseUrl;
+        var prov = await fetch(baseUrl + "/provision-tenant", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ companyName }),
+        });
+        var provData = await prov.json().catch(function () { return {}; });
+        if (!provData.ok) {
+          setText("auth-error-signup", provData.error || "Conta criada, mas falha ao criar empresa. Entre e tente novamente.");
+          if (errEl) errEl.classList.remove("hidden");
+          setButtonLoading(btn, false);
+          return;
+        }
+        await onAuthSuccess();
+      } catch (err) {
+        setText("auth-error-signup", err.message || "Falha ao cadastrar.");
+        if (errEl) errEl.classList.remove("hidden");
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    });
+
+    document.getElementById("auth-sign-out").addEventListener("click", function () {
+      if (supabaseAuthClient) supabaseAuthClient.auth.signOut().then(function () { showAuthGate(); });
+    });
+  </script>
+</body>
+</html>
