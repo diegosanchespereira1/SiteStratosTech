@@ -492,7 +492,8 @@
 
   var messageBuffer = [];
   var flushTimer = null;
-  var DEBOUNCE_MS = 8000;
+  var pendingTypingBubble = null;
+  var DEBOUNCE_MS = 1200;
 
   try {
     var storedHistory = JSON.parse(localStorage.getItem(historyKey) || "[]");
@@ -743,7 +744,8 @@
     messageBuffer = [];
     addToHistory("user", combinedMessage);
     sendBtn.disabled = true;
-    var typingBubble = createBubble("bot", "Digitando...");
+    var typingBubble = pendingTypingBubble || createBubble("bot", "Digitando...");
+    pendingTypingBubble = null;
     postToWebhook({
       eventType: "chat_message",
       message: combinedMessage,
@@ -798,6 +800,10 @@
       clearTimeout(flushTimer);
       flushTimer = null;
       messageBuffer = [];
+      if (pendingTypingBubble) {
+        pendingTypingBubble.remove();
+        pendingTypingBubble = null;
+      }
       createBubble("user", message);
       addToHistory("user", message);
       sendBtn.disabled = true;
@@ -907,6 +913,10 @@
 
     createBubble("user", message);
     messageBuffer.push(message);
+    if (!pendingTypingBubble) {
+      pendingTypingBubble = createBubble("bot", "Digitando...");
+      scrollToBottom();
+    }
     clearTimeout(flushTimer);
     flushTimer = setTimeout(flushBufferAndSend, DEBOUNCE_MS);
   }
