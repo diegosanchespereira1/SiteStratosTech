@@ -18,51 +18,25 @@ Se a VPS for ARM (ex.: Oracle Ampere), use `--platform linux/arm64`. Se build j�
 docker build -t polygonuser/stratosbot:latest .
 ```
 
-## 2. Variáveis no Portainer (SUPABASE_URL e SUPABASE_ANON_KEY)
+## 2. Config Supabase (StratosBot/config.js)
 
-O onboarding só funciona se o container receber `SUPABASE_URL` e `SUPABASE_ANON_KEY`. Há duas formas:
+Para o SaaS, o onboarding lê `SUPABASE_URL` e `SUPABASE_ANON_KEY` diretamente do arquivo **`StratosBot/config.js`** (commitado no repositório). O container apenas serve esses arquivos estáticos.
 
-### Opção A: Environment variables do stack (no deploy)
-
-1. No Portainer: **Stacks** → abra o stack do StratosBot.
-2. Clique em **Editor** (ou **Web editor**).
-3. Role até a área **Environment variables** (ou **Env**) **do stack** (não do serviço).
-4. Adicione duas entradas com o **nome exato** (case-sensitive):
-   - Nome: `SUPABASE_URL` — Valor: `https://SEU_PROJECT_REF.supabase.co`
-   - Nome: `SUPABASE_ANON_KEY` — Valor: a chave **anon public** do Supabase (Dashboard → Project Settings → API).
-5. Clique em **Update the stack**.
-
-Em alguns ambientes Swarm/Portainer as env vars do stack **não** são passadas ao container. Se após atualizar o stack o onboarding ainda mostrar "Configure config.js com SUPABASE_URL e SUPABASE_ANON_KEY", use a **Opção B**.
-
-### Opção B: Docker secrets (recomendado se a Opção A não funcionar)
-
-1. No Portainer: **Secrets** → **Add secret**.
-   - Nome: `SUPABASE_URL` — Valor: `https://SEU_PROJECT_REF.supabase.co`
-   - Nome: `SUPABASE_ANON_KEY` — Valor: chave anon do Supabase.
-2. No **Editor** do stack, no serviço `stratosbot`, descomente as linhas:
-   ```yaml
-   secrets:
-     - SUPABASE_URL
-     - SUPABASE_ANON_KEY
+1. No seu repositório local, edite `StratosBot/config.js`:
+   ```js
+   (function () {
+     "use strict";
+     window.SUPABASE_URL = "https://SEU_PROJECT_REF.supabase.co";
+     window.SUPABASE_ANON_KEY = "SUA_ANON_KEY_PUBLICA_AQUI";
+   })();
    ```
-3. No **final** do arquivo, descomente:
-   ```yaml
-   secrets:
-     SUPABASE_URL:
-       external: true
-     SUPABASE_ANON_KEY:
-       external: true
-   ```
-4. **Update the stack**.
+2. Os valores vêm do Supabase: Dashboard → **Project Settings** → **API**:
+   - **Project URL** → `SUPABASE_URL`
+   - **anon public** → `SUPABASE_ANON_KEY`
+3. Faça commit e push desse arquivo.  
+4. No Portainer, atualize o stack (ele vai puxar a nova imagem/tag, mas a configuração Supabase é sempre a do `config.js` já empacotado na imagem).
 
-O entrypoint do container lê primeiro as env vars; se estiverem vazias, lê de `/run/secrets/SUPABASE_URL` e `/run/secrets/SUPABASE_ANON_KEY`.
-
-### Conferir no log do container
-
-Após o deploy, abra o serviço **stratosbot** → **Logs**. Deve aparecer:
-
-- `[stratosbot] config.js gerado com SUPABASE_URL e SUPABASE_ANON_KEY.` — valores recebidos.
-- Se aparecer `AVISO: SUPABASE_URL ou SUPABASE_ANON_KEY vazios` — o container não recebeu as variáveis; use a Opção B (secrets).
+> Observação: a chave **anon** é feita para estar no frontend (é a mesma que o Supabase usa em exemplos React/Vue etc). A proteção real é feita pela RLS no banco; **não** use a chave `service_role` no frontend.
 
 ## 3. Evolution e n8n
 
@@ -84,4 +58,4 @@ Podem estar em outro stack. No Supabase (Edge Functions → Secrets) configure:
 | Container sai imediatamente / log vazio | Entrypoint com CRLF (Windows) | Já corrigido no Dockerfile (`sed -i 's/\r$//'`). Rebuild da imagem. |
 | Log mostra "Starting nginx..." e depois nada | Nginx não sobe (config/porta) | Confira no container: `docker run --rm -it polygonuser/stratosbot:latest sh` e rode `/docker-entrypoint.sh` manualmente para ver erro. |
 | 502 Bad Gateway no Traefik | Container não escuta na porta 80 | Verifique se o serviço está "Running" e se a rede (PolygonNetwork) está correta. |
-| Onboarding mostra "Configure config.js com SUPABASE_URL e SUPABASE_ANON_KEY" | Container não recebeu as env vars no Swarm | Use **Docker secrets** (Opção B na seção 2). Confira os logs do container: se aparecer "AVISO: SUPABASE_URL ou SUPABASE_ANON_KEY vazios", as variáveis não chegaram. |
+| Onboarding mostra "Configure config.js com SUPABASE_URL e SUPABASE_ANON_KEY" | `config.js` não foi atualizado ou a versão antiga da imagem ainda está em uso | Confira se `StratosBot/config.js` no repositório tem os valores corretos, rode o build/push da imagem e atualize o stack no Portainer. |
