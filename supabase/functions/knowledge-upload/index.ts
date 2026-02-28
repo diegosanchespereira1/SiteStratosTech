@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleCors, jsonResponse } from "../_shared/http.ts";
 import { decodeBase64ToBytes } from "../_shared/decode_base64.ts";
 import { createAdminClient, getAuthenticatedUserId, getUserTenantId } from "../_shared/supabase.ts";
+import { writeOperationLog } from "../_shared/ops_log.ts";
 
 interface KnowledgeUploadBody {
   fileName?: string;
@@ -49,6 +50,14 @@ serve(async (req: Request) => {
         });
 
       if (uploadError) {
+        await writeOperationLog({
+          tenantId,
+          source: "knowledge-upload",
+          level: "error",
+          event: "storage_upload_failed",
+          message: uploadError.message,
+          details: { fileName, storagePath },
+        });
         return jsonResponse(500, {
           ok: false,
           error: `Falha ao enviar arquivo para storage: ${uploadError.message}`,
@@ -70,8 +79,24 @@ serve(async (req: Request) => {
       .maybeSingle();
 
     if (error) {
+      await writeOperationLog({
+        tenantId,
+        source: "knowledge-upload",
+        level: "error",
+        event: "upload_failed",
+        message: error.message,
+        details: { fileName, storagePath },
+      });
       return jsonResponse(500, { ok: false, error: error.message });
     }
+
+    await writeOperationLog({
+      tenantId,
+      source: "knowledge-upload",
+      event: "file_uploaded",
+      message: `Arquivo ${data?.file_name} enviado. ID: ${data?.id}.`,
+      details: { fileId: data?.id, fileName: data?.file_name, sizeBytes: data?.size_bytes },
+    });
 
     return jsonResponse(200, {
       ok: true,

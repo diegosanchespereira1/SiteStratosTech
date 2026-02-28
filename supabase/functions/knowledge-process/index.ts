@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleCors, jsonResponse } from "../_shared/http.ts";
 import { createAdminClient, getAuthenticatedUserId, getUserTenantId } from "../_shared/supabase.ts";
+import { writeOperationLog } from "../_shared/ops_log.ts";
 
 interface KnowledgeProcessBody {
   knowledgeFileId?: string;
@@ -45,8 +46,24 @@ serve(async (req: Request) => {
       .maybeSingle();
 
     if (fileError || !file) {
+      await writeOperationLog({
+        tenantId,
+        source: "knowledge-process",
+        level: "warn",
+        event: "file_not_found",
+        message: "Arquivo nao encontrado para processar.",
+        details: { knowledgeFileId },
+      });
       return jsonResponse(404, { ok: false, error: "Arquivo nao encontrado." });
     }
+
+    await writeOperationLog({
+      tenantId,
+      source: "knowledge-process",
+      event: "processing_started",
+      message: `Processando arquivo guia: ${file.file_name}.`,
+      details: { knowledgeFileId: file.id, fileName: file.file_name },
+    });
 
     await supabase
       .from("knowledge_files")
@@ -67,8 +84,15 @@ serve(async (req: Request) => {
           extractedText = maybeText;
         }
       }
-    } catch {
-      // Keep fallback text and proceed.
+    } catch (e) {
+      await writeOperationLog({
+        tenantId,
+        source: "knowledge-process",
+        level: "warn",
+        event: "storage_download_failed",
+        message: (e as Error).message,
+        details: { knowledgeFileId: file.id, storagePath: file.storage_path },
+      });
     }
 
     const chunks = splitTextInChunks(extractedText, 800);
@@ -93,6 +117,14 @@ serve(async (req: Request) => {
           .from("knowledge_files")
           .update({ status: "failed", error_message: insertError.message })
           .eq("id", file.id);
+        await writeOperationLog({
+          tenantId,
+          source: "knowledge-process",
+          level: "error",
+          event: "chunks_insert_failed",
+          message: insertError.message,
+          details: { knowledgeFileId: file.id, fileName: file.file_name },
+        });
         return jsonResponse(500, { ok: false, error: insertError.message });
       }
     }
@@ -102,6 +134,14 @@ serve(async (req: Request) => {
       .update({ status: "ready", error_message: null })
       .eq("id", file.id);
 
+    await writeOperationLog({
+      tenantId,
+      source: "knowledge-process",
+      event: "processing_completed",
+      message: `Arquivo guia processado: ${chunks.length} chunks.`,
+      details: { knowledgeFileId: file.id, fileName: file.file_name, chunkCount: chunks.length },
+    });
+
     return jsonResponse(200, {
       ok: true,
       knowledgeFileId: file.id,
@@ -109,6 +149,7 @@ serve(async (req: Request) => {
       status: "ready",
     });
   } catch (error) {
-    return jsonResponse(401, { ok: false, error: (error as Error).message });
+    const errMsg = (error as Error).message;
+    return jsonResponse(401, { ok: false, error: errMsg });
   }
 });
