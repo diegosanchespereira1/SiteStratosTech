@@ -4,6 +4,84 @@ import { writeOperationLog } from "../_shared/ops_log.ts";
 import { parseTenantIdFromInstance } from "../_shared/parse_tenant.ts";
 import { createAdminClient } from "../_shared/supabase.ts";
 
+const EVOLUTION = {
+  markAsRead: async (
+    baseUrl: string,
+    apiKey: string,
+    instanceKey: string,
+    remoteJid: string,
+    messageId: string,
+  ): Promise<void> => {
+    const url = `${baseUrl.replace(/\/+$/, "")}/chat/markMessageAsRead/${encodeURIComponent(instanceKey)}`;
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: apiKey },
+      body: JSON.stringify({
+        readMessages: [{ remoteJid, fromMe: false, id: messageId }],
+      }),
+    });
+  },
+  sendPresence: async (
+    baseUrl: string,
+    apiKey: string,
+    instanceKey: string,
+    number: string,
+    presence: "composing" | "recording" = "composing",
+    delayMs = 3000,
+  ): Promise<void> => {
+    const url = `${baseUrl.replace(/\/+$/, "")}/chat/sendPresence/${encodeURIComponent(instanceKey)}`;
+    const jid = number.includes("@") ? number : `${number.replace(/\D/g, "")}@s.whatsapp.net`;
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ number: jid, delay: delayMs, presence }),
+    });
+  },
+  getBase64FromMediaMessage: async (
+    baseUrl: string,
+    apiKey: string,
+    instanceKey: string,
+    messageObj: Record<string, unknown>,
+  ): Promise<string | null> => {
+    const url = `${baseUrl.replace(/\/+$/, "")}/chat/getBase64FromMediaMessage/${encodeURIComponent(instanceKey)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ message: messageObj, convertToMp4: false }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+    const base64 = (data?.base64 ?? (data?.data as Record<string, unknown>)?.base64) as string | undefined;
+    return base64 && String(base64).trim() ? String(base64) : null;
+  },
+};
+
+/** Transcreve áudio em base64 usando OpenAI Whisper. Requer OPENAI_API_KEY. */
+async function transcribeAudioBase64(base64: string): Promise<string | null> {
+  const apiKey = (Deno.env.get("OPENAI_API_KEY") ?? "").trim();
+  if (!apiKey) return null;
+  try {
+    // Aceitar base64 puro ou data URL (ex.: data:audio/ogg;base64,...)
+    const raw = base64.includes("base64,") ? base64.split("base64,")[1]?.trim() ?? base64 : base64;
+    const binary = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+    const blob = new Blob([binary], { type: "audio/ogg" });
+    const form = new FormData();
+    form.append("file", blob, "audio.ogg");
+    form.append("model", "whisper-1");
+    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: form,
+    });
+    if (!res.ok) return null;
+    const data = (await res.json().catch(() => null)) as { text?: string } | null;
+    const text = data?.text?.trim();
+    return text ?? null;
+  } catch {
+    return null;
+  }
+}
+
 serve(async (req: Request) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -120,7 +198,7 @@ serve(async (req: Request) => {
     if (fromMe) {
       return jsonResponse(200, { ok: true, ignored: true, reason: "mensagem enviada por nos" });
     }
-    const messageText = String(
+    let messageText = String(
       (message as Record<string, unknown>)?.conversation ??
         (message as Record<string, unknown>)?.extendedTextMessage?.text ??
         (payload?.data as Record<string, unknown>)?.body ??
@@ -132,8 +210,39 @@ serve(async (req: Request) => {
         payload?.from ??
         "",
     ).trim();
+    const keyId = key ? String((key as Record<string, unknown>)?.id ?? "").trim() : "";
 
-    if (!messageText || !remoteJid) {
+    if (!remoteJid) {
+      return jsonResponse(200, { ok: true, ignored: true, reason: "remoteJid ausente" });
+    }
+
+    // Marcar como lida assim que temos a mensagem (inclui áudio)
+    const baseUrl = (Deno.env.get("EVOLUTION_API_BASE_URL") ?? "").replace(/\/+$/, "");
+    const apiKey = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+    if (baseUrl && apiKey && keyId && instanceKey) {
+      EVOLUTION.markAsRead(baseUrl, apiKey, instanceKey, remoteJid, keyId).catch((e) =>
+        console.warn("whatsapp-webhook: markAsRead falhou", (e as Error).message),
+      );
+    }
+
+    // Se for áudio/voz, transcrever e usar como texto
+    const hasAudio =
+      (message as Record<string, unknown>)?.audioMessage != null ||
+      (message as Record<string, unknown>)?.ptt === true;
+    if (hasAudio && (!messageText || messageText.length < 2)) {
+      if (baseUrl && apiKey && instanceKey) {
+        const base64 = await EVOLUTION.getBase64FromMediaMessage(baseUrl, apiKey, instanceKey, msg as Record<string, unknown>);
+        if (base64) {
+          const transcribed = await transcribeAudioBase64(base64);
+          if (transcribed) messageText = transcribed;
+        }
+      }
+      if (!messageText) {
+        messageText = "[Áudio recebido; não foi possível transcrever. Confira se OPENAI_API_KEY está definida e o áudio é válido.]";
+      }
+    }
+
+    if (!messageText) {
       return jsonResponse(200, { ok: true, ignored: true, reason: "mensagem nao suportada" });
     }
 
@@ -232,10 +341,15 @@ serve(async (req: Request) => {
           n8nData?.message ?? n8nData?.output ?? (n8nData?.data as Record<string, unknown>)?.message ?? "",
         ).trim();
         if (replyText) {
-          const baseUrl = (Deno.env.get("EVOLUTION_API_BASE_URL") ?? "").replace(/\/+$/, "");
-          const apiKey = Deno.env.get("EVOLUTION_API_KEY") ?? "";
           if (baseUrl && apiKey) {
             try {
+              // Mostrar "digitando..." antes de enviar a resposta (falha não bloqueia o envio)
+              try {
+                await EVOLUTION.sendPresence(baseUrl, apiKey, instanceKey, remoteJid, "composing", 3000);
+              } catch (presenceErr) {
+                console.warn("whatsapp-webhook: sendPresence falhou", (presenceErr as Error).message);
+              }
+
               const sendResp = await fetch(`${baseUrl}/message/sendText/${instanceKey}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", apikey: apiKey },

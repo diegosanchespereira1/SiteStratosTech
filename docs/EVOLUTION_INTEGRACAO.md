@@ -54,6 +54,7 @@ Defina os **secrets** do projeto Supabase para as Edge Functions:
 | `EVOLUTION_API_BASE_URL` | Sim | URL base da Evolution (sem barra no final). Ex.: `https://sua-evolution.exemplo.com` ou `http://host.docker.internal:8080` |
 | `EVOLUTION_API_KEY` | Sim | API Key da Evolution (mesmo valor usado no header `apikey` nas chamadas) |
 | `EVOLUTION_WEBHOOK_SECRET` | Recomendado | Segredo compartilhado do webhook. O backend exige que o webhook seja chamado em uma URL no formato `/functions/v1/whatsapp-webhook/SEGREDO`. A `whatsapp-connect` já configura automaticamente essa URL ao criar/conectar a instância. Se deixar vazio, qualquer origem que conheça a URL sem sufixo consegue chamar o webhook (não recomendado em produção). |
+| `OPENAI_API_KEY` | Para áudio | Usado para transcrever mensagens de voz (Whisper). Se não estiver definido, áudios recebidos geram uma mensagem de fallback informando que a transcrição não está disponível. |
 
 Exemplo (CLI):
 
@@ -127,6 +128,12 @@ A Evolution v2 **não** envia header customizado; não é necessário configurar
 6. **Evolution:** envia evento de conexão para o webhook → `whatsapp-webhook` atualiza `whatsapp_instances` para `connected`.
 7. **Usuário:** clica em **Atualizar status** no onboarding → vê “WhatsApp conectado”.
 8. Mensagens recebidas no WhatsApp dessa instância são enviadas pela Evolution ao webhook → salvas no Supabase e, se configurado, encaminhadas para o n8n.
+
+### Comportamento adicional do webhook (whatsapp-webhook)
+
+- **Marcar como lida:** Ao receber uma mensagem (texto ou áudio), o backend chama a Evolution `POST /chat/markMessageAsRead/{instance}` para marcar a mensagem como lida.
+- **“Digitando”:** Antes de enviar a resposta do agente, o backend chama `POST /chat/sendPresence/{instance}` com `presence: "composing"` e `delay` em ms, para o cliente ver o indicador de digitação.
+- **Áudio (voz):** Se a mensagem for de áudio/voz (`audioMessage` ou `ptt`), o webhook obtém o base64 via Evolution `getBase64FromMediaMessage`, transcreve com OpenAI Whisper (requer `OPENAI_API_KEY`) e usa o texto transcrito como entrada para o agente. Sem `OPENAI_API_KEY`, o usuário recebe uma mensagem informando que o áudio não pôde ser transcrito.
 
 ---
 
