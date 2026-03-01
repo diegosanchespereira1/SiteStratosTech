@@ -407,12 +407,21 @@ serve(async (req: Request) => {
             message: replyText,
             at: new Date().toISOString(),
           };
+          const updatePayload: Record<string, unknown> = {
+            messages: [...mergedMessages, assistantItem],
+            last_message_at: new Date().toISOString(),
+          };
+          const paymentMethod = n8nData?.payment_method != null ? String(n8nData.payment_method).trim() : null;
+          const deliveryAddress = n8nData?.delivery_address != null ? String(n8nData.delivery_address).trim() : null;
+          const orderSummary = n8nData?.order_summary != null && typeof n8nData.order_summary === "object"
+            ? (n8nData.order_summary as Record<string, unknown>)
+            : null;
+          if (paymentMethod) updatePayload.payment_method = paymentMethod;
+          if (deliveryAddress) updatePayload.delivery_address = deliveryAddress;
+          if (orderSummary) updatePayload.order_summary = orderSummary;
           await supabase
             .from("conversations")
-            .update({
-              messages: [...mergedMessages, assistantItem],
-              last_message_at: new Date().toISOString(),
-            })
+            .update(updatePayload)
             .eq("tenant_id", tenantId)
             .eq("external_contact_id", remoteJid)
             .eq("channel", "whatsapp");

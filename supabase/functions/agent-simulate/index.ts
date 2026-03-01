@@ -10,6 +10,48 @@ const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const DEFAULT_MODEL = "gpt-4o-mini";
 const MAX_CONTEXT_CHARS = 6000;
 
+/** Chama o mesmo webhook n8n usado pelo WhatsApp para obter a resposta real do agente. */
+async function simulateViaN8n(
+  tenantId: string,
+  tenantName: string,
+  message: string,
+  config: { assistant_name?: string; tone?: string; objective?: string; response_guidelines?: string } | null,
+  n8nWebhookUrl: string,
+  n8nApiKey: string,
+): Promise<string | null> {
+  const body = {
+    tenantId,
+    tenantName: tenantName || "Empresa",
+    instanceKey: "simulate",
+    channel: "whatsapp",
+    externalContactId: "onboarding-simulate",
+    message,
+    source: "onboarding-simulate",
+    raw: {} as Record<string, unknown>,
+    assistantName: config?.assistant_name ?? "Assistente",
+    tone: config?.tone ?? "profissional",
+    objective: config?.objective?.trim() ?? "",
+    responseGuidelines: config?.response_guidelines?.trim() ?? "",
+  };
+
+  const res = await fetch(n8nWebhookUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": n8nApiKey,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) return null;
+  const data = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!data) return null;
+  const reply = String(
+    data?.message ?? data?.output ?? (data?.data as Record<string, unknown>)?.message ?? "",
+  ).trim();
+  return reply || null;
+}
+
 serve(async (req: Request) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -19,14 +61,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    const apiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!apiKey?.trim()) {
-      return jsonResponse(503, {
-        ok: false,
-        error: "Simulacao com IA nao configurada (OPENAI_API_KEY ausente).",
-      });
-    }
-
     const userId = await getAuthenticatedUserId(req);
     const tenantId = await getUserTenantId(userId);
     const body = (await req.json().catch(() => ({}))) as SimulateBody;
@@ -38,12 +72,57 @@ serve(async (req: Request) => {
 
     const supabase = createAdminClient();
 
-    const [{ data: config }, { data: chunksData }] = await Promise.all([
+    const [{ data: config }, { data: tenantRow }] = await Promise.all([
       supabase
         .from("agent_configs")
         .select("assistant_name, tone, objective, response_guidelines")
         .eq("tenant_id", tenantId)
         .maybeSingle(),
+      supabase
+        .from("tenants")
+        .select("name")
+        .eq("id", tenantId)
+        .maybeSingle(),
+    ]);
+
+    const tenantName = (tenantRow as { name?: string } | null)?.name?.trim() ?? "";
+
+    const isDev = (Deno.env.get("STRATOSBOT_ENV") ?? "").toLowerCase() === "development";
+    const n8nWebhookUrl = (
+      isDev ? (Deno.env.get("N8N_INGRESS_WEBHOOK_URL_TEST") ?? "") : (Deno.env.get("N8N_INGRESS_WEBHOOK_URL") ?? "")
+    ).trim();
+    const n8nApiKey = Deno.env.get("N8N_INGRESS_API_KEY") ?? "";
+
+    if (n8nWebhookUrl) {
+      const n8nReply = await simulateViaN8n(
+        tenantId,
+        tenantName,
+        message,
+        config,
+        n8nWebhookUrl,
+        n8nApiKey,
+      );
+      if (n8nReply != null) {
+        return jsonResponse(200, {
+          ok: true,
+          tenantId,
+          reply: n8nReply,
+          source: "n8n",
+        });
+      }
+    }
+
+    const apiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!apiKey?.trim()) {
+      return jsonResponse(503, {
+        ok: false,
+        error: n8nWebhookUrl
+          ? "Resposta do n8n indisponível. Configure OPENAI_API_KEY para fallback ou verifique o workflow."
+          : "Simulacao com IA nao configurada (OPENAI_API_KEY ausente).",
+      });
+    }
+
+    const [{ data: chunksData }] = await Promise.all([
       supabase
         .from("knowledge_chunks")
         .select("content")

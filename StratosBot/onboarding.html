@@ -294,116 +294,246 @@
     </section>
 
     <div id="onboarding-app" class="space-y-6 hidden">
+    <!-- Cabeçalho e barra de progresso do wizard -->
     <section class="card rounded-xl p-5">
-      <h1 class="text-2xl font-bold">Onboarding Self-Service</h1>
-      <p class="muted mt-1">Configure pagamento, WhatsApp e agente sem suporte manual.</p>
-      <div class="mt-4">
-        <div class="w-full h-3 rounded-full bg-white/10 overflow-hidden">
-          <div id="progress-bar" class="h-full bg-[#76e1b5]" style="width:0%"></div>
+      <h1 class="text-2xl font-bold">Configure seu robô de atendimento</h1>
+      <p class="muted mt-1">Siga os passos abaixo em ordem. Assim fica fácil e nada fica para trás.</p>
+      <div class="mt-4" id="wizard-progress-wrap">
+        <div class="flex flex-wrap gap-1 sm:gap-2 text-xs mb-2">
+          <span id="progress-step-0" class="pill muted">Sua empresa</span>
+          <span id="progress-step-1" class="pill muted">Assinatura</span>
+          <span id="progress-step-2" class="pill muted">WhatsApp</span>
+          <span id="progress-step-3" class="pill muted">Como fala</span>
+          <span id="progress-step-4" class="pill muted">Documento</span>
+          <span id="progress-step-5" class="pill muted">Publicar</span>
         </div>
-        <p id="progress-label" class="text-sm muted mt-2">0 de 6 etapas concluídas</p>
-      </div>
-    </section>
-
-    <section id="config-api-section" class="card rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold">Configuração da API</h2>
-      <p class="text-sm muted">URL e token são <strong>configuração da aplicação</strong> (config.js + login). Novos usuários não precisam preencher: ao fazer login, os valores são usados automaticamente. Na fase de testes a seção permanece visível.</p>
-      <div class="grid md:grid-cols-2 gap-3">
-        <label class="text-sm">Base API
-          <input id="api-base" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Preenchido automaticamente ao fazer login" readonly />
-        </label>
-        <label class="text-sm">Token
-          <input id="api-token" type="password" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Preenchido automaticamente pela sessão" readonly />
-        </label>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <button id="save-config" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Salvar configuração no banco</button>
-        <button id="load-config-from-db" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Carregar do banco</button>
-      </div>
-      <p id="token-state" class="text-sm muted">Token: não configurado</p>
-      <p id="config-status" class="text-sm muted"></p>
-    </section>
-
-    <section id="steps" class="space-y-3"></section>
-
-    <section class="card rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold">Configuração do Agente</h2>
-      <div class="grid md:grid-cols-2 gap-3">
-        <label class="text-sm">Nome do agente
-          <input id="agent-name" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Assistente da sua empresa" />
-        </label>
-        <label class="text-sm">Tom
-          <select id="agent-tone" class="mt-1 w-full rounded bg-black/30 border border-white/10 text-inherit">
-            <option value="profissional">Profissional</option>
-            <option value="amigavel">Amigável</option>
-            <option value="formal">Formal</option>
-            <option value="tecnico">Técnico</option>
-            <option value="casual">Casual</option>
-            <option value="empatico">Empático</option>
-            <option value="direto">Direto / Objetivo</option>
-            <option value="consultivo">Consultivo</option>
-          </select>
-        </label>
-      </div>
-      <label class="text-sm block">Objetivo
-        <textarea id="agent-objective" class="mt-1 w-full rounded bg-black/30 border-white/10" rows="3" placeholder="Ex: qualificar leads e responder dúvidas frequentes"></textarea>
-      </label>
-      <label class="text-sm block">Diretrizes de resposta
-        <textarea id="agent-guidelines" class="mt-1 w-full rounded bg-black/30 border-white/10" rows="3" placeholder="Ex: responder em português, no máximo 3 frases"></textarea>
-      </label>
-      <div class="flex flex-wrap gap-2">
-        <button id="load-agent-config" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Carregar configuração</button>
-        <button id="save-agent-config" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Salvar configuração</button>
-      </div>
-      <p id="agent-config-status" class="text-sm muted"></p>
-    </section>
-
-    <section class="card rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold">Documento Guia</h2>
-      <p class="text-sm muted">Envie um TXT (MVP) com regras e contexto do seu atendimento.</p>
-      <input id="knowledge-file" type="file" accept=".txt,text/plain" class="block w-full text-sm" />
-      <div class="flex flex-wrap gap-2">
-        <button id="upload-knowledge" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Subir documento</button>
-        <button id="process-knowledge" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Processar documento</button>
-        <button id="list-knowledge" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Listar documentos</button>
-      </div>
-      <p id="knowledge-status" class="text-sm muted"></p>
-      <div id="knowledge-list" class="text-sm space-y-1"></div>
-    </section>
-
-    <section class="card rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold">Status da Conexão WhatsApp</h2>
-      <div class="flex flex-wrap gap-2 items-center">
-        <span id="wa-status-pill" class="pill muted" title="Estado atual conhecido da conexão Evolution ↔ WhatsApp para este tenant.">desconhecido</span>
-        <button id="refresh-whatsapp-status" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10" title="Consulta no backend o status salvo da instância WhatsApp (connected / connecting / disconnected / error).">Atualizar status</button>
-      </div>
-      <p id="whatsapp-status-text" class="text-sm muted">Clique em atualizar para consultar o backend.</p>
-      <div id="whatsapp-qr-container" class="hidden mt-4 p-4 rounded-lg bg-black/30 border border-white/10 text-center space-y-3">
-        <p class="text-sm" title="Fluxo padrão da Evolution: abra o WhatsApp → Aparelhos conectados → aponte a câmera para o QR desta instância gerada pela Evolution API.">Abra o WhatsApp no celular → Aparelhos conectados → Conectar um aparelho e escaneie o QR abaixo.</p>
-        <div class="flex justify-center">
-          <img id="whatsapp-qr-image" alt="QR Code WhatsApp" class="max-w-[220px] rounded border border-white/15" />
+        <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+          <div id="progress-bar" class="h-full bg-[#76e1b5] transition-all duration-300" style="width:0%"></div>
         </div>
-        <p id="whatsapp-pairing-wrap" class="hidden text-sm muted" title="Algumas versões da Evolution permitem pareamento por código numérico em vez do QR.">Ou use o código de pareamento: <strong id="whatsapp-pairing-code"></strong></p>
-        <p class="text-xs muted" title="Enquanto o modal estiver aberto, o backend renova o QR periodicamente para evitar expiração.">O QR é renovado automaticamente enquanto o modal estiver aberto.</p>
-        <button type="button" id="refresh-whatsapp-status-from-qr" class="px-3 py-2 text-sm rounded border border-white/15 hover:bg-white/10" title="Depois de escanear o QR ou usar o código de pareamento, clique aqui para forçar a leitura do status atualizado no backend.">Atualizar status após escanear</button>
+        <p id="progress-label" class="text-sm muted mt-2">Passo 1 de 6</p>
       </div>
     </section>
 
-    <section class="card rounded-xl p-5 space-y-3">
-      <button
-        id="whatsapp-config-toggle"
-        type="button"
-        class="w-full flex items-center justify-between gap-2 text-left"
-        aria-expanded="false"
-        title="Clique para ver as opções de eventos da Evolution (como na tela de Events) e o que cada uma faz."
-      >
-        <div class="space-y-1">
-          <h2 class="text-lg font-semibold">Configuração Evolution / WhatsApp (avançado)</h2>
-          <p class="text-xs muted">Espelho das opções de eventos da Evolution API (aba Events), para entender o que cada flag habilita/desabilita.</p>
+    <!-- Área do passo atual (wizard) -->
+    <section id="wizard-step-panels" class="space-y-4">
+      <!-- Passo 0: Sua empresa -->
+      <div id="panel-step-0" class="card rounded-xl p-5 space-y-4 wizard-panel">
+        <div>
+          <h2 class="text-lg font-semibold">Sua empresa</h2>
+          <p class="text-sm muted mt-1">Assim o robô sabe com quem está falando e qual é o objetivo do atendimento.</p>
         </div>
-        <span id="whatsapp-config-toggle-icon" class="text-xs muted">Mostrar ▼</span>
+        <div class="grid md:grid-cols-2 gap-3">
+          <label class="text-sm">Nome da empresa
+            <input id="company-name" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="Ex: Padaria do João" />
+          </label>
+          <label class="text-sm">Segmento
+            <select id="company-segment" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2 text-inherit">
+              <option value="">Selecione</option>
+              <option value="restaurante">Restaurante / Lanchonete</option>
+              <option value="loja">Loja / Varejo</option>
+              <option value="servicos">Prestação de serviços</option>
+              <option value="clinica">Clínica / Consultório</option>
+              <option value="imobiliaria">Imobiliária</option>
+              <option value="outro">Outro</option>
+            </select>
+          </label>
+        </div>
+        <label class="text-sm block">O que você quer que o robô faça? (em uma frase)
+          <textarea id="company-objective" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" rows="2" placeholder="Ex: Responder dúvidas sobre horário e cardápio"></textarea>
+        </label>
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="wizard-next-0" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Continuar</button>
+        </div>
+      </div>
+
+      <!-- Passo 1: Assinatura -->
+      <div id="panel-step-1" class="card rounded-xl p-5 space-y-4 wizard-panel hidden">
+        <div>
+          <h2 class="text-lg font-semibold">Assinatura</h2>
+          <p class="text-sm muted mt-1">Ative seu plano para liberar o robô e o WhatsApp.</p>
+        </div>
+        <p class="text-sm">Clique no botão abaixo para escolher seu plano e concluir o pagamento de forma segura.</p>
+        <div class="flex flex-wrap gap-3 items-center">
+          <button type="button" id="wizard-run-billing" data-step="billing" data-action="run" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Ativar assinatura</button>
+          <button type="button" id="wizard-next-1" class="px-5 py-2.5 rounded border border-white/15 hover:bg-white/10 font-medium">Já ativei, continuar</button>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="wizard-back-1" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Voltar</button>
+        </div>
+      </div>
+
+      <!-- Passo 2: Conectar WhatsApp -->
+      <div id="panel-step-2" class="card rounded-xl p-5 space-y-4 wizard-panel hidden">
+        <div>
+          <h2 class="text-lg font-semibold">Conectar seu WhatsApp</h2>
+          <p class="text-sm muted mt-1">O robô vai atender pelos contatos deste número. Conecte o WhatsApp do celular que você usa no dia a dia.</p>
+        </div>
+        <p class="text-sm">No celular: abra o <strong>WhatsApp</strong> → Menu (⋮) ou Configurações → <strong>Aparelhos conectados</strong> → <strong>Conectar um aparelho</strong>. Aponte a câmera para o QR que aparecer ao clicar no botão.</p>
+        <div class="flex flex-wrap gap-2 items-center">
+          <span id="wa-status-pill" class="pill muted">desconhecido</span>
+          <button type="button" id="wizard-run-whatsapp" data-step="whatsapp_connection" data-action="run" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Conectar WhatsApp (mostrar QR)</button>
+          <button type="button" id="refresh-whatsapp-status" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Atualizar status</button>
+        </div>
+        <p id="whatsapp-status-text" class="text-sm muted">Clique em &quot;Conectar WhatsApp&quot; para ver o QR Code.</p>
+        <div id="whatsapp-qr-container" class="hidden mt-4 p-4 rounded-lg bg-black/30 border border-white/10 text-center space-y-3">
+          <p class="text-sm">Escaneie o QR abaixo com o WhatsApp do celular (Aparelhos conectados → Conectar um aparelho).</p>
+          <div class="flex justify-center">
+            <img id="whatsapp-qr-image" alt="QR Code WhatsApp" class="max-w-[220px] rounded border border-white/15" />
+          </div>
+          <p id="whatsapp-pairing-wrap" class="hidden text-sm muted">Ou use o código de pareamento: <strong id="whatsapp-pairing-code"></strong></p>
+          <p class="text-xs muted">O QR é renovado automaticamente enquanto esta janela estiver aberta.</p>
+          <button type="button" id="refresh-whatsapp-status-from-qr" class="px-3 py-2 text-sm rounded border border-white/15 hover:bg-white/10">Atualizar status após escanear</button>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="wizard-back-2" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Voltar</button>
+          <button type="button" id="wizard-next-2" class="px-5 py-2.5 rounded border border-white/15 hover:bg-white/10 font-medium">Já conectei, continuar</button>
+        </div>
+      </div>
+
+      <!-- Passo 3: Como o robô fala -->
+      <div id="panel-step-3" class="card rounded-xl p-5 space-y-4 wizard-panel hidden">
+        <div>
+          <h2 class="text-lg font-semibold">Como o robô fala e se comporta</h2>
+          <p class="text-sm muted mt-1">Defina o nome, o tom de voz e as regras para as respostas automáticas.</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+          <label class="text-sm">Nome do robô
+            <input id="agent-name" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" placeholder="Ex: Assistente da loja" />
+          </label>
+          <label class="text-sm">Tom de voz
+            <select id="agent-tone" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2 text-inherit">
+              <option value="profissional">Profissional</option>
+              <option value="amigavel">Amigável</option>
+              <option value="formal">Formal</option>
+              <option value="tecnico">Técnico</option>
+              <option value="casual">Casual</option>
+              <option value="empatico">Empático</option>
+              <option value="direto">Direto / Objetivo</option>
+              <option value="consultivo">Consultivo</option>
+            </select>
+          </label>
+        </div>
+        <label class="text-sm block">Objetivo do atendimento
+          <textarea id="agent-objective" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" rows="2" placeholder="Ex: qualificar leads e responder dúvidas frequentes"></textarea>
+        </label>
+        <label class="text-sm block">Regras de resposta (como o robô deve responder)
+          <textarea id="agent-guidelines" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" rows="2" placeholder="Ex: responder em português, no máximo 3 frases, ser direto"></textarea>
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button id="load-agent-config" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Carregar configuração salva</button>
+        </div>
+        <p id="agent-config-status" class="text-sm muted"></p>
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="wizard-back-3" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Voltar</button>
+          <button type="button" id="wizard-save-agent" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Salvar e continuar</button>
+        </div>
+      </div>
+
+      <!-- Passo 4: O que o robô sabe (documento) -->
+      <div id="panel-step-4" class="card rounded-xl p-5 space-y-4 wizard-panel hidden">
+        <div>
+          <h2 class="text-lg font-semibold">O que o robô sabe</h2>
+          <p class="text-sm muted mt-1">Envie um arquivo de texto (TXT) com informações que o robô pode usar: horários, produtos, políticas, respostas frequentes.</p>
+        </div>
+        <input id="knowledge-file" type="file" accept=".txt,text/plain" class="block w-full text-sm rounded bg-black/30 border border-white/10 p-2" />
+        <div class="flex flex-wrap gap-2 items-center">
+          <button type="button" id="upload-and-process-knowledge" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Enviar e preparar para o robô</button>
+          <button type="button" id="list-knowledge" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Ver documentos enviados</button>
+        </div>
+        <p id="knowledge-status" class="text-sm muted"></p>
+        <div id="knowledge-list" class="text-sm space-y-1"></div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="wizard-back-4" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Voltar</button>
+          <button type="button" id="wizard-next-4" class="px-5 py-2.5 rounded border border-white/15 hover:bg-white/10 font-medium">Continuar (pular ou já enviei)</button>
+        </div>
+      </div>
+
+      <!-- Passo 5: Publicar e testar -->
+      <div id="panel-step-5" class="card rounded-xl p-5 space-y-4 wizard-panel hidden">
+        <div>
+          <h2 class="text-lg font-semibold">Publicar e testar</h2>
+          <p class="text-sm muted mt-1">Ative o robô para ele começar a responder. Depois teste com uma mensagem.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button type="button" id="wizard-run-publish" data-step="publish" data-action="run" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Publicar robô</button>
+        </div>
+        <div class="border-t border-white/10 pt-4 mt-4">
+          <h3 class="text-sm font-semibold mb-2">Testar o robô</h3>
+          <p class="text-xs muted mb-2">Digite uma mensagem como se fosse um cliente e veja a resposta.</p>
+          <label class="text-sm block">Mensagem de teste
+            <textarea id="simulate-message" class="mt-1 w-full rounded bg-black/30 border border-white/10 px-3 py-2" rows="2" placeholder="Ex: Vocês atendem sábado?"></textarea>
+          </label>
+          <button id="simulate-agent" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold mt-2">Ver resposta do robô</button>
+          <div class="rounded border border-white/10 p-3 mt-3">
+            <p class="text-xs uppercase muted mb-1">Resposta do robô</p>
+            <p id="simulate-response" class="text-sm min-h-[1.5rem]">---</p>
+          </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="wizard-back-5" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Voltar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Avançado (recolhida): Config API, Readiness, Health, Evolution -->
+    <section class="card rounded-xl p-4">
+      <button type="button" id="advanced-toggle" class="w-full flex items-center justify-between gap-2 text-left" aria-expanded="false">
+        <span class="text-sm font-semibold muted">Informações técnicas e configurações avançadas</span>
+        <span id="advanced-toggle-icon" class="text-xs muted">Mostrar ▼</span>
       </button>
-      <div id="whatsapp-config-body" class="space-y-4 hidden">
+      <div id="advanced-body" class="space-y-4 hidden mt-4">
+        <!-- Conectado (quando logado) ou Config API completa -->
+        <div id="config-api-section" class="space-y-4">
+          <div id="config-api-connected" class="hidden py-2">
+            <p class="text-sm ok">Conectado. URL e token preenchidos automaticamente pelo login. Não é necessário configurar nada aqui.</p>
+          </div>
+          <div id="config-api-form" class="space-y-4 hidden">
+            <h3 class="text-sm font-semibold">Configuração da API</h3>
+            <p class="text-xs muted">Só use se não estiver logado ou em testes manuais.</p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <label class="text-sm">Base API
+                <input id="api-base" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Preenchido automaticamente ao fazer login" readonly />
+              </label>
+              <label class="text-sm">Token
+                <input id="api-token" type="password" class="mt-1 w-full rounded bg-black/30 border-white/10" placeholder="Preenchido automaticamente pela sessão" readonly />
+              </label>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="save-config" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold text-sm">Salvar no banco</button>
+              <button id="load-config-from-db" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Carregar do banco</button>
+            </div>
+            <p id="token-state" class="text-sm muted">Token: não configurado</p>
+            <p id="config-status" class="text-sm muted"></p>
+          </div>
+        </div>
+
+        <div class="border-t border-white/10 pt-4">
+          <h3 class="text-sm font-semibold">Está tudo certo? (readiness)</h3>
+          <div class="flex flex-wrap gap-2 items-center mt-2">
+            <span id="tenant-readiness-pill" class="pill muted">0%</span>
+            <button id="refresh-tenant-readiness" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Atualizar</button>
+          </div>
+          <p id="tenant-readiness-status" class="text-sm muted mt-1">Use o botão para verificar o estado no servidor.</p>
+          <div id="tenant-next-actions" class="text-sm space-y-1 mt-2"></div>
+        </div>
+
+        <div class="border-t border-white/10 pt-4">
+          <h3 class="text-sm font-semibold">Health operacional</h3>
+          <div class="flex flex-wrap gap-2 items-center mt-2">
+            <span id="tenant-health-pill" class="pill muted">0</span>
+            <button id="refresh-tenant-health" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10 text-sm">Atualizar health</button>
+            <button id="refresh-session-and-health" class="px-4 py-2 rounded border border-amber-500/50 hover:bg-amber-500/20 text-amber-200 text-sm">Renovar sessão e atualizar</button>
+          </div>
+          <p id="tenant-health-status" class="text-sm muted mt-1">Sem diagnóstico recente.</p>
+          <div id="tenant-health-errors" class="text-sm space-y-1 mt-2"></div>
+        </div>
+
+        <div class="border-t border-white/10 pt-4">
+          <button type="button" id="whatsapp-config-toggle" class="w-full flex items-center justify-between gap-2 text-left text-sm font-semibold">
+            <span>Configuração Evolution / WhatsApp (eventos)</span>
+            <span id="whatsapp-config-toggle-icon" class="text-xs muted">Mostrar ▼</span>
+          </button>
+          <div id="whatsapp-config-body" class="space-y-4 hidden mt-3 pl-0">
         <div class="space-y-2">
           <h3 class="text-sm font-semibold" title="Equivalente aos campos enabled, webhook_by_events e webhook_base64 na configuração de webhook da Evolution.">Opções do webhook (gerais)</h3>
           <div class="space-y-1 text-xs">
@@ -518,6 +648,8 @@
           Este painel é um guia visual da tela <strong>Events</strong> da Evolution: marque/desmarque os eventos lá na Evolution,
           usando esta descrição para entender o impacto de cada opção na automação e no histórico do WhatsApp.
         </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -525,7 +657,7 @@
     <div id="whatsapp-qr-modal" class="hidden" aria-modal="true" role="dialog" aria-labelledby="whatsapp-qr-modal-title">
       <div class="modal-card card rounded-xl p-6 space-y-4 text-center">
         <h2 id="whatsapp-qr-modal-title" class="text-lg font-bold">Conectar WhatsApp</h2>
-        <p class="text-sm muted">Abra o WhatsApp no celular → Aparelhos conectados → Conectar um aparelho e escaneie o QR abaixo.</p>
+        <p class="text-sm muted">No celular: abra o WhatsApp → Menu ou Configurações → Aparelhos conectados → Conectar um aparelho. Aponte a câmera para o QR abaixo.</p>
         <div class="flex justify-center">
           <img id="whatsapp-qr-modal-image" alt="QR Code WhatsApp" class="w-[220px] h-[220px] rounded border-2 border-white/20 bg-white" />
         </div>
@@ -537,38 +669,6 @@
       </div>
     </div>
 
-    <section class="card rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold">Readiness do Tenant</h2>
-      <div class="flex flex-wrap gap-2 items-center">
-        <span id="tenant-readiness-pill" class="pill muted">0%</span>
-        <button id="refresh-tenant-readiness" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Atualizar readiness</button>
-      </div>
-      <p id="tenant-readiness-status" class="text-sm muted">Use o botão para verificar o estado real do tenant no backend.</p>
-      <div id="tenant-next-actions" class="text-sm space-y-1"></div>
-    </section>
-
-    <section class="card rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold">Health Operacional</h2>
-      <div class="flex flex-wrap gap-2 items-center">
-        <span id="tenant-health-pill" class="pill muted">0</span>
-        <button id="refresh-tenant-health" class="px-4 py-2 rounded border border-white/15 hover:bg-white/10">Atualizar health</button>
-        <button id="refresh-session-and-health" class="px-4 py-2 rounded border border-amber-500/50 hover:bg-amber-500/20 text-amber-200" title="Renova o token da sessão e consulta o health de novo (use se aparecer não autorizado)">Renovar sessão e atualizar</button>
-      </div>
-      <p id="tenant-health-status" class="text-sm muted">Sem diagnóstico recente.</p>
-      <div id="tenant-health-errors" class="text-sm space-y-1"></div>
-    </section>
-
-    <section class="card rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold">Simulação do Agente</h2>
-      <label class="text-sm block">Mensagem de teste
-        <textarea id="simulate-message" class="mt-1 w-full rounded bg-black/30 border-white/10" rows="3" placeholder="Ex: Vocês atendem sábado?"></textarea>
-      </label>
-      <button id="simulate-agent" class="btn-primary px-4 py-2 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Simular resposta</button>
-      <div class="rounded border border-white/10 p-3">
-        <p class="text-xs uppercase muted mb-1">Resposta simulada</p>
-        <p id="simulate-response" class="text-sm min-h-[1.5rem]">---</p>
-      </div>
-    </section>
     </div>
   </main>
 
@@ -634,6 +734,23 @@
 
     function saveState(state) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getWizardStepIndex() {
+      const state = loadState();
+      const idx = state.wizardStep;
+      if (typeof idx === "number" && idx >= 0 && idx < steps.length) return idx;
+      for (let i = 0; i < steps.length; i++) {
+        if (!state[steps[i].code]) return i;
+      }
+      return steps.length - 1;
+    }
+
+    function setWizardStepIndex(index) {
+      const state = loadState();
+      state.wizardStep = Math.max(0, Math.min(index, steps.length - 1));
+      saveState(state);
+      renderWizard();
     }
 
     function isPublishReady(state) {
@@ -714,7 +831,7 @@
       const state = loadState();
       state[stepCode] = completed;
       saveState(state);
-      render();
+      renderWizard();
       if (syncRemote) {
         await persistStepToBackend(stepCode, completed);
       }
@@ -727,9 +844,11 @@
         return;
       }
 
-      var runBtn = document.querySelector("#steps button[data-step=\"" + stepCode + "\"][data-action=\"run\"]");
+      var runBtn = stepCode === "billing" ? document.getElementById("wizard-run-billing")
+        : stepCode === "whatsapp_connection" ? document.getElementById("wizard-run-whatsapp")
+        : stepCode === "publish" ? document.getElementById("wizard-run-publish") : null;
       if (runBtn?.classList.contains("btn-loading")) return;
-      setButtonLoading(runBtn, true, "Carregando…");
+      if (runBtn) setButtonLoading(runBtn, true, "Carregando…");
       const base = runtimeConfig.baseUrl.replace(/\/+$/, "");
       try {
         if (stepCode === "billing") {
@@ -798,48 +917,58 @@
         if (err.name === "AbortError") msg = "A requisição demorou muito e foi cancelada. Verifique a conexão e a Evolution API.";
         alert(msg);
       } finally {
-        setButtonLoading(runBtn, false);
-        if (runBtn) runBtn.textContent = runBtn.dataset.originalText || "Executar";
+        if (runBtn) {
+          setButtonLoading(runBtn, false);
+          runBtn.textContent = runBtn.dataset.originalText || "Executar";
+        }
       }
     }
 
-    function render() {
+    function renderWizard() {
       const state = loadState();
-      const wrap = document.getElementById("steps");
-      wrap.innerHTML = "";
-
-      let done = 0;
-      for (const step of steps) {
-        const isDone = !!state[step.code];
-        if (isDone) done++;
-
-        const row = document.createElement("div");
-        row.className = "card rounded-xl p-4 flex items-center justify-between gap-3";
-        const publishLocked = step.code === "publish" && !isPublishReady(state);
-        const whatsappDone = step.code === "whatsapp_connection" && isDone;
-        const runDisabled = publishLocked || whatsappDone;
-        const runButtonLabel = publishLocked ? "Bloqueado" : (whatsappDone ? "Concluída" : "Executar");
-        row.innerHTML = `
-          <div>
-            <p class="font-semibold">${step.label}</p>
-            <p class="text-sm muted">${step.desc}</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-sm ${isDone ? "ok" : "muted"}">${isDone ? "Concluída" : "Pendente"}</span>
-            <button data-step="${step.code}" data-action="toggle" class="px-3 py-2 text-sm rounded border border-white/15 hover:bg-white/10">
-              ${isDone ? "Desmarcar" : "Concluir"}
-            </button>
-            ${(step.code === "billing" || step.code === "whatsapp_connection" || step.code === "publish")
-              ? `<button data-step="${step.code}" data-action="run" ${runDisabled ? "disabled" : ""} class="btn-executar btn-primary px-3 py-2 text-sm rounded ${runDisabled ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-[#76e1b5] text-[#1c1437]"} font-semibold">${runButtonLabel}</button>`
-              : ""}
-          </div>
-        `;
-        wrap.appendChild(row);
+      const current = getWizardStepIndex();
+      for (let i = 0; i < steps.length; i++) {
+        var panel = document.getElementById("panel-step-" + i);
+        if (panel) panel.classList.toggle("hidden", i !== current);
       }
-
-      const pct = Math.round((done / steps.length) * 100);
-      document.getElementById("progress-bar").style.width = `${pct}%`;
-      document.getElementById("progress-label").textContent = `${done} de ${steps.length} etapas concluídas`;
+      if (current === 3) {
+        var agentObj = document.getElementById("agent-objective");
+        if (agentObj && !agentObj.value.trim()) {
+          try {
+            var saved = localStorage.getItem("stratos_company_objective");
+            if (saved) agentObj.value = saved;
+          } catch (e) {}
+        }
+      }
+      var done = 0;
+      for (const step of steps) {
+        if (state[step.code]) done++;
+      }
+      const pct = steps.length ? Math.round((done / steps.length) * 100) : 0;
+      var progressBar = document.getElementById("progress-bar");
+      if (progressBar) progressBar.style.width = pct + "%";
+      var progressLabel = document.getElementById("progress-label");
+      if (progressLabel) progressLabel.textContent = "Passo " + (current + 1) + " de " + steps.length;
+      for (let i = 0; i < steps.length; i++) {
+        var pill = document.getElementById("progress-step-" + i);
+        if (pill) {
+          pill.classList.remove("ok", "warn", "muted");
+          if (state[steps[i].code]) pill.classList.add("ok");
+          else if (i === current) pill.classList.add("warn");
+          else pill.classList.add("muted");
+        }
+      }
+      var connectedEl = document.getElementById("config-api-connected");
+      var formEl = document.getElementById("config-api-form");
+      if (connectedEl && formEl) {
+        if (runtimeConfig.token) {
+          connectedEl.classList.remove("hidden");
+          formEl.classList.add("hidden");
+        } else {
+          connectedEl.classList.add("hidden");
+          formEl.classList.remove("hidden");
+        }
+      }
     }
 
     var qrRefreshIntervalId = null;
@@ -1046,11 +1175,11 @@
     }
 
     async function saveAgentConfig() {
-      const btn = document.getElementById("save-agent-config");
-      if (btn?.classList.contains("btn-loading")) return;
+      const btn = document.getElementById("wizard-save-agent") || document.getElementById("save-agent-config");
+      if (btn?.classList.contains("btn-loading")) return false;
       if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
         setText("agent-config-status", "Configure primeiro a Base API.");
-        return;
+        return false;
       }
       const body = {
         assistantName: document.getElementById("agent-name").value.trim() || "Assistente",
@@ -1069,10 +1198,13 @@
       const data = await safeJson(res);
       if (!data.ok) {
         setText("agent-config-status", data.error || "Falha ao salvar configuração.");
-        return;
+        return false;
       }
       await setStep("agent_config", true, true);
       setText("agent-config-status", "Configuração salva com sucesso.");
+      return true;
+      } catch (e) {
+        return false;
       } finally {
         setButtonLoading(btn, false);
       }
@@ -1299,7 +1431,7 @@
         state[key] = Boolean(checklist[key]);
       }
       saveState(state);
-      render();
+      renderWizard();
 
       const nextWrap = document.getElementById("tenant-next-actions");
       nextWrap.innerHTML = "";
@@ -1466,7 +1598,7 @@
 
         setText("config-status", "Configuração salva no banco. Token ocultado no navegador.");
         const ok = await syncStepsFromBackend();
-        if (ok) render();
+        if (ok) renderWizard();
       } catch (err) {
         setText("config-status", "Erro ao salvar: " + (err?.message || "verifique a URL e a conexão."));
       } finally {
@@ -1520,7 +1652,7 @@
 
         setText("config-status", "Configuração carregada do banco. Token não é exibido por segurança.");
         const ok = await syncStepsFromBackend();
-        if (ok) render();
+        if (ok) renderWizard();
       } catch (err) {
         setText("config-status", "Erro ao carregar: " + (err?.message || "verifique a URL e a conexão."));
       } finally {
@@ -1550,9 +1682,6 @@
     document.getElementById("load-config-from-db").addEventListener("click", loadConfigFromDatabase);
 
     document.getElementById("load-agent-config").addEventListener("click", loadAgentConfig);
-    document.getElementById("save-agent-config").addEventListener("click", saveAgentConfig);
-    document.getElementById("upload-knowledge").addEventListener("click", uploadKnowledge);
-    document.getElementById("process-knowledge").addEventListener("click", processKnowledge);
     document.getElementById("list-knowledge").addEventListener("click", listKnowledge);
     document.getElementById("simulate-agent").addEventListener("click", simulateAgent);
     document.getElementById("refresh-whatsapp-status").addEventListener("click", refreshWhatsappStatus);
@@ -1580,6 +1709,100 @@
     document.getElementById("refresh-tenant-readiness").addEventListener("click", refreshTenantReadiness);
     document.getElementById("refresh-tenant-health").addEventListener("click", refreshTenantHealth);
     document.getElementById("refresh-session-and-health").addEventListener("click", refreshSessionAndHealth);
+
+    var advancedToggle = document.getElementById("advanced-toggle");
+    var advancedBody = document.getElementById("advanced-body");
+    var advancedToggleIcon = document.getElementById("advanced-toggle-icon");
+    if (advancedToggle && advancedBody) {
+      advancedToggle.addEventListener("click", function () {
+        var isHidden = advancedBody.classList.contains("hidden");
+        advancedBody.classList.toggle("hidden", !isHidden);
+        if (advancedToggleIcon) advancedToggleIcon.textContent = isHidden ? "Esconder ▲" : "Mostrar ▼";
+      });
+    }
+
+    document.getElementById("wizard-next-0")?.addEventListener("click", async function () {
+      var companyName = (document.getElementById("company-name")?.value || "").trim() || "Minha Empresa";
+      if (runtimeConfig.baseUrl && runtimeConfig.token) {
+        try {
+          await fetch(runtimeConfig.baseUrl.replace(/\/+$/, "") + "/provision-tenant", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ companyName: companyName })
+          });
+        } catch (e) {}
+      }
+      var objective = (document.getElementById("company-objective")?.value || "").trim();
+      if (objective) try { localStorage.setItem("stratos_company_objective", objective); } catch (e) {}
+      await setStep("company_profile", true, true);
+      setWizardStepIndex(1);
+    });
+
+    document.getElementById("wizard-back-1")?.addEventListener("click", function () { setWizardStepIndex(0); });
+    document.getElementById("wizard-next-1")?.addEventListener("click", function () { setWizardStepIndex(2); });
+
+    document.getElementById("wizard-back-2")?.addEventListener("click", function () { setWizardStepIndex(1); });
+    document.getElementById("wizard-next-2")?.addEventListener("click", function () { setWizardStepIndex(3); });
+
+    document.getElementById("wizard-back-3")?.addEventListener("click", function () { setWizardStepIndex(2); });
+    document.getElementById("wizard-save-agent")?.addEventListener("click", async function () {
+      var ok = await saveAgentConfig();
+      if (ok) setWizardStepIndex(4);
+    });
+
+    document.getElementById("wizard-back-4")?.addEventListener("click", function () { setWizardStepIndex(3); });
+    document.getElementById("wizard-next-4")?.addEventListener("click", function () { setWizardStepIndex(5); });
+
+    document.getElementById("wizard-back-5")?.addEventListener("click", function () { setWizardStepIndex(4); });
+
+    async function uploadAndProcessKnowledge() {
+      var btn = document.getElementById("upload-and-process-knowledge");
+      if (btn?.classList.contains("btn-loading")) return;
+      if (!runtimeConfig.baseUrl || !runtimeConfig.token) {
+        setText("knowledge-status", "Faça login para usar o onboarding.");
+        return;
+      }
+      var input = document.getElementById("knowledge-file");
+      var file = input?.files && input.files[0];
+      if (!file) {
+        setText("knowledge-status", "Selecione um arquivo TXT antes.");
+        return;
+      }
+      setButtonLoading(btn, true, "Enviando e preparando…");
+      try {
+        var fileBase64 = await toBase64(file);
+        var res = await fetch(runtimeConfig.baseUrl.replace(/\/+$/, "") + "/knowledge-upload", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ fileName: file.name, mimeType: file.type || "text/plain", fileBase64: fileBase64 })
+        });
+        var data = await safeJson(res);
+        if (!data.ok) {
+          setText("knowledge-status", data.error || "Falha no envio.");
+          return;
+        }
+        var knowledgeFileId = data.file?.id || "";
+        localStorage.setItem("stratos_last_knowledge_id", knowledgeFileId);
+        setText("knowledge-status", "Enviado. Preparando para o robô…");
+        var res2 = await fetch(runtimeConfig.baseUrl.replace(/\/+$/, "") + "/knowledge-process", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ knowledgeFileId: knowledgeFileId })
+        });
+        var data2 = await safeJson(res2);
+        if (!data2.ok) {
+          setText("knowledge-status", data2.error || "Falha ao preparar.");
+          return;
+        }
+        await setStep("knowledge_upload", true, true);
+        setText("knowledge-status", "Documento enviado e pronto. O robô já pode usar essas informações.");
+      } catch (err) {
+        setText("knowledge-status", "Erro: " + (err?.message || String(err)));
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+    document.getElementById("upload-and-process-knowledge")?.addEventListener("click", uploadAndProcessKnowledge);
 
     function switchAuthTab(toSignup) {
       var tabLogin = document.getElementById("auth-tab-login");
@@ -1640,7 +1863,7 @@
       setText("token-state", "Token: da sessão (preenchido automaticamente)");
       // Mostra o app imediatamente; tarefas de backend rodam em background.
       showOnboarding();
-      render();
+      renderWizard();
       ensureTenant().catch(function () {});
       callLogSession().catch(function () {});
     }
@@ -1650,7 +1873,7 @@
         showAuthGate();
         var warn = document.getElementById("auth-gate-config-warn");
         if (warn) warn.classList.remove("hidden");
-        render();
+        renderWizard();
         initSupabaseAuth();
         return;
       }
@@ -1667,10 +1890,10 @@
         } else {
           showAuthGate();
         }
-        render();
+        renderWizard();
       }).catch(function () {
         showAuthGate();
-        render();
+        renderWizard();
       });
     })();
 

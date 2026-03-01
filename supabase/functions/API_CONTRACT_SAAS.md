@@ -189,7 +189,7 @@ Body:
 ```
 
 ### POST `/agent-simulate`
-Retorna a resposta **real do agente de IA** (OpenAI), usando a configuração do tenant e a base de conhecimento (chunks). Requer `OPENAI_API_KEY` configurada no projeto.
+Retorna a resposta do agente usando **o mesmo fluxo do atendimento real** (webhook n8n), para prévia fiel no onboarding. Se `N8N_INGRESS_WEBHOOK_URL` (ou `N8N_INGRESS_WEBHOOK_URL_TEST` em desenvolvimento) estiver configurada, a função chama esse webhook com o mesmo payload que o WhatsApp usa; caso contrário, usa OpenAI diretamente (fallback).
 
 Body:
 ```json
@@ -202,12 +202,13 @@ Response (sucesso):
 {
   "ok": true,
   "tenantId": "uuid",
-  "reply": "Texto gerado pela LLM com base no agente e no knowledge.",
-  "source": "agent-simulate"
+  "reply": "Texto da resposta do agente (n8n ou OpenAI).",
+  "source": "n8n"
 }
 ```
-- `503`: `OPENAI_API_KEY` ausente (corpo: `error` com mensagem).
-- `502`: erro retornado pela API OpenAI (corpo: `error` com detalhe).
+ou `"source": "agent-simulate"` quando o fallback OpenAI for usado.
+- `503`: nem n8n nem OpenAI disponíveis (corpo: `error` com mensagem).
+- `502`: erro da API OpenAI no fallback (corpo: `error` com detalhe).
 
 ### POST `/publish-agent`
 Valida pré-requisitos e ativa automação do tenant.
