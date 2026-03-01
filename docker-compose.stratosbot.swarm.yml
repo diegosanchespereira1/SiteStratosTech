@@ -1,6 +1,10 @@
 # StratosBot stack (Swarm) – frontend SaaS + landing.
 # Onboarding: SUPABASE_URL e SUPABASE_ANON_KEY vêm do arquivo StratosBot/config.js (commitado no repositório).
 # O container apenas serve os arquivos estáticos (stratosbot.html, onboarding.html, config.js).
+#
+# Build da imagem (sempre linux/amd64 para evitar pending no Swarm ao buildar no Mac):
+#   cd StratosBot && ./build.sh        # só build
+#   cd StratosBot && ./build.sh push   # build + push para Docker Hub
 version: "3.8"
 
 services:

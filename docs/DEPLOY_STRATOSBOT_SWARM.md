@@ -4,7 +4,18 @@ Stack usa o mesmo `docker-compose.stratosbot.swarm.yml`: Traefik, rede `PolygonN
 
 ## 1. Build da imagem (opcional)
 
-Se você faz build **no Mac** e sobe para uma **VPS Linux (amd64)**, use `--platform linux/amd64` para evitar container que não inicia / log vazio:
+**Recomendado:** use o script `StratosBot/build.sh`, que sempre builda para **linux/amd64**. Isso evita o problema frequente de buildar no Mac (ARM) e o container ficar **pending** no Swarm porque o servidor é x86_64.
+
+```bash
+cd StratosBot
+./build.sh        # só build local (imagem linux/amd64)
+./build.sh push   # build + push para Docker Hub (polygonuser/stratosbot:latest)
+```
+
+- A imagem padrão é `polygonuser/stratosbot:latest`. Para outra tag: `STRATOSBOT_IMAGE=seu-registry/stratosbot:tag ./build.sh push`.
+- O `Dockerfile` já declara `FROM --platform=linux/amd64`; o script garante que o build use essa plataforma mesmo no Mac.
+
+**Se não usar o script:** ao buildar **no Mac** para uma **VPS Linux (amd64)**, use explicitamente:
 
 ```bash
 cd StratosBot
@@ -12,11 +23,7 @@ docker build --platform linux/amd64 -t polygonuser/stratosbot:latest .
 docker push polygonuser/stratosbot:latest
 ```
 
-Se a VPS for ARM (ex.: Oracle Ampere), use `--platform linux/arm64`. Se build já for feito na própria VPS, pode usar só:
-
-```bash
-docker build -t polygonuser/stratosbot:latest .
-```
+Se a VPS for ARM (ex.: Oracle Ampere), use `--platform linux/arm64`. Se o build for feito na própria VPS (Linux amd64), pode usar só `docker build -t polygonuser/stratosbot:latest .`.
 
 ## 2. Config Supabase (StratosBot/config.js)
 
@@ -54,7 +61,7 @@ Podem estar em outro stack. No Supabase (Edge Functions → Secrets) configure:
 
 | Sintoma | Causa provável | Solução |
 |--------|-----------------|---------|
-| Status do serviço sem informação no log | Imagem buildada no Mac (arm64) rodando em VPS amd64 | Rebuild com `docker build --platform linux/amd64 -t polygonuser/stratosbot:latest .` e push de novo. |
+| Status do serviço sem informação no log / container **pending** | Imagem buildada no Mac (arm64) rodando em VPS amd64 | Use `cd StratosBot && ./build.sh push` (sempre builda para linux/amd64). Depois atualize o stack no Portainer. |
 | Container sai imediatamente / log vazio | Entrypoint com CRLF (Windows) | Já corrigido no Dockerfile (`sed -i 's/\r$//'`). Rebuild da imagem. |
 | Log mostra "Starting nginx..." e depois nada | Nginx não sobe (config/porta) | Confira no container: `docker run --rm -it polygonuser/stratosbot:latest sh` e rode `/docker-entrypoint.sh` manualmente para ver erro. |
 | 502 Bad Gateway no Traefik | Container não escuta na porta 80 | Verifique se o serviço está "Running" e se a rede (PolygonNetwork) está correta. |
