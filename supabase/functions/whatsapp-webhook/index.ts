@@ -249,10 +249,11 @@ serve(async (req: Request) => {
     // Respeitar publicação do agente: só encaminhar para n8n e responder se automation_enabled
     const { data: tenantRow } = await supabase
       .from("tenants")
-      .select("automation_enabled")
+      .select("automation_enabled, name")
       .eq("id", tenantId)
       .maybeSingle();
     const automationEnabled = tenantRow?.automation_enabled === true;
+    const tenantName = (tenantRow as { name?: string } | null)?.name?.trim() ?? "";
 
     const { data: instance } = await supabase
       .from("whatsapp_instances")
@@ -304,6 +305,23 @@ serve(async (req: Request) => {
     const n8nWebhookUrl = (
       isDev ? (Deno.env.get("N8N_INGRESS_WEBHOOK_URL_TEST") ?? "") : (Deno.env.get("N8N_INGRESS_WEBHOOK_URL") ?? "")
     ).trim();
+
+    let n8nHost: string | null = null;
+    if (n8nWebhookUrl) {
+      try {
+        n8nHost = new URL(n8nWebhookUrl).hostname;
+      } catch {
+        n8nHost = "(url invalida)";
+      }
+    }
+    console.log(JSON.stringify({
+      ev: "n8n_forward_check",
+      automationEnabled,
+      hasN8nUrl: !!n8nWebhookUrl,
+      n8nHost,
+      willForward: automationEnabled && !!n8nWebhookUrl,
+    }));
+
     if (automationEnabled && n8nWebhookUrl) {
       const n8nResp = await fetch(n8nWebhookUrl, {
         method: "POST",
@@ -313,6 +331,7 @@ serve(async (req: Request) => {
         },
         body: JSON.stringify({
           tenantId,
+          tenantName,
           instanceKey,
           channel: "whatsapp",
           externalContactId: remoteJid,
@@ -322,7 +341,15 @@ serve(async (req: Request) => {
         }),
       });
 
+      console.log(JSON.stringify({
+        ev: "n8n_response",
+        status: n8nResp.status,
+        ok: n8nResp.ok,
+      }));
+
       if (!n8nResp.ok) {
+        const errBody = await n8nResp.text().catch(() => "");
+        console.warn("whatsapp-webhook: n8n retornou erro", n8nResp.status, errBody.slice(0, 200));
         await writeOperationLog({
           tenantId,
           source: "whatsapp-webhook",
@@ -333,6 +360,7 @@ serve(async (req: Request) => {
             instanceKey,
             remoteJid,
             status: n8nResp.status,
+            bodyPreview: errBody.slice(0, 300),
           },
         });
       } else {

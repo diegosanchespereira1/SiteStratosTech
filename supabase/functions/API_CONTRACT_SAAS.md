@@ -291,6 +291,7 @@ Payload padrao enviado para `N8N_INGRESS_WEBHOOK_URL`:
 ```json
 {
   "tenantId": "uuid",
+  "tenantName": "Nome da Empresa",
   "instanceKey": "tenant_abcd...",
   "channel": "whatsapp",
   "externalContactId": "5511999999999@s.whatsapp.net",
@@ -299,3 +300,4 @@ Payload padrao enviado para `N8N_INGRESS_WEBHOOK_URL`:
   "raw": {}
 }
 ```
+`tenantName` vem de `tenants.name` e é usado pelo agente para se identificar (nome da empresa). Mensagens de áudio são transcritas (Whisper) e o texto transcrito é enviado em `message` e salvo no histórico da conversa.
