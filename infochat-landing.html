@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark" data-theme="infochat">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plataforma de Atendimento Multicanal — InfoChat</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+            secondary: { DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))' },
+            destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+            muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+            accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+            card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+            popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          borderRadius: {
+            lg: 'var(--radius)',
+            md: 'calc(var(--radius) - 2px)',
+            sm: 'calc(var(--radius) - 4px)',
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    section[id] {
+      scroll-margin-top: 5rem; /* compensa o header fixo */
+    }
+
+    :root {
+      --radius: 0.5rem;
+    }
+
+    /* Tema A – InfoChat (neon azul) */
+    html.dark[data-theme='infochat'] {
+      /* Fundos */
+      --background: 210 30% 6%;
+      --card: 210 25% 10%;
+      --popover: 210 25% 10%;
+
+      /* Texto */
+      --foreground: 210 40% 96%;
+      --card-foreground: 210 40% 96%;
+      --popover-foreground: 210 40% 96%;
+      --muted-foreground: 210 15% 65%;
+
+      /* Ações / destaques */
+      --primary: 185 100% 55%;
+      --primary-foreground: 210 50% 8%;
+
+      --secondary: 210 20% 18%;
+      --secondary-foreground: 210 40% 96%;
+
+      --accent: 185 100% 55%;
+      --accent-foreground: 210 50% 8%;
+
+      /* Estados especiais */
+      --destructive: 0 80% 55%;
+      --destructive-foreground: 0 0% 100%;
+
+      /* Bordas / inputs / foco */
+      --border: 210 20% 16%;
+      --input: 210 20% 16%;
+      --ring: 185 100% 60%;
+    }
+
+    /* Tema B – Studio-inspired (claro minimalista) */
+    html.dark[data-theme='studio375'] {
+      /* Fundos */
+      --background: 47 50% 96%;
+      --card: 0 0% 100%;
+      --popover: 0 0% 100%;
+
+      /* Texto */
+      --foreground: 210 20% 10%;
+      --card-foreground: 210 20% 10%;
+      --popover-foreground: 210 20% 10%;
+      --muted-foreground: 210 10% 45%;
+
+      /* Ações / destaques */
+      --primary: 48 100% 50%;
+      --primary-foreground: 210 20% 10%;
+
+      --secondary: 210 20% 92%;
+      --secondary-foreground: 210 20% 10%;
+
+      --accent: 210 20% 10%;
+      --accent-foreground: 47 50% 96%;
+
+      /* Estados especiais */
+      --destructive: 0 80% 45%;
+      --destructive-foreground: 0 0% 100%;
+
+      /* Bordas / inputs / foco */
+      --border: 210 16% 90%;
+      --input: 210 16% 90%;
+      --ring: 48 100% 50%;
+    }
+
+    /* Tema C – Gradient Hero (magenta + ciano) */
+    html.dark[data-theme='studioGradient'] {
+      /* Fundos */
+      --background: 240 21% 10%;  /* azul escuro como base */
+      --card: 240 23% 13%;
+      --popover: 240 23% 13%;
+
+      /* Texto */
+      --foreground: 210 40% 96%;  /* quase branco */
+      --card-foreground: 210 40% 96%;
+      --popover-foreground: 210 40% 96%;
+      --muted-foreground: 210 12% 70%;
+
+      /* Ações / destaques (magenta + ciano) */
+      --primary: 330 85% 60%;     /* magenta forte (títulos/CTAs principais) */
+      --primary-foreground: 240 21% 10%;
+
+      --secondary: 190 90% 55%;   /* ciano vivo para chips/badges */
+      --secondary-foreground: 240 21% 10%;
+
+      --accent: 190 90% 55%;      /* usar o ciano como accent principal */
+      --accent-foreground: 240 21% 10%;
+
+      /* Estados especiais */
+      --destructive: 0 80% 55%;
+      --destructive-foreground: 0 0% 100%;
+
+      /* Bordas / inputs / foco */
+      --border: 240 18% 25%;
+      --input: 240 18% 25%;
+      --ring: 190 90% 60%;
+    }
+
+    /* Tema D – Adnia-inspired (corporate teal) */
+    html.dark[data-theme='adnia'] {
+      /* Fundos – base clara, conteúdo sobre painéis brancos */
+      --background: 210 35% 97%;  /* quase branco azulado */
+      --card: 0 0% 100%;
+      --popover: 0 0% 100%;
+
+      /* Texto */
+      --foreground: 210 20% 12%;  /* azul muito escuro para títulos */
+      --card-foreground: 210 20% 12%;
+      --popover-foreground: 210 20% 12%;
+      --muted-foreground: 210 10% 45%; /* cinza azulado para textos longos */
+
+      /* Ações / destaques – teal + azul escuro */
+      --primary: 187 80% 42%;        /* teal corporativo (botões/links principais) */
+      --primary-foreground: 0 0% 100%;
+
+      --secondary: 210 25% 90%;      /* chips/badges suaves */
+      --secondary-foreground: 210 20% 20%;
+
+      --accent: 222 60% 32%;         /* azul mais escuro para hovers/linhas */
+      --accent-foreground: 0 0% 100%;
+
+      /* Estados especiais */
+      --destructive: 0 70% 50%;
+      --destructive-foreground: 0 0% 100%;
+
+      /* Bordas / inputs / foco */
+      --border: 210 20% 88%;
+      --input: 210 20% 88%;
+      --ring: 187 80% 42%;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-background text-foreground font-sans antialiased">
+  <!-- Navbar – shadcn Navbar block style -->
+  <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div class="container flex h-14 max-w-6xl mx-auto items-center px-4 sm:px-6">
+      <a href="#" class="mr-6 flex items-center space-x-2">
+        <div class="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-semibold text-sm">IC</div>
+        <span class="font-semibold">InfoChat</span>
+      </a>
+      <nav class="flex flex-1 items-center justify-end space-x-2 sm:space-x-6 text-sm font-medium">
+        <a href="#features" class="text-muted-foreground hover:text-foreground transition-colors">Recursos</a>
+        <a href="#integrations" class="text-muted-foreground hover:text-foreground transition-colors">Integrações</a>
+        <a href="#plans" class="text-muted-foreground hover:text-foreground transition-colors">Planos</a>
+        <a href="#contact" class="text-muted-foreground hover:text-foreground transition-colors">Contato</a>
+        <a href="#demo" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+          Ver demonstração
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="demo">
+    <!-- Hero – shadcn Hero block style (centered + CTA) -->
+    <section class="relative overflow-hidden py-16 sm:py-24 md:py-32">
+      <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="mx-auto max-w-3xl text-center space-y-6">
+          <span class="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+            Atendimento unificado · IA generativa
+          </span>
+          <h1 class="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            Atendimento ao cliente simplificado para todo o Brasil
+          </h1>
+          <p class="text-lg text-muted-foreground md:text-xl">
+            Conecte-se com seus clientes por WhatsApp, Instagram, Messenger, e-mail e site em uma única plataforma.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="#demo" class="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+              Ver demonstração
+            </a>
+            <a href="#integrations" class="inline-flex items-center justify-center rounded-md border border-input bg-background px-6 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+              Ver integrações
+            </a>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Respostas em minutos · Conversas ilimitadas em todos os planos
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features – shadcn Features block style (grid + cards) -->
+    <section id="features" class="border-t border-border py-16 sm:py-24" data-aos="fade-up">
+      <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="mx-auto max-w-2xl text-center space-y-4 mb-12">
+          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Recursos para atendimento excepcional</h2>
+          <p class="text-muted-foreground">
+            Tudo que você precisa para oferecer um atendimento multicanal e inteligente.
+          </p>
+        </div>
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="group rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-accent/50">
+            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">💬</div>
+            <h3 class="mb-2 font-semibold">Chat multicanal</h3>
+            <p class="text-sm text-muted-foreground">
+              Atenda WhatsApp, Instagram, Messenger, e-mail e chat do site em um único painel com histórico completo.
+            </p>
+          </div>
+          <div class="group rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-accent/50">
+            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">🤖</div>
+            <h3 class="mb-2 font-semibold">IA avançada</h3>
+            <p class="text-sm text-muted-foreground">
+              Integração com OpenAI para respostas automáticas inteligentes e personalizadas.
+            </p>
+          </div>
+          <div class="group rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-accent/50">
+            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">📊</div>
+            <h3 class="mb-2 font-semibold">Relatórios</h3>
+            <p class="text-sm text-muted-foreground">
+              Métricas e relatórios detalhados para análise do comportamento em todos os canais.
+            </p>
+          </div>
+          <div class="group rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-accent/50">
+            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">👥</div>
+            <h3 class="mb-2 font-semibold">Equipe colaborativa</h3>
+            <p class="text-sm text-muted-foreground">
+              Atribua conversas, compartilhe notas internas e resolva problemas em equipe.
+            </p>
+          </div>
+          <div class="group rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-accent/50">
+            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">📋</div>
+            <h3 class="mb-2 font-semibold">CRM integrado</h3>
+            <p class="text-sm text-muted-foreground">
+              Histórico completo de interações para atendimento personalizado.
+            </p>
+          </div>
+          <div class="group rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-accent/50">
+            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">🔗</div>
+            <h3 class="mb-2 font-semibold">Webhooks</h3>
+            <p class="text-sm text-muted-foreground">
+              Integração via Webhooks para conectar com outros sistemas e automatizar fluxos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Integrations – Logo cloud / grid style -->
+    <section
+      id="methodology"
+      class="border-b border-border bg-muted/40 py-16 sm:py-20"
+      data-aos="fade-up"
+      data-aos-delay="100"
+    >
+      <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-2xl mb-10">
+          <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-primary">
+            Metodologia
+          </p>
+          <h2 class="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+            Da visão de atendimento à operação orientada por dados.
+          </h2>
+          <p class="mt-3 text-sm text-muted-foreground">
+            Uma abordagem em três movimentos, pensada para sair rapidamente do diagnóstico para resultados práticos.
+          </p>
+        </div>
+
+        <ol class="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6 text-sm">
+          <li class="relative rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                01
+              </span>
+              <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+                Entender o agora
+              </p>
+            </div>
+            <p class="font-semibold">Mapeamos canais, filas e dados existentes.</p>
+            <p class="mt-2 text-muted-foreground">
+              Identificamos gargalos, oportunidades de automação e lacunas de dados em todo o funil de atendimento.
+            </p>
+          </li>
+          <li class="relative rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                02
+              </span>
+              <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+                Desenhar a visão
+              </p>
+            </div>
+            <p class="font-semibold">Definimos a experiência ideal para clientes e times.</p>
+            <p class="mt-2 text-muted-foreground">
+              Alinhamos metas de NPS, tempo de resposta, automação e uso de dados com as prioridades do negócio.
+            </p>
+          </li>
+          <li class="relative rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                03
+              </span>
+              <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+                Operar e evoluir
+              </p>
+            </div>
+            <p class="font-semibold">Implementamos, medimos e iteramos continuamente.</p>
+            <p class="mt-2 text-muted-foreground">
+              Conectamos InfoChat ao seu stack e acompanhamos a evolução com metas claras e revisões trimestrais.
+            </p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Insights / blog cards -->
+    <section
+      id="insights"
+      class="border-b border-border bg-background py-16 sm:py-20"
+      data-aos="fade-up"
+      data-aos-delay="160"
+    >
+      <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+          <div>
+            <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-primary">
+              Perspectivas
+            </p>
+            <h2 class="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+              Ideias para times que levam dados de atendimento a sério.
+            </h2>
+          </div>
+          <a
+            href="#contact"
+            class="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+          >
+            Conversar sobre um projeto
+          </a>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-3 text-sm">
+          <article class="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              IA · Operações
+            </p>
+            <h3 class="mt-3 text-base font-semibold group-hover:text-primary transition-colors">
+              Antes de automatizar com IA, organize suas filas de atendimento.
+            </h3>
+            <p class="mt-2 text-muted-foreground">
+              Como consolidar motivos de contato e regras de priorização para que bots e humanos atuem em harmonia.
+            </p>
+            <span class="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              Ler estudo de caso →
+            </span>
+          </article>
+          <article class="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Dados · Governança
+            </p>
+            <h3 class="mt-3 text-base font-semibold group-hover:text-primary transition-colors">
+              Seis pilares para confiabilidade em dados de conversas.
+            </h3>
+            <p class="mt-2 text-muted-foreground">
+              Um modelo simples para garantir qualidade, rastreabilidade e contexto nos dados que alimentam seus dashboards.
+            </p>
+            <span class="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              Ver framework →
+            </span>
+          </article>
+          <article class="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Pessoas · Cultura
+            </p>
+            <h3 class="mt-3 text-base font-semibold group-hover:text-primary transition-colors">
+              Transforme supervisores em verdadeiros analistas de atendimento.
+            </h3>
+            <p class="mt-2 text-muted-foreground">
+              Programas de formação que unem leitura de métricas, coaching de time e experimentos semanais de melhoria.
+            </p>
+            <span class="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              Explorar trilhas →
+            </span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Training / newsletter-like section -->
+    <section
+      id="training"
+      class="border-b border-border bg-muted/40 py-16 sm:py-20"
+      data-aos="fade-up"
+      data-aos-delay="200"
+    >
+      <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="grid gap-10 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-center">
+          <div>
+            <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-primary">
+              Formações
+            </p>
+            <h2 class="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+              Capacite suas equipes para ler, questionar e agir sobre dados de atendimento.
+            </h2>
+            <p class="mt-3 text-sm text-muted-foreground">
+              Da operação ao board, oferecemos formações modulares que conectam métricas de atendimento a decisões
+              diárias.
+            </p>
+            <ul class="mt-5 space-y-2 text-sm text-muted-foreground">
+              <li>• Jornada “Supervisão orientada a dados”</li>
+              <li>• Bootcamp de desenho de jornadas e SLAs</li>
+              <li>• Laboratórios práticos de IA aplicada ao atendimento</li>
+            </ul>
+          </div>
+          <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <p class="text-sm font-semibold">
+              Roteiros, dashboards e exercícios práticos enviados diretamente para sua equipe.
+            </p>
+            <p class="mt-3 text-xs text-muted-foreground">
+              Preencha seu e-mail e nós retornamos com uma proposta de trilha personalizada para o seu contexto.
+            </p>
+            <form class="mt-4 space-y-3">
+              <input
+                type="email"
+                required
+                placeholder="Seu melhor e-mail corporativo"
+                class="w-full rounded-full border border-input bg-background px-4 py-2.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+              <button
+                type="submit"
+                class="w-full inline-flex items-center justify-center rounded-full bg-primary px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Quero receber a trilha
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials style, compact -->
+    <section class="border-b border-border bg-background py-16 sm:py-20" data-aos="fade-up" data-aos-delay="240">
+      <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-2xl mb-10">
+          <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-primary">
+            Voz dos clientes
+          </p>
+          <h2 class="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+            Onde atendimento, dados e pessoas puxam para o mesmo lado.
+          </h2>
+        </div>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 text-sm">
+          <figure class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <blockquote class="text-muted-foreground">
+              “Com a InfoChat conectamos WhatsApp, e-mail e voz em um único painel.
+              Hoje revisamos métricas semanalmente e sabemos exatamente por que os clientes nos procuram.”
+            </blockquote>
+            <figcaption class="mt-4 text-xs text-muted-foreground">
+              <span class="block font-semibold text-foreground">Francine · Varejo de serviços</span>
+              <span>Diretora de Operações</span>
+            </figcaption>
+          </figure>
+          <figure class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <blockquote class="text-muted-foreground">
+              “Conseguimos automatizar 40% das interações sem perder o toque humano,
+              porque a IA foi desenhada a partir dos nossos próprios dados de atendimento.”
+            </blockquote>
+            <figcaption class="mt-4 text-xs text-muted-foreground">
+              <span class="block font-semibold text-foreground">Souleymane · Educação</span>
+              <span>Head de Experiência do Cliente</span>
+            </figcaption>
+          </figure>
+          <figure class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <blockquote class="text-muted-foreground">
+              “O time agora discute números e histórias de clientes com a mesma fluidez.
+              Isso mudou completamente nossas reuniões de performance.”
+            </blockquote>
+            <figcaption class="mt-4 text-xs text-muted-foreground">
+              <span class="block font-semibold text-foreground">Maud · Saúde</span>
+              <span>Coordenadora de Atendimento</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section
+      id="contact"
+      class="border-b border-border bg-gradient-to-br from-background via-background to-primary/15 py-16 sm:py-20"
+      data-aos="zoom-in-up"
+      data-aos-delay="260"
+    >
+      <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-3xl mx-auto text-center">
+          <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-primary">
+            Vamos conversar
+          </p>
+          <h2 class="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+            Pronto para transformar seu atendimento em uma máquina de insights?
+          </h2>
+          <p class="mt-3 text-sm text-muted-foreground">
+            Em uma conversa de 30 minutos, desenhamos juntos onde a InfoChat pode gerar mais impacto
+            – seja em eficiência operacional, satisfação ou novas receitas.
+          </p>
+          <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <a
+              href="mailto:contato@exemplo.com"
+              class="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Agendar conversa
+            </a>
+            <a
+              href="#insights"
+              class="inline-flex items-center justify-center rounded-full border border-border px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+            >
+              Ver mais perspectivas
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer – minimal -->
+  <footer class="border-t border-border py-8 md:py-10 bg-background">
+    <div class="container max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="flex flex-col items-center justify-between gap-4 md:flex-row text-xs text-muted-foreground">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-foreground">InfoChat</span>
+          <span>·</span>
+          <span>Experiências de atendimento orientadas por dados</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+          <span>Baseada no Brasil · Atuação global</span>
+          <span class="hidden md:inline">·</span>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+            onclick="setInfochatTheme('infochat')"
+          >
+            Tema InfoChat
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+            onclick="setInfochatTheme('adnia')"
+          >
+            Tema ADNia
+          </button>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      AOS.init({
+        duration: 700,
+        easing: 'ease-out-cubic',
+        once: true,
+        offset: 60,
+      });
+
+      const savedTheme = localStorage.getItem('infochat-theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+
+      window.setInfochatTheme = function (themeName) {
+        document.documentElement.setAttribute('data-theme', themeName);
+        localStorage.setItem('infochat-theme', themeName);
+      };
+    });
+  </script>
+</body>
+</html>

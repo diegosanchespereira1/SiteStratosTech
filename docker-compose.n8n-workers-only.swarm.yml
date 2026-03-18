@@ -1,0 +1,54 @@
+# Stack Swarm: só n8n workers (queue mode)
+#
+# Use quando você JÁ TEM n8n (main) e Redis rodando. Este stack sobe apenas
+# os workers que consomem a fila e executam os workflows.
+#
+# Variáveis obrigatórias:
+#   N8N_ENCRYPTION_KEY       - mesma chave do n8n main
+#   QUEUE_BULL_REDIS_HOST    - host do Redis (IP ou nome do serviço no Swarm)
+#   QUEUE_BULL_REDIS_PORT    - porta do Redis (ex: 6379)
+#   DB_POSTGRESDB_HOST       - host do Postgres do n8n
+#   DB_POSTGRESDB_PORT       - ex: 5432
+#   DB_POSTGRESDB_DATABASE    - nome do banco n8n
+#   DB_POSTGRESDB_USER       - usuário
+#   DB_POSTGRESDB_PASSWORD   - senha
+#
+# Opcional: QUEUE_BULL_REDIS_PASSWORD, N8N_WORKER_REPLICAS (default 2)
+#
+version: "3.8"
+
+services:
+  n8n-worker:
+    image: docker.n8n.io/n8nio/n8n:latest
+    command: ["worker"]
+    environment:
+      NODE_ENV: production
+      EXECUTIONS_MODE: queue
+      # Redis existente
+      QUEUE_BULL_REDIS_HOST: ${QUEUE_BULL_REDIS_HOST:?Defina QUEUE_BULL_REDIS_HOST}
+      QUEUE_BULL_REDIS_PORT: ${QUEUE_BULL_REDIS_PORT:-6379}
+      # QUEUE_BULL_REDIS_PASSWORD: ${QUEUE_BULL_REDIS_PASSWORD:-}
+      # Mesma chave do n8n main
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?Defina N8N_ENCRYPTION_KEY}
+      # Postgres do n8n (mesmo banco que o main usa)
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: ${DB_POSTGRESDB_HOST:?Defina DB_POSTGRESDB_HOST}
+      DB_POSTGRESDB_PORT: ${DB_POSTGRESDB_PORT:-5432}
+      DB_POSTGRESDB_DATABASE: ${DB_POSTGRESDB_DATABASE:?Defina DB_POSTGRESDB_DATABASE}
+      DB_POSTGRESDB_USER: ${DB_POSTGRESDB_USER:?Defina DB_POSTGRESDB_USER}
+      DB_POSTGRESDB_PASSWORD: ${DB_POSTGRESDB_PASSWORD:?Defina DB_POSTGRESDB_PASSWORD}
+      GENERIC_TIMEZONE: ${N8N_GENERIC_TIMEZONE:-America/Sao_Paulo}
+    deploy:
+      mode: replicated
+      replicas: ${N8N_WORKER_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    networks:
+      - PolygonNetwork
+
+networks:
+  PolygonNetwork:
+    external: true
+    name: PolygonNetwork

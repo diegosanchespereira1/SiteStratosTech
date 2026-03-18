@@ -1,0 +1,313 @@
+{
+  "hero_title": "Atendimento ao cliente simplificado para todo o Brasil",
+  "hero_subtitle": "Conecte-se com seus clientes atravÃ©s de mÃºltiplos canais com uma plataforma unificada e completa.",
+  "hero_ctas": [
+    "Ver DemonstraÃ§Ã£o",
+    "Ver IntegraÃ§Ãµes",
+    "Fale com nossa equipe",
+    "Agendar DemonstraÃ§Ã£o",
+    "Contratar"
+  ],
+  "features": [
+    "Conecte-se com todas as plataformas que sua equipe jÃ¡ utiliza",
+    "Atendimento profissional pelo WhatsApp com recursos avanÃ§ados.",
+    "Centralize todos os e-mails de atendimento em um Ãºnico lugar.",
+    "Responda mensagens diretas do Instagram diretamente na plataforma.",
+    "Atendimento integrado ao Facebook Messenger.",
+    "Widget de chat para seu website com personalizaÃ§Ã£o total.",
+    "Respostas automÃ¡ticas inteligentes usando IA generativa.",
+    "IntegraÃ§Ã£o com outros sistemas via Webhooks.",
+    "IntegraÃ§Ã£o com chatbots avanÃ§ados do Google Dialogflow.",
+    "Atendimento por vÃ­deo integrado com Dyte.",
+    "Precisa de outra integraÃ§Ã£o? Fale com nossa equipe",
+    "Escolha o plano que melhor atende Ã s necessidades do seu negÃ³cio",
+    "Para pequenos negÃ³cios",
+    "AtÃ© 3 agentes",
+    "AtÃ© 5 canais",
+    "WhatsApp + E-mail",
+    "Conversas ilimitadas",
+    "Suporte por e-mail",
+    "Para empresas em crescimento",
+    "AtÃ© 10 agentes",
+    "AtÃ© 10 canais",
+    "Conversas ilimitadas",
+    "RelatÃ³rios avanÃ§ados",
+    "IntegraÃ§Ã£o com OpenAI",
+    "Suporte prioritÃ¡rio",
+    "Para grandes empresas",
+    "AtÃ© 25 Agentes",
+    "Todos os canais",
+    "AtÃ© 30 Canais",
+    "API completa",
+    "Webhooks, e muiticanais",
+    "Suporte 24/7",
+    "Precisa de um plano personalizado? Fale com nossa equipe",
+    "Centralize todos os canais de comunicaÃ§Ã£o e ofereÃ§a uma experiÃªncia excepcional aos seus clientes em todo o Brasil."
+  ],
+  "integrations": [
+    "Conecte-se com todas as plataformas que sua equipe jÃ¡ utiliza",
+    "Atendimento profissional pelo WhatsApp com recursos avanÃ§ados.",
+    "Centralize todos os e-mails de atendimento em um Ãºnico lugar.",
+    "Responda mensagens diretas do Instagram diretamente na plataforma.",
+    "Atendimento integrado ao Facebook Messenger.",
+    "Widget de chat para seu website com personalizaÃ§Ã£o total.",
+    "Respostas automÃ¡ticas inteligentes usando IA generativa.",
+    "IntegraÃ§Ã£o com outros sistemas via Webhooks.",
+    "IntegraÃ§Ã£o com chatbots avanÃ§ados do Google Dialogflow.",
+    "Atendimento por vÃ­deo integrado com Dyte.",
+    "Precisa de outra integraÃ§Ã£o? Fale com nossa equipe",
+    "Nosso painel foi projetado para centralizar todas as comunicaÃ§Ãµes com seus clientes, independente do canal utilizado.",
+    "Visual unificado para todos os canais de atendimento",
+    "HistÃ³rico completo de interaÃ§Ãµes com cada cliente",
+    "Ferramentas de produtividade para equipes de atendimento"
+  ],
+  "plans_intro": "Planos para todos os tamanhos de empresa",
+  "pricing_plans": [
+    {
+      "title": "BÃ¡sico",
+      "subtitle": null,
+      "price": "R$ 149",
+      "description_items": [
+        "Para pequenos negÃ³cios",
+        "AtÃ© 3 agentes",
+        "AtÃ© 5 canais",
+        "WhatsApp + E-mail",
+        "Conversas ilimitadas",
+        "Suporte por e-mail",
+        "Para empresas em crescimento",
+        "AtÃ© 10 agentes",
+        "AtÃ© 10 canais",
+        "Conversas ilimitadas",
+        "RelatÃ³rios avanÃ§ados",
+        "IntegraÃ§Ã£o com OpenAI",
+        "Suporte prioritÃ¡rio",
+        "Para grandes empresas",
+        "AtÃ© 25 Agentes",
+        "Todos os canais",
+        "AtÃ© 30 Canais",
+        "API completa",
+        "Webhooks, e muiticanais",
+        "Suporte 24/7"
+      ]
+    },
+    {
+      "title": "BÃ¡sico",
+      "subtitle": null,
+      "price": "R$ 399",
+      "description_items": [
+        "Para pequenos negÃ³cios",
+        "AtÃ© 3 agentes",
+        "AtÃ© 5 canais",
+        "WhatsApp + E-mail",
+        "Conversas ilimitadas",
+        "Suporte por e-mail",
+        "Para empresas em crescimento",
+        "AtÃ© 10 agentes",
+        "AtÃ© 10 canais",
+        "Conversas ilimitadas",
+        "RelatÃ³rios avanÃ§ados",
+        "IntegraÃ§Ã£o com OpenAI",
+        "Suporte prioritÃ¡rio",
+        "Para grandes empresas",
+        "AtÃ© 25 Agentes",
+        "Todos os canais",
+        "AtÃ© 30 Canais",
+        "API completa",
+        "Webhooks, e muiticanais",
+        "Suporte 24/7"
+      ]
+    },
+    {
+      "title": "BÃ¡sico",
+      "subtitle": null,
+      "price": "R$ 899",
+      "description_items": [
+        "Para pequenos negÃ³cios",
+        "AtÃ© 3 agentes",
+        "AtÃ© 5 canais",
+        "WhatsApp + E-mail",
+        "Conversas ilimitadas",
+        "Suporte por e-mail",
+        "Para empresas em crescimento",
+        "AtÃ© 10 agentes",
+        "AtÃ© 10 canais",
+        "Conversas ilimitadas",
+        "RelatÃ³rios avanÃ§ados",
+        "IntegraÃ§Ã£o com OpenAI",
+        "Suporte prioritÃ¡rio",
+        "Para grandes empresas",
+        "AtÃ© 25 Agentes",
+        "Todos os canais",
+        "AtÃ© 30 Canais",
+        "API completa",
+        "Webhooks, e muiticanais",
+        "Suporte 24/7"
+      ]
+    }
+  ],
+  "testimonials": [
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Conecte-se com seus clientes atravÃ©s de mÃºltiplos canais com uma plataforma unificada e completa."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "SoluÃ§Ã£o completa para atendimento multicanal"
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Com a confianÃ§a de empresas inovadoras em todo o Brasil"
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Tudo que vocÃª precisa para oferecer um atendimento excepcional em todo o Brasil"
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Atenda seus clientes via WhatsApp, Instagram, Messenger, e-mail e site em uma Ãºnica plataforma integrada."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "IntegraÃ§Ã£o com OpenAI para respostas automÃ¡ticas inteligentes e personalizadas para cada cliente."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "MÃ©tricas e relatÃ³rios detalhados para anÃ¡lise do comportamento do consumidor em todos os canais."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Atribua conversas, compartilhe notas internas e trabalhe em equipe para resolver problemas rapidamente."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Armazene todas as interaÃ§Ãµes com clientes e tenha histÃ³rico completo para atendimento personalizado."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "IntegraÃ§Ã£o via Webhooks para conectar com outros sistemas e automatizar fluxos de trabalho."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Conecte-se com todas as plataformas que sua equipe jÃ¡ utiliza"
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Atendimento profissional pelo WhatsApp com recursos avanÃ§ados."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Centralize todos os e-mails de atendimento em um Ãºnico lugar."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Responda mensagens diretas do Instagram diretamente na plataforma."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Atendimento integrado ao Facebook Messenger."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Widget de chat para seu website com personalizaÃ§Ã£o total."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Respostas automÃ¡ticas inteligentes usando IA generativa."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "IntegraÃ§Ã£o com outros sistemas via Webhooks."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "IntegraÃ§Ã£o com chatbots avanÃ§ados do Google Dialogflow."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Atendimento por vÃ­deo integrado com Dyte."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Precisa de outra integraÃ§Ã£o? Fale com nossa equipe"
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Nosso painel foi projetado para centralizar todas as comunicaÃ§Ãµes com seus clientes, independente do canal utilizado."
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Escolha o plano que melhor atende Ã s necessidades do seu negÃ³cio"
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Precisa de um plano personalizado? Fale com nossa equipe"
+    },
+    {
+      "name": "Carlos Silva",
+      "role_location": "ComÃ©rcio de Moda, SÃ£o Paulo",
+      "text": "Empresas de diversos segmentos jÃ¡ estÃ£o usando o Chat InfoTec MG"
+    },
+    {
+      "name": "Ana Paula Oliveira",
+      "role_location": "ClÃ­nica MÃ©dica, Rio de Janeiro",
+      "text": "\"A integraÃ§Ã£o com WhatsApp e Instagram mudou completamente nosso atendimento. Agora respondemos em minutos e nÃ£o perdemos mais nenhuma oportunidade de venda.\""
+    },
+    {
+      "name": "Roberto Costa",
+      "role_location": "Distribuidora, Minas Gerais",
+      "text": "\"A integraÃ§Ã£o com Dyte para consultas por vÃ­deo foi fundamental durante a pandemia. Conseguimos manter nosso atendimento humanizado mesmo Ã distÃ¢ncia.\""
+    },
+    {
+      "name": "E-mail",
+      "role_location": "contato@infotecmg.net",
+      "text": "\"Usamos a integraÃ§Ã£o com Webhooks para conectar com nosso ERP. Agora temos todas as informaÃ§Ãµes dos clientes centralizadas e o atendimento ficou muito mais eficiente.\""
+    },
+    {
+      "name": "E-mail",
+      "role_location": "contato@infotecmg.net",
+      "text": "Tem dÃºvidas sobre nossa plataforma? Quer saber mais sobre nossas integraÃ§Ãµes? Entre em contato com nossa equipe."
+    }
+  ],
+  "contact_info": [
+    "E-mail",
+    "Telefone"
+  ],
+  "footer_notes": [
+    "A plataforma de atendimento multicanal mais completa do mercado brasileiro.",
+    "Recursos",
+    "IntegraÃ§Ãµes",
+    "PreÃ§os",
+    "DemonstraÃ§Ã£o",
+    "Sobre NÃ³s",
+    "Contato",
+    "DocumentaÃ§Ã£o",
+    "Guias",
+    "API",
+    "Status",
+    "Â© 2025 InfoTec MG. Todos os direitos reservados."
+  ]
+}

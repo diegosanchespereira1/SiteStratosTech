@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat InfoTec MG - Plataforma de Atendimento ao Cliente</title>
+    <!--<script src="https://cdn.tailwindcss.com"></script>-->
+	<link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+  	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  	<!-- Open Graph para redes sociais -->
+	<meta property="og:title" content="InfoChat - Atendimento Multicanal">
+	<meta property="og:description" content="Centralize seus atendimentos de WhatsApp, Instagram, Messenger e mais!">
+	<meta property="og:image" content="https://infochat.infotecmg.net/images/multi.png">
+	<meta property="og:url" content="https://infochat.infotecmg.net/">
+	<meta property="og:type" content="website">
+
+	<!-- Twitter (opcional, mas recomendado) -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="InfoChat - Atendimento Multicanal">
+	<meta name="twitter:description" content="Centralize seus atendimentos de WhatsApp, Instagram, Messenger e mais!">
+	<meta name="twitter:image" content="https://infochat.infotecmg.net/images/multi.png">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .screenshot {
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .integration-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin: 0 auto 15px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800">
+    <!-- Header/Navigation -->
+    <header class="sticky top-0 z-50 bg-white shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-comments text-3xl text-indigo-600 mr-2"></i>
+                        <span class="text-2xl font-bold text-indigo-600">Chat InfoTec MG</span>
+                    </div>
+                </div>
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-600 hover:text-indigo-600 font-medium">Recursos</a>
+                    <a href="#integrations" class="text-gray-600 hover:text-indigo-600 font-medium">IntegraÃ§Ãµes</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-indigo-600 font-medium">PreÃ§os</a>
+                    <a href="#testimonials" class="text-gray-600 hover:text-indigo-600 font-medium">Depoimentos</a>
+                </nav>
+                <div class="flex items-center">
+                    <a href="#contact" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition duration-300">Contato</a>
+                </div>
+                <button class="md:hidden text-gray-600 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-20">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-12 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Atendimento ao cliente simplificado para todo o Brasil</h1>
+                    <p class="text-xl text-indigo-100 mb-8">Conecte-se com seus clientes atravÃ©s de mÃºltiplos canais com uma plataforma unificada e completa.</p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="#demo" class="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-bold text-lg text-center transition duration-300">Ver DemonstraÃ§Ã£o</a>
+                        <a href="#integrations" class="border-2 border-white text-white hover:bg-white hover:bg-opacity-10 px-8 py-4 rounded-lg font-bold text-lg text-center transition duration-300">Ver IntegraÃ§Ãµes</a>
+                    </div>
+                    <p class="mt-4 text-indigo-100">SoluÃ§Ã£o completa para atendimento multicanal</p>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="/images/pre.png" alt="Dashboard do Chat InfoTec MG" class="screenshot w-full h-auto">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trusted By Section -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <p class="text-center text-gray-500 mb-8">Com a confianÃ§a de empresas inovadoras em todo o Brasil</p>
+            <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+                <img src="https://placehold.co/150x50?text=Empresa+BR" alt="Empresa BR" class="h-8 opacity-70">
+                <img src="https://placehold.co/150x50?text=Tecnologia+BR" alt="Tecnologia BR" class="h-8 opacity-70">
+                <img src="https://placehold.co/150x50?text=Startup+BR" alt="Startup BR" class="h-8 opacity-70">
+                <img src="https://placehold.co/150x50?text=ComÃ©rcio+BR" alt="ComÃ©rcio BR" class="h-8 opacity-70">
+                <img src="https://placehold.co/150x50?text=ServiÃ§os+BR" alt="ServiÃ§os BR" class="h-8 opacity-70">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Recursos completos para atendimento ao cliente</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Tudo que vocÃª precisa para oferecer um atendimento excepcional em todo o Brasil</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-md transition duration-300">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-comment-dots text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Chat Multicanais</h3>
+                    <p class="text-gray-600">Atenda seus clientes via WhatsApp, Instagram, Messenger, e-mail e site em uma Ãºnica plataforma integrada.</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-md transition duration-300">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-robot text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">IA AvanÃ§ada</h3>
+                    <p class="text-gray-600">IntegraÃ§Ã£o com OpenAI para respostas automÃ¡ticas inteligentes e personalizadas para cada cliente.</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-md transition duration-300">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">RelatÃ³rios Personalizados</h3>
+                    <p class="text-gray-600">MÃ©tricas e relatÃ³rios detalhados para anÃ¡lise do comportamento do consumidor em todos os canais.</p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-md transition duration-300">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-users text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Equipe Colaborativa</h3>
+                    <p class="text-gray-600">Atribua conversas, compartilhe notas internas e trabalhe em equipe para resolver problemas rapidamente.</p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-md transition duration-300">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-database text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">CRM Integrado</h3>
+                    <p class="text-gray-600">Armazene todas as interaÃ§Ãµes com clientes e tenha histÃ³rico completo para atendimento personalizado.</p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-md transition duration-300">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-plug text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Webhooks</h3>
+                    <p class="text-gray-600">IntegraÃ§Ã£o via Webhooks para conectar com outros sistemas e automatizar fluxos de trabalho.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations Section -->
+    <section id="integrations" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">IntegraÃ§Ãµes Poderosas</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Conecte-se com todas as plataformas que sua equipe jÃ¡ utiliza</p>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- WhatsApp -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-green-100">
+                        <i class="fab fa-whatsapp text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">WhatsApp Business</h3>
+                    <p class="text-gray-600">Atendimento profissional pelo WhatsApp com recursos avanÃ§ados.</p>
+                </div>
+                
+                <!-- Email -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-blue-100">
+                        <i class="fas fa-envelope text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">E-mail</h3>
+                    <p class="text-gray-600">Centralize todos os e-mails de atendimento em um Ãºnico lugar.</p>
+                </div>
+                
+                <!-- Instagram -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-pink-100">
+                        <i class="fab fa-instagram text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Instagram</h3>
+                    <p class="text-gray-600">Responda mensagens diretas do Instagram diretamente na plataforma.</p>
+                </div>
+                
+                <!-- Messenger -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-blue-100">
+                        <i class="fab fa-facebook-messenger text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Messenger</h3>
+                    <p class="text-gray-600">Atendimento integrado ao Facebook Messenger.</p>
+                </div>
+                
+                <!-- Website -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-purple-100">
+                        <i class="fas fa-globe text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Chat no Site</h3>
+                    <p class="text-gray-600">Widget de chat para seu website com personalizaÃ§Ã£o total.</p>
+                </div>
+                
+                <!-- OpenAI -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-indigo-100">
+                        <i class="fas fa-brain text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">OpenAI</h3>
+                    <p class="text-gray-600">Respostas automÃ¡ticas inteligentes usando IA generativa.</p>
+                </div>
+                
+                <!-- Webhooks -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-yellow-100">
+                        <i class="fas fa-plug text-yellow-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Webhooks</h3>
+                    <p class="text-gray-600">IntegraÃ§Ã£o com outros sistemas via Webhooks.</p>
+                </div>
+                
+                <!-- Dialogflow -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-red-100">
+                        <i class="fas fa-comments text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Dialogflow</h3>
+                    <p class="text-gray-600">IntegraÃ§Ã£o com chatbots avanÃ§ados do Google Dialogflow.</p>
+                </div>
+                
+                <!-- Dyte -->
+                <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="integration-icon bg-blue-100">
+                        <i class="fas fa-video text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Dyte</h3>
+                    <p class="text-gray-600">Atendimento por vÃ­deo integrado com Dyte.</p>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center">
+                <p class="text-gray-600">Precisa de outra integraÃ§Ã£o? <a href="#contact" class="text-indigo-600 hover:underline">Fale com nossa equipe</a></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-12 md:mb-0">
+                    <img src="/images/multi.png" alt="DemonstraÃ§Ã£o do Chat InfoTec MG" class="screenshot w-full h-auto">
+                </div>
+                <div class="md:w-1/2 md:pl-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Interface intuitiva para atendimento multicanal</h2>
+                    <p class="text-xl text-gray-600 mb-8">Nosso painel foi projetado para centralizar todas as comunicaÃ§Ãµes com seus clientes, independente do canal utilizado.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-700">Visual unificado para todos os canais de atendimento</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-700">HistÃ³rico completo de interaÃ§Ãµes com cada cliente</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-700">Ferramentas de produtividade para equipes de atendimento</span>
+                        </li>
+                    </ul>
+                    <a href="#contact" class="inline-block mt-8 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-bold text-lg transition duration-300">Agendar DemonstraÃ§Ã£o</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Planos para todos os tamanhos de empresa</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Escolha o plano que melhor atende Ã s necessidades do seu negÃ³cio</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Starter Plan -->
+                <div class="bg-white p-8 rounded-xl shadow-md border border-gray-200">
+                    <h3 class="text-xl font-bold mb-2">BÃ¡sico</h3>
+                    <p class="text-gray-600 mb-6">Para pequenos negÃ³cios</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">R$ 149</span>
+                        <span class="text-gray-500">/mÃªs</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>AtÃ© 3 agentes</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>AtÃ© 5 canais</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>WhatsApp + E-mail</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Conversas ilimitadas</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Suporte por e-mail</span>
+                        </li>
+                    </ul>
+                    <a href="#contact" class="block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-medium transition duration-300">Contratar</a>
+                </div>
+                
+                <!-- Pro Plan -->
+                <div class="bg-white p-8 rounded-xl shadow-lg border-2 border-indigo-500 relative">
+                    <div class="absolute top-0 right-0 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">MAIS POPULAR</div>
+                    <h3 class="text-xl font-bold mb-2">Profissional</h3>
+                    <p class="text-gray-600 mb-6">Para empresas em crescimento</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">R$ 399</span>
+                        <span class="text-gray-500">/mÃªs</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>AtÃ© 10 agentes</span>
+                        </li>
+                      	<li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>AtÃ© 10 canais</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Conversas ilimitadas</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>RelatÃ³rios avanÃ§ados</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>IntegraÃ§Ã£o com OpenAI</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Suporte prioritÃ¡rio</span>
+                        </li>
+                    </ul>
+                    <a href="#contact" class="block text-center bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition duration-300">Contratar</a>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="bg-white p-8 rounded-xl shadow-md border border-gray-200">
+                    <h3 class="text-xl font-bold mb-2">Empresarial</h3>
+                    <p class="text-gray-600 mb-6">Para grandes empresas</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">R$ 899</span>
+                        <span class="text-gray-500">/mÃªs</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>AtÃ© 25 Agentes</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Todos os canais</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>AtÃ© 30 Canais</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>API completa</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Webhooks, e muiticanais</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Suporte 24/7</span>
+                        </li>
+                    </ul>
+                    <a href="https://buy.stripe.com/cNicN40sT78geRy6XB7ok01" class="block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-medium transition duration-300">Contratar</a>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center">
+                <p class="text-gray-600">Precisa de um plano personalizado? <a href="#contact" class="text-indigo-600 hover:underline">Fale com nossa equipe</a></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">O que dizem nossos clientes</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Empresas de diversos segmentos jÃ¡ estÃ£o usando o Chat InfoTec MG</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-user text-indigo-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Carlos Silva</h4>
+                                <p class="text-gray-600 text-sm">ComÃ©rcio de Moda, SÃ£o Paulo</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"A integraÃ§Ã£o com WhatsApp e Instagram mudou completamente nosso atendimento. Agora respondemos em minutos e nÃ£o perdemos mais nenhuma oportunidade de venda."</p>
+                    <div class="mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-user text-indigo-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Ana Paula Oliveira</h4>
+                                <p class="text-gray-600 text-sm">ClÃ­nica MÃ©dica, Rio de Janeiro</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"A integraÃ§Ã£o com Dyte para consultas por vÃ­deo foi fundamental durante a pandemia. Conseguimos manter nosso atendimento humanizado mesmo Ã  distÃ¢ncia."</p>
+                    <div class="mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-user text-indigo-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Roberto Costa</h4>
+                                <p class="text-gray-600 text-sm">Distribuidora, Minas Gerais</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"Usamos a integraÃ§Ã£o com Webhooks para conectar com nosso ERP. Agora temos todas as informaÃ§Ãµes dos clientes centralizadas e o atendimento ficou muito mais eficiente."</p>
+                    <div class="mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   <!-- Contact Section -->
+<section id="contact" class="py-20 bg-gray-900 text-white">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row">
+            <div class="md:w-full mb-12 md:mb-0 md:pr-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Fale conosco</h2>
+                <p class="text-xl text-gray-300 mb-8">Tem dÃºvidas sobre nossa plataforma? Quer saber mais sobre nossas integraÃ§Ãµes? Entre em contato com nossa equipe.</p>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="bg-indigo-600 p-3 rounded-lg mr-4">
+                            <i class="fas fa-envelope text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">E-mail</h4>
+                            <p class="text-gray-300">contato@infotecmg.net</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="bg-indigo-600 p-3 rounded-lg mr-4">
+                            <i class="fas fa-phone-alt text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Telefone</h4>
+                            <p class="text-gray-300">(31) 997745063</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="bg-indigo-600 p-3 rounded-lg mr-4">
+                            <i class="fas fa-map-marker-alt text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">EndereÃ§o</h4>
+                            <p class="text-gray-300">IgarapÃ©, MG - Brasil</p>
+                        </div>
+                    </div>
+                  
+                  <div class="flex items-start">
+                        <div class="bg-indigo-600 p-3 rounded-lg mr-4">
+                            <i class="fas fa-phone-alt text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Politica de Privacidade</h4>
+                            <a href="https://infotecmg.net/privacy-policy/" class="text-gray-300">Leia nossa Politica</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- CTA Section -->
+    <section class="py-20 gradient-bg text-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Pronto para revolucionar seu atendimento ao cliente?</h2>
+            <p class="text-xl text-indigo-100 mb-8 max-w-3xl mx-auto">Centralize todos os canais de comunicaÃ§Ã£o e ofereÃ§a uma experiÃªncia excepcional aos seus clientes em todo o Brasil.</p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="#demo" class="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-bold text-lg transition duration-300">Ver DemonstraÃ§Ã£o</a>
+                <a href="#contact" class="border-2 border-white text-white hover:bg-white hover:bg-opacity-10 px-8 py-4 rounded-lg font-bold text-lg transition duration-300">Falar com Especialista</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-comments text-2xl text-indigo-400 mr-2"></i>
+                        <span class="text-xl font-bold">Chat InfoTec MG</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">A plataforma de atendimento multicanal mais completa do mercado brasileiro.</p>
+                    <div class="flex space-x-4">
+                        <a href="https://www.facebook.com/profile.php?id=100088953913422" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.linkedin.com/in/ailton-henrique-moreira-6b3315193/" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.instagram.com/mginfotec/" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Produto</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white">Recursos</a></li>
+                        <li><a href="#integrations" class="text-gray-400 hover:text-white">IntegraÃ§Ãµes</a></li>
+                        <li><a href="#pricing" class="text-gray-400 hover:text-white">PreÃ§os</a></li>
+                        <li><a href="#demo" class="text-gray-400 hover:text-white">DemonstraÃ§Ã£o</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Empresa</h3>
+                    <ul class="space-y-2">
+                        <li><a href="https://infotecmg.net" class="text-gray-400 hover:text-white">Sobre NÃ³s</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white">Contato</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Suporte</h3>
+                    <ul class="space-y-2">
+                        <li><a href="documents.html" class="text-gray-400 hover:text-white">DocumentaÃ§Ã£o</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Guias</a></li>
+                        <li><a href="apis.html" class="text-gray-400 hover:text-white">API</a></li>
+                        <li><a href="https://uptime.infotecmg.net/status/infotecmg" class="text-gray-400 hover:text-white">Status</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 mb-4 md:mb-0">Â© 2025 InfoTec MG. Todos os direitos reservados.</p>
+                <div class="flex space-x-6">
+                    <a href="https://infotecmg.net/termos/" class="text-gray-400 hover:text-white">Termos de ServiÃ§o</a>
+                    <a href="https://infotecmg.net/privacy-policy/" class="text-gray-400 hover:text-white">PolÃ­tica de Privacidade</a>
+                    <a href="#" class="text-gray-400 hover:text-white">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple mobile menu toggle
+        document.querySelector('button.md\\:hidden').addEventListener('click', function() {
+            const nav = document.querySelector('nav.md\\:flex');
+            nav.classList.toggle('hidden');
+            nav.classList.toggle('flex');
+            nav.classList.toggle('flex-col');
+            nav.classList.toggle('absolute');
+            nav.classList.toggle('top-16');
+            nav.classList.toggle('left-0');
+            nav.classList.toggle('right-0');
+            nav.classList.toggle('bg-white');
+            nav.classList.toggle('p-4');
+            nav.classList.toggle('shadow-md');
+            nav.classList.toggle('space-y-4');
+            nav.classList.toggle('space-x-8');
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+  
+ <script>
+  window.chatwootSettings = {"position":"right","type":"expanded_bubble","launcherTitle":"Fale conosco no chat"};
+  (function(d,t) {
+    var BASE_URL="https://chatwoot.infotecmg.net";
+    var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+    g.src=BASE_URL+"/packs/js/sdk.js";
+    g.defer = true;
+    g.async = true;
+    s.parentNode.insertBefore(g,s);
+    g.onload=function(){
+      window.chatwootSDK.run({
+        websiteToken: 'hPejvmPLsnLSmZF2JwzcESpD',
+        baseUrl: BASE_URL
+      })
+    }
+  })(document,"script");
+</script>
+
+</body>
+</html>

@@ -52,6 +52,16 @@ Podem estar em outro stack. No Supabase (Edge Functions → Secrets) configure:
 - `EVOLUTION_API_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_WEBHOOK_SECRET`
 - `N8N_INGRESS_WEBHOOK_URL` (URL pública do webhook do workflow SaaS)
 
+### n8n em queue mode (Swarm)
+
+Para distribuir carga do n8n com **main + workers + Redis**, use a stack:
+
+- **Compose:** `docker-compose.n8n-queue.swarm.yml`
+- **Deploy e variáveis:** `docs/DEPLOY_N8N_QUEUE_SWARM.md`
+- **Conceitos e env vars do queue mode:** `docs/N8N_QUEUE_MODE_GUIA.md`
+
+A URL de webhook configurada no Supabase deve ser a do n8n main (ex.: `https://n8n.stratostech.com.br/webhook/stratosbotsaas`).
+
 ## 4. URLs
 
 - Landing: `https://stratosbot.stratostech.com.br/` → `stratosbot.html`
