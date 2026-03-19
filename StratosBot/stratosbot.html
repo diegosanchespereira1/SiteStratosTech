@@ -247,49 +247,73 @@
 <section class="py-16 sm:py-20 md:py-24 bg-surface/20" id="demo">
 <div class="container mx-auto px-4 sm:px-6 flex flex-col items-center">
 <div class="text-center mb-10 sm:mb-16">
-<h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 sm:mb-4 px-2">Veja como seu cliente será atendido</h2>
-<p class="text-gray-400 text-sm sm:text-base px-2">Experimente a resposta do agente em tempo real. É assim que suas conversas no WhatsApp podem funcionar.</p>
+<h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 sm:mb-4 px-2">Assista ao atendimento no WhatsApp</h2>
+<p class="text-gray-400 text-sm sm:text-base px-2">Um vídeo curto para você ver o agente Stratos Bot respondendo como se fosse sua equipe no WhatsApp.</p>
 </div>
-<!-- Chat UI -->
-<div class="w-full max-w-2xl glassmorphism rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 mx-2 sm:mx-0" data-purpose="chat-container">
-<!-- Chat Header -->
+<!-- Mini player do YouTube -->
+<div class="w-full max-w-2xl glassmorphism rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 mx-2 sm:mx-0" data-purpose="demo-video">
+<!-- Video Header -->
 <div class="bg-white/5 p-4 border-b border-white/10 flex items-center justify-between">
-<div class="flex items-center gap-3"><div class="relative">
-<div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-<svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<div class="flex items-center gap-3">
+  <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+    <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+      <path d="M14.5 10.5V9.75a2.25 2.25 0 00-2.25-2.25h-6A2.25 2.25 0 004 9.75v4.5A2.25 2.25 0 006.25 16.5h6A2.25 2.25 0 0014.5 14.25v-.75" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      <path d="M21 12l-4-2.5v5L21 12z" fill="currentColor"></path>
+      <path d="M12.5 12h8.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+    </svg>
+  </div>
+  <div>
+    <p class="text-sm font-bold">Demonstração em vídeo</p>
+    <p class="text-[10px] text-primary font-bold uppercase tracking-widest">Stratos Bot</p>
+  </div>
 </div>
-<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1a1a1e] rounded-full"></div>
-</div>
-<div>
-<p class="text-sm font-bold">Agente Stratos</p>
-<p class="text-[10px] text-primary font-bold uppercase tracking-widest">Online agora</p>
-</div></div>
 <div class="flex gap-2">
 <div class="w-2 h-2 rounded-full bg-white/20"></div>
 <div class="w-2 h-2 rounded-full bg-white/20"></div>
 </div>
 </div>
-<!-- Chat Body -->
-<div class="p-4 sm:p-6 h-[320px] sm:h-[380px] md:h-[400px] overflow-y-auto space-y-4 sm:space-y-6 flex flex-col" id="demo-chat-messages">
-<!-- Message: Agent -->
-<div class="flex gap-3 max-w-[85%]">
-<div class="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
-<span class="text-[10px] font-bold">AI</span>
+<!-- Video Body -->
+<div class="p-3 sm:p-4">
+<div class="relative w-full pb-[56.25%] rounded-custom overflow-hidden border border-white/10 bg-black/20">
+<iframe
+  class="absolute inset-0 w-full h-full"
+  id="demo-youtube-iframe"
+  src="https://www.youtube.com/embed/-hewQsxZwSg?rel=0"
+  title="Demonstração do Stratos Bot no WhatsApp"
+  frameborder="0"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
 </div>
-<div class="bg-white/10 p-4 rounded-r-xl rounded-bl-xl text-sm leading-relaxed whitespace-pre-line">Oi! Sou o assistente Stratos Bot. E aqui você consegue testar o agente de IA para WhatsApp. Pergunte: "como funciona o agente de IA para WhatsApp" e veja como seria a resposta no WhatsApp.</div>
+<a
+  id="demo-youtube-file-fallback"
+  class="hidden mt-3 inline-flex w-full items-center justify-center rounded-custom bg-primary/10 border border-primary/20 px-4 py-2 text-sm font-bold text-primary hover:bg-primary/20 transition-colors"
+  href="https://www.youtube.com/watch?v=-hewQsxZwSg"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+Abrir no YouTube
+</a>
+<div class="px-2 pt-3 text-xs sm:text-sm text-gray-400">
+Clique em play para ver como o agente responde no WhatsApp.
 </div>
-</div>
-<!-- Chat Input -->
-<div class="p-3 sm:p-4 bg-white/5 border-t border-white/10 flex gap-2">
-<input class="w-full bg-white/5 border border-white/10 rounded-custom text-sm focus:border-primary focus:ring-0 px-3 py-2" id="demo-chat-input" placeholder="Digite sua resposta..." type="text"/>
-<button class="bg-primary p-2 rounded-custom glow-purple" id="demo-chat-send" type="button">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
 </div>
 </div>
 </div>
 </section>
 <!-- END: Interactive Demo -->
+<script>
+(function () {
+  try {
+    if (!window.location || window.location.protocol !== "file:") return;
+    var iframe = document.getElementById("demo-youtube-iframe");
+    var fallback = document.getElementById("demo-youtube-file-fallback");
+    if (iframe) iframe.style.display = "none";
+    if (fallback) fallback.classList.remove("hidden");
+  } catch (e) {}
+})();
+</script>
 <!-- BEGIN: CTA Section -->
 <section class="py-16 sm:py-20 md:py-24" id="pricing">
 <div class="container mx-auto px-4 sm:px-6">
