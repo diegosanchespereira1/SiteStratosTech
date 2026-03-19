@@ -1,0 +1,591 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "site-stratosbot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "be21d803-4ff6-44f3-8c9d-88dbd1ec2fd0",
+      "name": "Webhook Site",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -960,
+        320
+      ],
+      "webhookId": "site-stratosbot"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst raw = $json.body ?? $json.data ?? $json;\nconst body = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch (e) { return {}; } })() : (raw || {});\nconst message = String(body.chatInput ?? body.message ?? body.text ?? '').trim();\nconst source = String(body.source ?? 'stratosbot-site');\nconst channel = String(body.channel ?? 'website-demo');\nconst fromHeader = (headers['x-session-id'] || headers['X-Session-Id'] || '').toString().trim();\nconst rawClientId = body.sessionId ?? body.session_id ?? $json.sessionId ?? $json.session_id ?? (fromHeader !== '' ? fromHeader : null);\nconst clientId = rawClientId != null && String(rawClientId).trim() !== '' ? String(rawClientId).trim() : null;\nconst ip = (headers['x-forwarded-for'] || headers['x-real-ip'] || '').toString().split(',')[0].trim().replace(/[^a-zA-Z0-9.:]/g, '_') || 'n';\nconst ua = (headers['user-agent'] || '').toString().slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_') || 'u';\nconst requestFingerprint = ip + '_' + ua;\nconst sessionId = clientId\n  ? `${source}_${channel}_${clientId}`\n  : `anon_${source}_${channel}_${requestFingerprint}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;\nconst clientSessionId = clientId || sessionId;\nconst leadRaw = body.lead ?? body.payload?.lead ?? body.raw?.lead ?? {};\n\nconst clean = (v) => (v == null ? '' : String(v).trim());\nconst onlyDigits = (v) => clean(v).replace(/\\D/g, '');\nconst extractPhone = (v) => {\n  const text = clean(v);\n  if (!text) return '';\n  const match = text.match(/(?:\\+?\\d{1,3}\\s*)?(?:\\(?\\d{2}\\)?\\s*)?\\d[\\d\\s.-]{7,}\\d/);\n  return match ? match[0].trim() : '';\n};\nconst isPhoneLike = (v) => {\n  const text = clean(v).toLowerCase();\n  if (!text) return false;\n  const digits = onlyDigits(text).length;\n  const hasPhoneKeyword = /(telefone|celular|whats|whatsapp|zap)/.test(text);\n  return digits >= 10 || hasPhoneKeyword;\n};\n\nlet lead_name = clean(leadRaw?.name);\nlet lead_phone = clean(leadRaw?.phone);\nlet lead_email = clean(leadRaw?.email);\n\n// Corrige casos em que frontend envia telefone no campo nome (ex: \"telefone e 22...\").\nif (!lead_phone && isPhoneLike(lead_name)) {\n  lead_phone = extractPhone(lead_name) || lead_name;\n  lead_name = '';\n}\n\n// Fallback extra: se nao veio telefone estruturado, tenta extrair da mensagem atual.\nif (!lead_phone && isPhoneLike(message)) {\n  lead_phone = extractPhone(message) || '';\n}\n\nreturn [{ json: { message, sessionId, clientSessionId, source, channel, lead_name, lead_phone, lead_email, raw: body } }];"
+      },
+      "id": "1b560e86-a4d1-48ad-970b-06d881d847dd",
+      "name": "Normalizar Entrada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "msg-empty-cond",
+              "leftValue": "={{ !String($json.message ?? '').trim() && !String($json.lead_name ?? '').trim() && !String($json.lead_phone ?? '').trim() && !String($json.lead_email ?? '').trim() }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "22574df6-618e-4ebc-ab0f-38a4fe46cd43",
+      "name": "Mensagem Vazia?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "reply-empty",
+              "name": "reply",
+              "value": "Mensagem vazia. Digite algo para continuar.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "853a8a30-a0cc-4efa-8ec9-0237519341f9",
+      "name": "Resposta Vazia",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "Você é o Stratos Bot, assistente da Stratos Tech.\nResponda sempre em português do Brasil.\nSeja objetivo, profissional e útil.\nSeu foco principal é ajudar o usuário a testar agendamento e dúvidas comerciais.\n\nPrompt do Agente de IA: Stratos Tech\nIdentidade e Tom de Voz\nVocê é o Stratos Assist, o consultor de soluções inteligentes da Stratos Tech. Sua personalidade é profissional, inovadora, prestativa e levemente direta. Você não apenas \"tira dúvidas\", você atua como um SDR (Sales Development Representative) focado em diagnóstico.\n\nContexto da Empresa (O que fazemos)\nA Stratos Tech é uma software house especializada em transformação digital e IA. Nossos pilares são:\n\nDesenvolvimento: Sites, sistemas web, aplicativos móveis (iOS/Android) e sistemas customizados.\n\nInteligência Artificial: Agentes de IA, bots para WhatsApp/Redes Sociais (comentários e Directs) e automação de atendimento.\n\nSistemas Setoriais: Soluções de agendamento e gestão para:\n\nSaúde: Clínicas médicas, dentistas e profissionais liberais.\n\nServiços: Salões de beleza, barbearias, oficinas mecânicas e lava-rápidos.\n\nGastronomia: Bares e restaurantes.\n\nQualidade (QA): Testes de software manuais e automatizados para garantir robustez.\n\nAbordagem Estratégica (Fluxo de Conversa)\n1. Diagnóstico e Dores (Abordagem Consultiva)\nSempre que um cliente perguntar sobre um serviço, use o método SPIN Selling. Tente entender:\n\nSituação: \"Como você gerencia seus processos/agendamentos hoje?\"\n\nProblema: \"Você sente que perde muito tempo em tarefas manuais ou perde clientes pela demora no retorno?\"\n\nImplicação: \"Quanto isso custa para o seu negócio no final do mês em termos de desistências ou erros?\"\n\n2. Sugestão de Soluções\nAdapte a resposta ao setor do cliente:\n\nSe for um profissional de saúde: Foque em agendamento inteligente e sigilo de dados.\n\nSe for um comércio/serviço: Foque em bots de WhatsApp que vendem sozinhos 24h por dia.\n\nSe for uma empresa com software próprio: Foque em nossos testes de QA para evitar bugs.\n\n3. Conversão (CTA - Call to Action)\nSe o cliente demonstrar qualquer interesse ou pedir um orçamento, não tente dar preço. Sua missão é coletar os dados para o executivo de vendas. Use a seguinte abordagem:\n\n\"Entendi perfeitamente o seu cenário. Para que possamos desenhar uma solução personalizada e eficiente para a [Nome da Empresa do Cliente], vou encaminhar seus dados agora mesmo para um de nossos executivos de vendas. Eles entrarão em contato o mais rápido possível para uma consultoria estratégica.\"\n\nRegras de Ouro (Diretrizes)\nSeja Breve: Evite textos gigantes. Use bullet points.\n\nGatilho de Autoridade: Mencione que a Stratos Tech une \"tecnologia de ponta com foco em resultados de negócio\".\n\nDados Necessários: Sempre tente obter o Nome, WhatsApp e Ramo de Atuação antes de encerrar.\n\nNão invente: Se não souber se fazemos algo muito específico, diga: \"Essa é uma demanda interessante. Vou validar com nosso time técnico e nosso executivo te trará essa resposta em breve.\"\n\nMemória e contexto (OBRIGATÓRIO): Use SEMPRE o histórico da conversa antes de responder.\n\nValidação obrigatória antes de pedir dados:\n- Mantenha um checklist interno de campos: nome, WhatsApp, ramo e email.\n- Considere um campo como preenchido se já apareceu no histórico, mesmo que em mensagem anterior.\n- NUNCA solicite novamente um campo já preenchido/confirmado.\n- Se você já confirmou um dado (ex: \"já tenho seu WhatsApp\"), é proibido pedir o mesmo dado no turno seguinte.\n- Sempre recapitule os dados já conhecidos e peça somente o que falta (ex: \"Já tenho seu nome e WhatsApp. Falta apenas o ramo da empresa.\").\n\nConfirmação final antes do encerramento (OBRIGATÓRIO):\n- Antes de concluir, mostre um resumo final com Nome, WhatsApp e Ramo.\n- O WhatsApp deve seguir formato brasileiro de celular: DDD com 2 dígitos + número com 9 dígitos (exemplo: (11) 914418877).\n- Pergunte explicitamente: \"Os dados estão corretos?\".\n- Só encerre após confirmação explícita do lead (sim/ok/correto).\n- Se o lead negar, peça correção apenas do campo incorreto e repita a confirmação final.\n\nExemplo de Interação Inicial (Script sugerido)\nCliente: \"Vocês fazem bot para WhatsApp?\"\nAgente: \"Sim! Na Stratos Tech, desenvolvemos agentes de IA para WhatsApp que não apenas respondem, mas qualificam leads e até realizam agendamentos automáticos. Mas antes, para eu te dar a melhor sugestão: hoje seu maior gargalo é a demora em responder novos clientes ou a gestão dos agendamentos que já entram?\""
+        }
+      },
+      "id": "da8f20e3-3176-4455-b5f8-08a7227bfabb",
+      "name": "Agente Site",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        480
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "dce2e9cb-7a19-4662-95d8-da337b5de79f",
+      "name": "OpenAI - Site",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        688
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "VDdtqaZU5UioRC9C",
+          "name": "ContaDiego-WladvanBotSite"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalizar = $('Normalizar Entrada').first().json;\nconst hasError = !!($json.error || ($json.code && $json.code >= 400));\nconst output = $json.output ?? $json.reply ?? $json.text ?? '';\nconst fallbackOk = 'Recebi sua mensagem. Pode me dar mais detalhes para eu te ajudar melhor?';\nconst fallbackError = 'Desculpe, tive um problema ao processar agora. Pode repetir em um instante?';\nconst reply = String(hasError ? fallbackError : (output || fallbackOk));\nconst rawSession = $json.sessionId ?? normalizar?.sessionId;\nconst sessionId = (rawSession != null && String(rawSession).trim() !== '') ? String(rawSession).trim() : `anon_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;\nconst clientSessionId = normalizar?.clientSessionId ?? sessionId;\nconst message = normalizar?.message ?? $json.message ?? '';\nconst source = normalizar?.source ?? $json.source ?? 'stratosbot-site';\nconst channel = normalizar?.channel ?? $json.channel ?? 'website-demo';\nconst lead_name = normalizar?.lead_name ?? '';\nconst lead_phone = normalizar?.lead_phone ?? '';\nconst lead_email = normalizar?.lead_email ?? '';\nreturn [{ json: { reply, sessionId, clientSessionId, message, source, channel, lead_name, lead_phone, lead_email } }];"
+      },
+      "id": "9ecb4c86-8d47-43f6-8026-cf270e6f3a5e",
+      "name": "Formatar Resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "schema": "public",
+        "tableId": "stratosbot_site",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "session_id",
+              "keyValue": "={{ $json.sessionId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [40, 320],
+      "id": "b2c3d4e5-2345-5bfc-a457-e2ed9f3f6cg5",
+      "name": "Buscar sessão",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "iO1lOJv6a0uuJOJ3",
+          "name": "SupabaseCloud-N8N-sdr-br-hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const formatar = $('Formatar Resposta').first().json;\n// Este node agora roda a partir de \"Buscar sessão\"; usa o item atual para evitar pegar dado antigo de outra execução.\nconst existing = ($json && typeof $json === 'object' && Object.keys($json).length > 0) ? $json : null;\nconst existingConv = (function () {\n  var raw = existing?.conversation;\n  if (Array.isArray(raw)) return raw;\n  if (typeof raw === 'string') {\n    try { var parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch (e) { return []; }\n  }\n  return [];\n})();\nconst turn = { role: 'user', message: formatar.message, reply: formatar.reply, at: new Date().toISOString() };\nconst merged = [...existingConv, turn];\nmerged.sort(function (a, b) {\n  var atA = a && a.at ? new Date(a.at).getTime() : 0;\n  var atB = b && b.at ? new Date(b.at).getTime() : 0;\n  return atA - atB;\n});\nconst conversation = merged;\nconst lead_name = (formatar.lead_name && String(formatar.lead_name).trim() !== '') ? String(formatar.lead_name).trim() : (existing?.lead_name ?? null);\nconst lead_phone = (formatar.lead_phone && String(formatar.lead_phone).trim() !== '') ? String(formatar.lead_phone).trim() : (existing?.lead_phone ?? null);\nconst lead_email = (formatar.lead_email && String(formatar.lead_email).trim() !== '') ? String(formatar.lead_email).trim() : (existing?.lead_email ?? null);\nreturn [{ json: {\n  sessionId: formatar.sessionId,\n  conversation,\n  message: formatar.message,\n  reply: formatar.reply,\n  source: formatar.source,\n  channel: formatar.channel,\n  lead_name,\n  lead_phone,\n  lead_email,\n  updated_at: new Date().toISOString(),\n  existingId: existing?.id ?? null\n}}];"
+      },
+      "id": "c3d4e5f6-3456-6cgd-b568-f3fe0g4g7dh6",
+      "name": "Montar conversation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [120, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            {
+              "id": "has-existing",
+              "leftValue": "={{ $json.existingId != null && $json.existingId !== '' ? String($json.existingId) : '' }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d4e5f6g7-4567-7dhe-c679-g4gf1h5h8ei7",
+      "name": "Sessão existe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [200, 320]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "tableId": "stratosbot_site",
+        "dataToSend": "defineBelow",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.existingId }}" }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "conversation", "fieldValue": "={{ $json.conversation }}" },
+            { "fieldId": "message", "fieldValue": "={{ $json.message }}" },
+            { "fieldId": "reply", "fieldValue": "={{ $json.reply }}" },
+            { "fieldId": "lead_name", "fieldValue": "={{ $json.lead_name }}" },
+            { "fieldId": "lead_phone", "fieldValue": "={{ $json.lead_phone }}" },
+            { "fieldId": "lead_email", "fieldValue": "={{ $json.lead_email }}" },
+            { "fieldId": "source", "fieldValue": "={{ $json.source }}" },
+            { "fieldId": "channel", "fieldValue": "={{ $json.channel }}" },
+            { "fieldId": "payload", "fieldValue": "={{ JSON.stringify({ message: $json.message, reply: $json.reply, lead_name: $json.lead_name, lead_phone: $json.lead_phone, lead_email: $json.lead_email }) }}" },
+            { "fieldId": "updated_at", "fieldValue": "={{ $json.updated_at }}" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [320, 220],
+      "id": "e5f6g7h8-5678-8eif-d780-h5hg2i6i9fj8",
+      "name": "Atualizar Sessão",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "iO1lOJv6a0uuJOJ3",
+          "name": "SupabaseCloud-N8N-sdr-br-hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "schema": "public",
+        "tableId": "stratosbot_site",
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "session_id", "fieldValue": "={{ $json.sessionId }}" },
+            { "fieldId": "event_type", "fieldValue": "chat_message" },
+            { "fieldId": "role", "fieldValue": "user" },
+            { "fieldId": "message", "fieldValue": "={{ $json.message }}" },
+            { "fieldId": "reply", "fieldValue": "={{ $json.reply }}" },
+            { "fieldId": "lead_name", "fieldValue": "={{ $json.lead_name }}" },
+            { "fieldId": "lead_phone", "fieldValue": "={{ $json.lead_phone }}" },
+            { "fieldId": "lead_email", "fieldValue": "={{ $json.lead_email }}" },
+            { "fieldId": "source", "fieldValue": "={{ $json.source }}" },
+            { "fieldId": "channel", "fieldValue": "={{ $json.channel }}" },
+            { "fieldId": "payload", "fieldValue": "={{ JSON.stringify({ message: $json.message, reply: $json.reply, lead_name: $json.lead_name, lead_phone: $json.lead_phone, lead_email: $json.lead_email }) }}" },
+            { "fieldId": "conversation", "fieldValue": "={{ $json.conversation }}" },
+            { "fieldId": "updated_at", "fieldValue": "={{ $json.updated_at }}" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [320, 420],
+      "id": "a1b2c3d4-1234-4afb-9346-e1dc8e2e5bf4",
+      "name": "Criar Sessão",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "iO1lOJv6a0uuJOJ3",
+          "name": "SupabaseCloud-N8N-sdr-br-hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ (() => { const normNode = $('Normalizar Entrada'); const fmtNode = $('Formatar Resposta'); const norm = normNode.isExecuted ? normNode.first().json : {}; const d = fmtNode.isExecuted ? fmtNode.first().json : {}; const reply = (d?.reply || $json.reply) || 'Desculpe, ocorreu um erro. Tente novamente em instantes.'; const sessionId = (d?.clientSessionId ?? norm?.clientSessionId ?? d?.sessionId ?? norm?.sessionId ?? $json.sessionId) ?? ''; return { reply, sessionId }; })() }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "578f2999-d805-4c76-9ab4-ba9d6487627f",
+      "name": "Responder Site",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Está é a referencia sobre o que você deve responder para o usuário",
+        "tableName": {
+          "__rl": true,
+          "value": "documentosragsdr",
+          "mode": "list",
+          "cachedResultName": "documentosragsdr"
+        },
+        "topK": 10,
+        "useReranker": "={{ false }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        672
+      ],
+      "id": "a55123b7-fdab-4c39-b81d-fa15cc548175",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "iO1lOJv6a0uuJOJ3",
+          "name": "SupabaseCloud-N8N-sdr-br-hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "stratosbot_site",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        688
+      ],
+      "id": "66cd1f34-689d-4afb-9346-e1dc8e2e5bf4",
+      "name": "Create a row in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "iO1lOJv6a0uuJOJ3",
+          "name": "SupabaseCloud-N8N-sdr-br-hotmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        880
+      ],
+      "id": "c20af8fb-9c1f-44a5-ad46-7d022cbc1e41",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "VDdtqaZU5UioRC9C",
+          "name": "ContaDiego-WladvanBotSite"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $json.sessionId }}",
+        "sessionTTL": 86400,
+        "contextWindowLength": 30
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        -208,
+        784
+      ],
+      "id": "ef863a58-230d-426f-8ecd-7ba943c9a034",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "Q8Mpx4dh40Ou3gQ4",
+          "name": "Redis account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Site": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Entrada": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Vazia?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Vazia?": {
+      "main": [
+        [
+          {
+            "node": "Resposta Vazia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta Vazia": {
+      "main": [
+        [
+          {
+            "node": "Responder Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Site": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Site": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Site",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Resposta": {
+      "main": [
+        [
+          {
+            "node": "Buscar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar sessão": {
+      "main": [
+        [
+          {
+            "node": "Montar conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar conversation": {
+      "main": [
+        [
+          {
+            "node": "Sessão existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sessão existe?": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Sessão": {
+      "main": [
+        [
+          {
+            "node": "Responder Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Sessão": {
+      "main": [
+        [
+          {
+            "node": "Responder Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Site",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente Site",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3de12e05115bb098a2e608aedd8d1df01efc945ce74e7ee49ad2f8130afb48fe"
+  }
+}
