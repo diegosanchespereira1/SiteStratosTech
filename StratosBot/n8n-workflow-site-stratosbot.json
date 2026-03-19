@@ -217,7 +217,7 @@
         },
         "fieldsUi": {
           "fieldValues": [
-            { "fieldId": "conversation", "fieldValue": "={{ JSON.stringify($json.conversation) }}" },
+            { "fieldId": "conversation", "fieldValue": "={{ $json.conversation }}" },
             { "fieldId": "message", "fieldValue": "={{ $json.message }}" },
             { "fieldId": "reply", "fieldValue": "={{ $json.reply }}" },
             { "fieldId": "lead_name", "fieldValue": "={{ $json.lead_name }}" },
@@ -262,7 +262,7 @@
             { "fieldId": "source", "fieldValue": "={{ $json.source }}" },
             { "fieldId": "channel", "fieldValue": "={{ $json.channel }}" },
             { "fieldId": "payload", "fieldValue": "={{ JSON.stringify({ message: $json.message, reply: $json.reply, lead_name: $json.lead_name, lead_phone: $json.lead_phone, lead_email: $json.lead_email }) }}" },
-            { "fieldId": "conversation", "fieldValue": "={{ JSON.stringify($json.conversation) }}" },
+            { "fieldId": "conversation", "fieldValue": "={{ $json.conversation }}" },
             { "fieldId": "updated_at", "fieldValue": "={{ $json.updated_at }}" }
           ]
         }
