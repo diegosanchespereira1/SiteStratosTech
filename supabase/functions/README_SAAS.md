@@ -57,6 +57,8 @@ Use o arquivo `supabase/functions/.env.example` como referência; copie para `.e
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 
+Passo a passo (Dashboard Stripe, SQL `plans.stripe_price_id`, webhook, deploy): **[docs/STRIPE_INTEGRACAO.md](../docs/STRIPE_INTEGRACAO.md)**.
+
 ### Evolution API (WhatsApp)
 - `EVOLUTION_API_BASE_URL` – URL base da Evolution (sem barra no final). Ex.: `https://evolution.seudominio.com`
 - `EVOLUTION_API_KEY` – API Key da Evolution (header `apikey` nas chamadas da Edge Function)

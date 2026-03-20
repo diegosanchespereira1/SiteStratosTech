@@ -51,6 +51,36 @@ function mapStripeStatus(status?: string): string {
   return "inactive";
 }
 
+async function resolvePlanIdByCode(
+  supabase: ReturnType<typeof createAdminClient>,
+  planCode: string | null | undefined,
+): Promise<string | null> {
+  const code = String(planCode ?? "").trim().toLowerCase();
+  if (!code) return null;
+  const { data } = await supabase
+    .from("plans")
+    .select("id")
+    .eq("code", code)
+    .eq("active", true)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
+async function markBillingOnboardingComplete(
+  supabase: ReturnType<typeof createAdminClient>,
+  tenantId: string,
+) {
+  await supabase.from("onboarding_steps").upsert(
+    {
+      tenant_id: tenantId,
+      step_code: "billing",
+      status: "completed",
+      completed_at: new Date().toISOString(),
+    },
+    { onConflict: "tenant_id,step_code" },
+  );
+}
+
 serve(async (req: Request) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -84,9 +114,10 @@ serve(async (req: Request) => {
       return jsonResponse(400, { ok: false, error: "Evento Stripe invalido." });
     }
 
+    const obj = event?.data?.object;
     const tenantId =
-      event?.data?.object?.metadata?.tenant_id ??
-      event?.data?.object?.subscription_details?.metadata?.tenant_id ??
+      obj?.metadata?.tenant_id ??
+      obj?.subscription_details?.metadata?.tenant_id ??
       null;
 
     const { error: eventInsertError } = await supabase.from("billing_events").insert({
@@ -108,20 +139,33 @@ serve(async (req: Request) => {
 
     if (eventType === "checkout.session.completed") {
       const sessionObj = event.data.object;
-      await supabase.from("subscriptions").upsert({
+      const planCode = sessionObj.metadata?.plan_code;
+      const planId = await resolvePlanIdByCode(supabase, planCode);
+
+      const upsertRow: Record<string, unknown> = {
         tenant_id: tenantId,
         stripe_customer_id: sessionObj.customer ?? null,
         stripe_subscription_id: sessionObj.subscription ?? null,
         stripe_checkout_session_id: sessionObj.id ?? null,
         status: "active",
-      }, { onConflict: "tenant_id" });
+      };
+      if (planId) upsertRow.plan_id = planId;
+
+      await supabase.from("subscriptions").upsert(upsertRow as never, { onConflict: "tenant_id" });
+      await markBillingOnboardingComplete(supabase, tenantId);
     }
 
     if (eventType === "customer.subscription.updated" || eventType === "customer.subscription.created") {
       const subscription = event.data.object;
+      const subTenantId = subscription.metadata?.tenant_id ?? tenantId;
+      if (!subTenantId) {
+        return jsonResponse(200, { ok: true, ignored: true, reason: "tenant_id ausente na subscription" });
+      }
       const mapped = mapStripeStatus(subscription.status);
-      await supabase.from("subscriptions").upsert({
-        tenant_id: tenantId,
+      const planId = await resolvePlanIdByCode(supabase, subscription.metadata?.plan_code);
+
+      const upsertRow: Record<string, unknown> = {
+        tenant_id: subTenantId,
         stripe_customer_id: subscription.customer ?? null,
         stripe_subscription_id: subscription.id ?? null,
         status: mapped,
@@ -131,18 +175,29 @@ serve(async (req: Request) => {
         current_period_end: subscription.current_period_end
           ? new Date(subscription.current_period_end * 1000).toISOString()
           : null,
-      }, { onConflict: "tenant_id" });
+      };
+      if (planId) upsertRow.plan_id = planId;
+
+      await supabase.from("subscriptions").upsert(upsertRow as never, { onConflict: "tenant_id" });
+
+      if (mapped === "active" || mapped === "trialing") {
+        await markBillingOnboardingComplete(supabase, subTenantId);
+      }
     }
 
     if (eventType === "customer.subscription.deleted") {
       const subscription = event.data.object;
+      const subTenantId = subscription.metadata?.tenant_id ?? tenantId;
+      if (!subTenantId) {
+        return jsonResponse(200, { ok: true, ignored: true, reason: "tenant_id ausente na subscription" });
+      }
       await supabase
         .from("subscriptions")
         .update({
           status: "canceled",
           stripe_subscription_id: subscription.id ?? null,
         })
-        .eq("tenant_id", tenantId);
+        .eq("tenant_id", subTenantId);
     }
 
     await writeOperationLog({

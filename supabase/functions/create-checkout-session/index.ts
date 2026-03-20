@@ -52,12 +52,19 @@ serve(async (req: Request) => {
       return jsonResponse(500, { ok: false, error: "STRIPE_SECRET_KEY nao configurada." });
     }
 
+    const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+    const customerEmail = authUser?.user?.email?.trim();
+
     const stripePayload = new URLSearchParams();
     stripePayload.set("mode", "subscription");
     stripePayload.set("success_url", successUrl);
     stripePayload.set("cancel_url", cancelUrl);
     stripePayload.set("line_items[0][price]", plan.stripe_price_id);
     stripePayload.set("line_items[0][quantity]", "1");
+    stripePayload.set("client_reference_id", tenantId);
+    if (customerEmail) {
+      stripePayload.set("customer_email", customerEmail);
+    }
     stripePayload.set("metadata[tenant_id]", tenantId);
     stripePayload.set("metadata[plan_code]", plan.code);
     stripePayload.set("subscription_data[metadata][tenant_id]", tenantId);

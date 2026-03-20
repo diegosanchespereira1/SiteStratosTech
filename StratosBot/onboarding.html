@@ -91,6 +91,98 @@
       max-width: 420px;
       width: 92%;
     }
+
+    /* Auth gate — visual alinhado a shadcn/ui (borders, ring, radius) */
+    /* Tons de verde/mint alinhados a styles.css da index (eyebrow #8cead0, marca #7be5c9 / #66c8ad) */
+    .auth-gate-pattern {
+      background-color: #0c1018;
+      background-image: url("data:image/svg+xml,%3Csvg width='56' height='48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%2376e1b5' fill-opacity='0.1' d='M28 0l28 48H0z'/%3E%3C/svg%3E");
+      background-size: 56px 48px;
+    }
+    .auth-input {
+      display: flex;
+      height: 2.5rem;
+      width: 100%;
+      border-radius: 0.375rem;
+      border: 1px solid #e2e8f0;
+      background-color: #fff;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      color: #0f172a;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .auth-input::placeholder { color: #94a3b8; }
+    .auth-input:focus {
+      outline: none;
+      border-color: rgba(132, 236, 206, 0.9);
+      box-shadow: 0 0 0 3px rgba(84, 205, 169, 0.22);
+    }
+    .auth-input:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* Altura útil abaixo do header; vh como fallback, dvh em browsers recentes */
+    .auth-gate-minh {
+      min-height: calc(100vh - 4.25rem);
+      min-height: calc(100dvh - 4.25rem);
+    }
+    /* Carrossel hero (coluna esquerda) */
+    .auth-hero-viewport {
+      overflow: hidden;
+      width: 100%;
+      max-width: min(100%, 520px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+    @media (min-width: 1280px) {
+      .auth-hero-viewport {
+        max-width: min(100%, 580px);
+      }
+    }
+    /* Área da imagem: mais larga e alta, recorte premium */
+    .auth-hero-media {
+      width: 100%;
+      height: clamp(360px, 54vh, 600px);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.25);
+    }
+    .auth-hero-media img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+    .auth-hero-track {
+      display: flex;
+      transition: transform 0.5s ease;
+      will-change: transform;
+    }
+    .auth-hero-slide {
+      flex-shrink: 0;
+      box-sizing: border-box;
+      padding-left: 0.125rem;
+      padding-right: 0.125rem;
+    }
+    .auth-hero-dot {
+      flex: 1;
+      height: 0.25rem;
+      border-radius: 9999px;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.15);
+      transition: background 0.25s ease, transform 0.2s ease;
+    }
+    .auth-hero-dot:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+    .auth-hero-dot[aria-selected="true"] {
+      background: #76e1b5;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .auth-hero-track { transition: none; }
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -104,256 +196,369 @@
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-4 py-8 space-y-6">
-    <!-- Porta de entrada: login e cadastro (visível quando não há sessão) -->
-    <section id="auth-gate" class="card rounded-xl p-0 max-w-2xl mx-auto overflow-hidden">
-      <div class="grid md:grid-cols-2">
-        <!-- Lado visual (inspirado no login-04 do shadcn/ui) -->
-        <div class="hidden md:flex flex-col justify-between bg-gradient-to-b from-[#1f163f] to-[#120c28] p-6 text-sm">
-          <div class="space-y-2">
-            <p class="text-xs uppercase tracking-wide text-[#76e1b5]">StratosBot SaaS</p>
-            <h1 class="text-xl font-bold leading-tight">Bem-vindo de volta</h1>
-            <p class="text-xs text-gray-300">
-              Faça login para continuar o onboarding, configurar WhatsApp e publicar seu agente.
-            </p>
+  <!-- Auth em largura total (sem card / sem max-width); 2 colunas a partir de md (tablet e desktop) -->
+  <section id="auth-gate" class="w-full bg-white">
+    <div class="grid auth-gate-minh grid-cols-1 md:grid-cols-2 md:divide-x md:divide-slate-200/80">
+        <!-- Coluna marcação / hero -->
+        <div class="auth-gate-pattern relative hidden min-h-0 md:flex md:flex-col md:justify-between">
+          <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="absolute -right-8 top-24 h-32 w-32 rotate-12 rounded-lg border border-[#76e1b5]/20 bg-[#76e1b5]/10"></div>
+            <div class="absolute bottom-40 left-8 h-20 w-20 -rotate-6 rounded-lg border border-[#8cead0]/25 bg-[#66c8ad]/10"></div>
           </div>
-          <div class="space-y-1 text-xs text-gray-400">
-            <p>• Login seguro via Supabase Auth.</p>
-            <p>• Tenant, instância WhatsApp e assinatura vinculados automaticamente ao seu usuário.</p>
+          <div id="auth-hero-carousel" class="relative z-10 flex flex-col gap-8 p-8 lg:p-10">
+            <div class="flex flex-1 flex-col items-center justify-center px-2">
+              <div class="auth-hero-viewport rounded-2xl border border-white/10 bg-[#0f0d2a]/90 p-2 shadow-2xl shadow-black/40 ring-1 ring-white/5">
+                <div id="auth-hero-track" class="auth-hero-track" aria-live="polite">
+                  <!-- Troque src de cada slide por imagens suas (ex.: onboarding-hero-2.png) -->
+                  <div
+                    class="auth-hero-slide"
+                    data-title="Painel simples de usar"
+                    data-desc="Configure seu agente, WhatsApp e assinatura em um só lugar — do cadastro à publicação."
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label="1 de 3"
+                  >
+                    <div class="auth-hero-media">
+                      <img
+                        src="onboarding-hero-reference.png"
+                        alt="Prévia do painel StratosBot"
+                        width="800"
+                        height="1000"
+                        loading="eager"
+                      />
+                    </div>
+                  </div>
+                  <div
+                    class="auth-hero-slide"
+                    data-title="Atendimento no WhatsApp"
+                    data-desc="Conecte seu número, veja o status da instância e publique o robô quando estiver pronto."
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label="2 de 3"
+                  >
+                    <div class="auth-hero-media">
+                      <img
+                        src="onboarding-hero-reference.png"
+                        alt="Fluxo de conexão WhatsApp no StratosBot"
+                        width="800"
+                        height="1000"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                  <div
+                    class="auth-hero-slide"
+                    data-title="Assinatura e limites claros"
+                    data-desc="Ative o plano no Stripe, acompanhe o uso e escale quando precisar."
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label="3 de 3"
+                  >
+                    <div class="auth-hero-media">
+                      <img
+                        src="onboarding-hero-reference.png"
+                        alt="Checkout e planos StratosBot"
+                        width="800"
+                        height="1000"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="relative z-10 space-y-3">
+              <h1 id="auth-hero-title" class="text-xl font-bold leading-tight text-white lg:text-2xl">Painel simples de usar</h1>
+              <p id="auth-hero-desc" class="max-w-md text-sm leading-relaxed text-white/75 lg:text-base">
+                Configure seu agente, WhatsApp e assinatura em um só lugar — do cadastro à publicação.
+              </p>
+              <div id="auth-hero-dots" class="flex gap-2 pt-2" role="tablist" aria-label="Destaques do produto"></div>
+            </div>
           </div>
         </div>
 
-        <!-- Lado do formulário -->
-        <div class="p-6 space-y-4">
-          <div class="space-y-1 text-center md:text-left">
-            <h2 class="text-lg font-semibold">Acesse sua conta</h2>
-            <p class="text-xs muted">Use e-mail e senha para entrar. Se ainda não tiver conta, você pode se cadastrar abaixo.</p>
-          </div>
-
-          <!-- Abas lógicas (mantendo IDs para o JS) -->
-          <div id="auth-mode-tabs" class="flex justify-center gap-3 text-xs">
-            <button
-              type="button"
-              id="auth-tab-login"
-              class="px-3 py-1 rounded-full border border-transparent text-[#76e1b5]"
-            >
-              Entrar
-            </button>
+        <!-- Formulários (surface clara, componentes estilo shadcn) -->
+        <div class="flex min-h-0 flex-col justify-center overflow-y-auto bg-white px-5 py-8 sm:px-10 md:px-12 lg:px-16 xl:px-20">
+          <div id="auth-mode-tabs" class="mb-6 flex gap-8 border-b border-slate-200">
             <button
               type="button"
               id="auth-tab-signup"
-              class="px-3 py-1 rounded-full border border-transparent text-gray-400 hover:text-white"
+              class="-mb-px border-b-2 border-[#66c8ad] pb-2.5 text-sm font-medium text-[#1a6b52]"
             >
               Cadastrar
             </button>
+            <button type="button" id="auth-tab-login" class="-mb-px border-b-2 border-transparent pb-2.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-800">
+              Entrar
+            </button>
           </div>
 
-          <!-- Form login (layout inspirado no login-04) -->
-          <form id="auth-form-login" class="space-y-3 mt-2">
-            <div class="space-y-2">
-              <label class="text-xs font-medium block">
-                E-mail
-                <input
-                  type="email"
-                  id="auth-email-login"
-                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
-                  placeholder="voce@empresa.com"
-                  required
-                />
-              </label>
-              <label class="text-xs font-medium block">
-                Senha
-                <div class="mt-1 relative">
+          <!-- Login -->
+          <form id="auth-form-login" class="hidden space-y-5">
+            <div class="space-y-1 text-center md:text-left">
+              <h2 class="text-xl font-semibold tracking-tight text-slate-900">Acesse sua conta</h2>
+              <p class="text-sm text-slate-500">Entre com e-mail e senha para continuar o onboarding.</p>
+            </div>
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-slate-700" for="auth-email-login">E-mail</label>
+                <div class="relative">
+                  <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    </svg>
+                  </span>
+                  <input
+                    type="email"
+                    id="auth-email-login"
+                    class="auth-input pl-10"
+                    placeholder="voce@empresa.com"
+                    required
+                    autocomplete="email"
+                  />
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-slate-700" for="auth-password-login">Senha</label>
+                <div class="relative">
+                  <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </span>
                   <input
                     type="password"
                     id="auth-password-login"
-                    class="w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm pr-9"
+                    class="auth-input pl-10 pr-10"
                     placeholder="••••••••"
                     required
+                    autocomplete="current-password"
                   />
                   <button
                     type="button"
                     id="auth-password-login-toggle"
-                    class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-200"
+                    class="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
                     aria-label="Mostrar ou ocultar senha"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
                 </div>
-              </label>
-              <div class="flex items-center justify-end">
+              </div>
+              <div class="flex justify-end">
                 <a
                   href="#password-reset-modal"
                   id="auth-forgot-password-open"
-                  class="text-[11px] text-gray-400 hover:text-white underline"
+                  class="text-xs font-medium text-[#2a8b6c] hover:text-[#1f6d56] hover:underline"
                   onclick="window.__openPasswordResetModal && window.__openPasswordResetModal()"
                 >
                   Esqueceu a senha?
                 </a>
               </div>
             </div>
-            <p id="auth-error-login" class="text-xs err hidden"></p>
+            <p id="auth-error-login" class="hidden text-sm text-red-600"></p>
             <button
               type="submit"
               id="auth-btn-login"
-              class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#76e1b5] text-[#1c1437] text-sm font-semibold py-2.5"
+              class="inline-flex h-10 w-full items-center justify-center rounded-md bg-[#76e1b5] text-sm font-semibold text-[#0c1018] shadow-sm transition-colors hover:bg-[#66c8ad] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(84,205,169,0.45)] focus-visible:ring-offset-2"
             >
               Entrar
             </button>
-
+            <p class="text-center text-xs text-slate-500">Ao continuar, você concorda com os termos e a política de privacidade.</p>
             <div class="relative my-2">
-              <div class="border-t border-white/10"></div>
-              <span class="absolute inset-0 flex items-center justify-center">
-                <span class="bg-[#050010] px-2 text-[11px] text-gray-400">Ou continue com</span>
-              </span>
+              <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-200"></span></div>
+              <div class="relative flex justify-center text-xs"><span class="bg-white px-3 text-slate-500">ou</span></div>
             </div>
-
-            <div class="grid grid-cols-3 gap-2 text-[11px]">
-              <button
-                type="button"
-                class="border border-white/10 rounded-md py-1.5 text-gray-300 hover:bg-white/5"
-                title="Exemplo visual – autenticação social não está habilitada neste MVP."
-              >
-                Google
-              </button>
-              <button
-                type="button"
-                class="border border-white/10 rounded-md py-1.5 text-gray-300 hover:bg-white/5"
-                title="Exemplo visual – autenticação social não está habilitada neste MVP."
-              >
-                Apple
-              </button>
-              <button
-                type="button"
-                class="border border-white/10 rounded-md py-1.5 text-gray-300 hover:bg-white/5"
-                title="Exemplo visual – autenticação social não está habilitada neste MVP."
-              >
-                Meta
-              </button>
-            </div>
-
-            <p class="text-[11px] text-center text-gray-500 mt-2">
-              Ao continuar, você concorda com os termos de uso e política de privacidade do serviço.
-            </p>
+            <button
+              type="button"
+              class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(84,205,169,0.35)]"
+              title="Exemplo visual – login social não está habilitado neste MVP."
+            >
+              <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Entrar com Google
+            </button>
           </form>
 
-          <!-- Form signup (mantido, mas com layout alinhado ao modelo) -->
-          <form id="auth-form-signup" class="space-y-3 mt-2 hidden">
-            <div class="space-y-2">
-              <label class="text-xs font-medium block">
-                E-mail
-                <input
-                  type="email"
-                  id="auth-email-signup"
-                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
-                  placeholder="voce@empresa.com"
-                  required
-                />
-              </label>
-              <label class="text-xs font-medium block">
-                Senha
-                <div class="mt-1 relative">
+          <!-- Cadastro -->
+          <form id="auth-form-signup" class="space-y-5">
+            <div class="space-y-1 text-center md:text-left">
+              <h2 class="text-xl font-semibold tracking-tight text-slate-900">Crie sua conta</h2>
+              <p class="text-sm text-slate-500">Cadastre-se para provisionar sua empresa e configurar o robô.</p>
+            </div>
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-slate-700" for="auth-company-signup">Nome da empresa</label>
+                <div class="relative">
+                  <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    id="auth-company-signup"
+                    class="auth-input pl-10"
+                    placeholder="Minha Empresa"
+                    required
+                    autocomplete="organization"
+                  />
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-slate-700" for="auth-email-signup">E-mail</label>
+                <div class="relative">
+                  <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    </svg>
+                  </span>
+                  <input
+                    type="email"
+                    id="auth-email-signup"
+                    class="auth-input pl-10"
+                    placeholder="voce@empresa.com"
+                    required
+                    autocomplete="email"
+                  />
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-slate-700" for="auth-password-signup">Senha</label>
+                <div class="relative">
+                  <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </span>
                   <input
                     type="password"
                     id="auth-password-signup"
-                    class="w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm pr-9"
-                    placeholder="mínimo 6 caracteres"
-                    minlength="6"
+                    class="auth-input pl-10 pr-10"
+                    placeholder="••••••••"
+                    minlength="8"
                     required
+                    autocomplete="new-password"
                   />
                   <button
                     type="button"
                     id="auth-password-signup-toggle"
-                    class="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-200"
+                    class="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
                     aria-label="Mostrar ou ocultar senha"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
                 </div>
-              </label>
-              <label class="text-xs font-medium block">
-                Nome da empresa
+                <p class="text-xs text-slate-500">Mínimo de 8 caracteres.</p>
+              </div>
+              <label class="flex cursor-pointer items-start gap-3 text-sm text-slate-600">
                 <input
-                  type="text"
-                  id="auth-company-signup"
-                  class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
-                  placeholder="Minha Empresa"
+                  type="checkbox"
+                  id="auth-terms-signup"
+                  name="terms"
                   required
+                  class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#66c8ad] focus:ring-2 focus:ring-[rgba(84,205,169,0.5)] focus:ring-offset-0"
                 />
+                <span>Concordo com os <a href="stratosbot.html" class="font-medium text-[#2a8b6c] hover:text-[#1f6d56] hover:underline">Termos e condições</a>.</span>
               </label>
             </div>
-            <p id="auth-error-signup" class="text-xs err hidden"></p>
+            <p id="auth-error-signup" class="hidden text-sm text-red-600"></p>
             <button
               type="submit"
               id="auth-btn-signup"
-              class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#76e1b5] text-[#1c1437] text-sm font-semibold py-2.5"
+              class="inline-flex h-10 w-full items-center justify-center rounded-md bg-[#76e1b5] text-sm font-semibold text-[#0c1018] shadow-sm transition-colors hover:bg-[#66c8ad] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(84,205,169,0.45)] focus-visible:ring-offset-2"
             >
               Criar conta
             </button>
-            <p class="text-[11px] text-center text-gray-500 mt-1">
+            <p class="text-center text-sm text-slate-500">
               Já tem conta?
               <button
                 type="button"
                 id="auth-tab-login-secondary"
-                class="underline text-[#76e1b5]"
+                class="font-medium text-[#2a8b6c] hover:text-[#1f6d56] hover:underline"
                 onclick="document.getElementById('auth-tab-login')?.click();"
               >
                 Entrar
               </button>
             </p>
+            <p class="text-center text-xs text-slate-500">Ao continuar, você concorda com os termos e a política de privacidade.</p>
+            <div class="relative my-2">
+              <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-200"></span></div>
+              <div class="relative flex justify-center text-xs"><span class="bg-white px-3 text-slate-500">ou</span></div>
+            </div>
+            <button
+              type="button"
+              class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(84,205,169,0.35)]"
+              title="Exemplo visual – cadastro social não está habilitado neste MVP."
+            >
+              <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Cadastrar com Google
+            </button>
           </form>
 
-          <!-- Após clicar no link do e-mail (type=recovery): definir nova senha nesta mesma URL -->
-          <div id="auth-recovery-panel" class="space-y-3 mt-2 hidden" aria-live="polite">
+          <!-- Recuperação de senha (link do e-mail) -->
+          <div id="auth-recovery-panel" class="hidden space-y-5" aria-live="polite">
             <div class="space-y-1 text-center md:text-left">
-              <h3 class="text-sm font-semibold text-[#76e1b5]">Definir nova senha</h3>
-              <p class="text-xs text-gray-400">Você abriu o link enviado por e-mail. Escolha uma nova senha para continuar.</p>
+              <h3 class="text-lg font-semibold text-slate-900">Definir nova senha</h3>
+              <p class="text-sm text-slate-500">Você abriu o link enviado por e-mail. Escolha uma nova senha para continuar.</p>
             </div>
-            <label class="text-xs font-medium block">
-              Nova senha
-              <input
-                type="password"
-                id="auth-recovery-password"
-                class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
-                placeholder="mínimo 6 caracteres"
-                minlength="6"
-                autocomplete="new-password"
-              />
-            </label>
-            <label class="text-xs font-medium block">
-              Confirmar senha
-              <input
-                type="password"
-                id="auth-recovery-password-confirm"
-                class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
-                placeholder="repita a senha"
-                minlength="6"
-                autocomplete="new-password"
-              />
-            </label>
-            <p id="auth-recovery-error" class="text-xs err hidden"></p>
+            <div class="space-y-4">
+              <label class="block space-y-2">
+                <span class="text-sm font-medium text-slate-700">Nova senha</span>
+                <input
+                  type="password"
+                  id="auth-recovery-password"
+                  class="auth-input"
+                  placeholder="mínimo 6 caracteres"
+                  minlength="6"
+                  autocomplete="new-password"
+                />
+              </label>
+              <label class="block space-y-2">
+                <span class="text-sm font-medium text-slate-700">Confirmar senha</span>
+                <input
+                  type="password"
+                  id="auth-recovery-password-confirm"
+                  class="auth-input"
+                  placeholder="repita a senha"
+                  minlength="6"
+                  autocomplete="new-password"
+                />
+              </label>
+            </div>
+            <p id="auth-recovery-error" class="hidden text-sm text-red-600"></p>
             <button
               type="button"
               id="auth-recovery-submit"
-              class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#76e1b5] text-[#1c1437] text-sm font-semibold py-2.5"
+              class="inline-flex h-10 w-full items-center justify-center rounded-md bg-[#76e1b5] text-sm font-semibold text-[#0c1018] shadow-sm transition-colors hover:bg-[#66c8ad] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(84,205,169,0.45)] focus-visible:ring-offset-2"
             >
               Salvar nova senha
             </button>
           </div>
 
-          <p id="auth-gate-config-warn" class="text-[11px] muted text-center hidden">
-            Defina <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> em <code>config.js</code> para usar login.
+          <p id="auth-gate-config-warn" class="mt-6 hidden text-center text-xs text-slate-500">
+            Defina <code class="rounded bg-slate-100 px-1 py-0.5 text-slate-800">SUPABASE_URL</code> e
+            <code class="rounded bg-slate-100 px-1 py-0.5 text-slate-800">SUPABASE_ANON_KEY</code> em
+            <code class="rounded bg-slate-100 px-1 py-0.5 text-slate-800">config.js</code> para usar login.
           </p>
         </div>
-      </div>
-    </section>
+    </div>
+  </section>
 
+  <main class="mx-auto max-w-5xl space-y-6 px-4 py-8">
     <div id="onboarding-app" class="space-y-6 hidden">
     <!-- Cabeçalho e barra de progresso do wizard -->
     <section class="card rounded-xl p-5">
@@ -414,6 +619,7 @@
           <p class="text-sm muted mt-1">Ative seu plano para liberar o robô e o WhatsApp.</p>
         </div>
         <p class="text-sm">Clique no botão abaixo para escolher seu plano e concluir o pagamento de forma segura.</p>
+        <p id="billing-return-hint" class="text-sm hidden min-h-[1.25rem]" role="status"></p>
         <div class="flex flex-wrap gap-3 items-center">
           <button type="button" id="wizard-run-billing" data-step="billing" data-action="run" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Ativar assinatura</button>
           <button type="button" id="wizard-next-1" class="px-5 py-2.5 rounded border border-white/15 hover:bg-white/10 font-medium">Já ativei, continuar</button>
@@ -802,13 +1008,10 @@
 
     function hideAuthRecoveryPanel() {
       var tabs = document.getElementById("auth-mode-tabs");
-      var fl = document.getElementById("auth-form-login");
-      var fs = document.getElementById("auth-form-signup");
       var rp = document.getElementById("auth-recovery-panel");
       if (rp) rp.classList.add("hidden");
       if (tabs) tabs.classList.remove("hidden");
-      if (fl) fl.classList.remove("hidden");
-      if (fs) fs.classList.add("hidden");
+      switchAuthTab(true);
     }
 
     function showAuthGate() {
@@ -917,6 +1120,46 @@
       return fetch(url, { ...options, signal: ctrl.signal }).finally(function () { clearTimeout(id); });
     }
 
+    function billingCheckoutUrls() {
+      try {
+        var u1 = new URL(window.location.href);
+        u1.searchParams.set("stripe", "success");
+        var u2 = new URL(window.location.href);
+        u2.searchParams.set("stripe", "canceled");
+        return { successUrl: u1.toString(), cancelUrl: u2.toString() };
+      } catch (e) {
+        return { successUrl: window.location.href, cancelUrl: window.location.href };
+      }
+    }
+
+    async function applyStripeReturnParams() {
+      try {
+        var u = new URL(window.location.href);
+        var s = u.searchParams.get("stripe");
+        if (s !== "success" && s !== "canceled") return;
+        u.searchParams.delete("stripe");
+        var qs = u.searchParams.toString();
+        var clean = u.pathname + (qs ? "?" + qs : "") + u.hash;
+        if (typeof history !== "undefined" && history.replaceState) {
+          history.replaceState({}, "", clean);
+        }
+        if (runtimeConfig.baseUrl && runtimeConfig.token) {
+          await syncStepsFromBackend();
+        }
+        var hint = document.getElementById("billing-return-hint");
+        if (hint) {
+          hint.classList.remove("hidden", "ok", "warn", "err", "muted");
+          if (s === "success") {
+            hint.textContent = "Pagamento concluído. Progresso do onboarding sincronizado com o servidor.";
+            hint.classList.add("ok");
+          } else {
+            hint.textContent = "Checkout cancelado. Você pode tentar de novo com \"Ativar assinatura\".";
+            hint.classList.add("muted");
+          }
+        }
+      } catch (e) { /* ignore */ }
+    }
+
     async function syncStepsFromBackend() {
       if (!runtimeConfig.baseUrl || !runtimeConfig.token) return false;
       try {
@@ -976,13 +1219,14 @@
       const base = runtimeConfig.baseUrl.replace(/\/+$/, "");
       try {
         if (stepCode === "billing") {
+          var urls = billingCheckoutUrls();
           const res = await fetchWithTimeout(base + "/create-checkout-session", {
             method: "POST",
             headers: authHeaders(),
             body: JSON.stringify({
               planCode: "starter",
-              successUrl: window.location.href,
-              cancelUrl: window.location.href
+              successUrl: urls.successUrl,
+              cancelUrl: urls.cancelUrl
             })
           });
           const data = await safeJson(res);
@@ -1933,15 +2177,11 @@
       var tabSignup = document.getElementById("auth-tab-signup");
       var formLogin = document.getElementById("auth-form-login");
       var formSignup = document.getElementById("auth-form-signup");
+      var tabInactive = "-mb-px border-b-2 border-transparent pb-2.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-800";
+      var tabActive = "-mb-px border-b-2 border-[#66c8ad] pb-2.5 text-sm font-medium text-[#1a6b52]";
       if (tabLogin && tabSignup) {
-        tabLogin.classList.toggle("border-[#76e1b5]", !toSignup);
-        tabLogin.classList.toggle("border-transparent", toSignup);
-        tabLogin.classList.toggle("text-[#76e1b5]", !toSignup);
-        tabLogin.classList.toggle("text-gray-400", toSignup);
-        tabSignup.classList.toggle("border-[#76e1b5]", toSignup);
-        tabSignup.classList.toggle("border-transparent", !toSignup);
-        tabSignup.classList.toggle("text-[#76e1b5]", toSignup);
-        tabSignup.classList.toggle("text-gray-400", !toSignup);
+        tabLogin.className = toSignup ? tabInactive : tabActive;
+        tabSignup.className = toSignup ? tabActive : tabInactive;
       }
       if (formLogin) formLogin.classList.toggle("hidden", toSignup);
       if (formSignup) formSignup.classList.toggle("hidden", !toSignup);
@@ -1987,6 +2227,7 @@
       setText("token-state", "Token: da sessão (preenchido automaticamente)");
       // Mostra o app imediatamente; tarefas de backend rodam em background.
       showOnboarding();
+      await applyStripeReturnParams();
       renderWizard();
       ensureTenant().catch(function () {});
       callLogSession().catch(function () {});
@@ -2027,6 +2268,7 @@
           await ensureTenant();
           showOnboarding();
           initSupabaseAuth();
+          await applyStripeReturnParams();
         } else {
           showAuthGate();
         }
@@ -2424,6 +2666,86 @@
     document.getElementById("auth-sign-out").addEventListener("click", function () {
       if (supabaseAuthClient) supabaseAuthClient.auth.signOut().then(function () { showAuthGate(); });
     });
+
+    (function initAuthHeroCarousel() {
+      var root = document.getElementById("auth-hero-carousel");
+      var track = document.getElementById("auth-hero-track");
+      var dotsWrap = document.getElementById("auth-hero-dots");
+      if (!root || !track || !dotsWrap) return;
+
+      var slides = root.querySelectorAll(".auth-hero-slide");
+      var titleEl = document.getElementById("auth-hero-title");
+      var descEl = document.getElementById("auth-hero-desc");
+      var n = slides.length;
+      if (n === 0) return;
+
+      var dots = [];
+      if (n > 1) {
+        for (var d = 0; d < n; d++) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "auth-hero-dot";
+          b.setAttribute("role", "tab");
+          b.setAttribute("aria-label", "Slide " + (d + 1) + " de " + n);
+          b.setAttribute("data-hero-index", String(d));
+          dotsWrap.appendChild(b);
+          dots.push(b);
+        }
+      } else {
+        dotsWrap.classList.add("hidden");
+      }
+
+      var i = 0;
+      var timer = null;
+      var intervalMs = 6000;
+
+      function applySlide(idx) {
+        i = ((idx % n) + n) % n;
+        var pct = (100 * i) / n;
+        track.style.transform = "translateX(-" + pct + "%)";
+        slides.forEach(function (s, j) {
+          s.setAttribute("aria-hidden", j === i ? "false" : "true");
+        });
+        if (dots.length) {
+          dots.forEach(function (btn, j) {
+            btn.setAttribute("aria-selected", j === i ? "true" : "false");
+          });
+        }
+        var active = slides[i];
+        if (active && titleEl) titleEl.textContent = active.getAttribute("data-title") || "";
+        if (active && descEl) descEl.textContent = active.getAttribute("data-desc") || "";
+      }
+
+      function next() {
+        applySlide(i + 1);
+      }
+
+      function armTimer() {
+        if (timer) clearInterval(timer);
+        if (n > 1) timer = setInterval(next, intervalMs);
+      }
+
+      dots.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var idx = parseInt(btn.getAttribute("data-hero-index") || "0", 10);
+          applySlide(idx);
+          armTimer();
+        });
+      });
+
+      root.addEventListener("mouseenter", function () {
+        if (timer) clearInterval(timer);
+      });
+      root.addEventListener("mouseleave", armTimer);
+
+      track.style.width = n * 100 + "%";
+      slides.forEach(function (s) {
+        s.style.flex = "0 0 " + 100 / n + "%";
+      });
+
+      applySlide(0);
+      armTimer();
+    })();
   </script>
 </body>
 </html>
