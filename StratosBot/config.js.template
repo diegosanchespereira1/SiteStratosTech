@@ -2,4 +2,6 @@
   "use strict";
   window.SUPABASE_URL = "${SUPABASE_URL}";
   window.SUPABASE_ANON_KEY = "${SUPABASE_ANON_KEY}";
+  /* Opcional: mesma URL que em Supabase → Authentication → Redirect URLs */
+  // window.SUPABASE_PASSWORD_RESET_REDIRECT = "${SUPABASE_PASSWORD_RESET_REDIRECT}";
 })();

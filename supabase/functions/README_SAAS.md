@@ -19,6 +19,7 @@ Este diretório contém a base inicial dos endpoints para o SaaS self-service:
 - `tenant-api-config`: salva/carrega configuração da API do tenant no banco com token mascarado.
 - `provision-tenant`: após cadastro (signUp), cria tenant + tenant_member + subscription (starter) para o usuário. POST com JWT; body: `{ companyName }`.
 - `log-session`: registra login/sessão em `auth_login_log` (user_id, tenant_id, IP, user_agent) para rastreabilidade. POST com JWT.
+- `password-reset-request`: “esqueci a senha” no onboarding — confere se o e-mail existe em `auth.users` (RPC `check_auth_user_email_exists`) e só então chama GoTrue `POST /auth/v1/recover`. O `redirect_to` enviado pelo front **precisa** estar em **Authentication → Redirect URLs**; veja `docs/SUPABASE_AUTH_REDIRECT_URLS.md` e `window.SUPABASE_PASSWORD_RESET_REDIRECT` em `config.js`. No **Edge** hospedado, o `/recover` roda em **background** (`EdgeRuntime.waitUntil`, até ~120s) e a resposta HTTP é **200** logo em seguida (`pendingDelivery: true`), porque o GoTrue costuma devolver **504** ao caller se SMTP demora (~30–40s), o que não significa que o e-mail não será enviado. Conferir logs `bg recover HTTP`. Em ambiente **sem** `waitUntil`, a função aguarda o recover (timeout ~90s). **POST público** (sem JWT). Deploy: `supabase functions deploy password-reset-request --no-verify-jwt`. Exige a migration `20260319130000_check_auth_user_email_exists.sql`.
 
 ## Onde configurar os secrets (Super Admin)
 
@@ -80,6 +81,7 @@ Use o arquivo `supabase/functions/.env.example` como referência; copie para `.e
 
 ## Observações importantes
 
+- **Reset de senha (onboarding):** aplicar a migration `20260319130000_check_auth_user_email_exists.sql` e publicar a função `password-reset-request` com `--no-verify-jwt`, pois o usuário ainda não está autenticado. O `onboarding.html` chama `POST /functions/v1/password-reset-request` com `apikey` + `Authorization: Bearer` (anon).
 - Todos os endpoints foram construídos para uso no **backend/edge**, sem expor segredos no front-end.
 - O isolamento entre clientes depende do `tenant_id` + RLS da migration `20260225113000_saas_core_multitenant.sql`.
 - Para produção, valide os paths da Evolution API da sua versão (algumas instalações variam endpoints).

@@ -73,6 +73,24 @@
       max-width: 360px;
       width: 90%;
     }
+
+    /* Modal: recuperação de senha */
+    #password-reset-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+    }
+    #password-reset-modal.hidden { display: none; }
+    #password-reset-modal:target { display: flex !important; }
+    #password-reset-modal .modal-card {
+      max-width: 420px;
+      width: 92%;
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -113,7 +131,7 @@
           </div>
 
           <!-- Abas lógicas (mantendo IDs para o JS) -->
-          <div class="flex justify-center gap-3 text-xs">
+          <div id="auth-mode-tabs" class="flex justify-center gap-3 text-xs">
             <button
               type="button"
               id="auth-tab-login"
@@ -167,9 +185,14 @@
                 </div>
               </label>
               <div class="flex items-center justify-end">
-                <span class="text-[11px] text-gray-400" title="Funcionalidade futura para fluxo de redefinição de senha.">
+                <a
+                  href="#password-reset-modal"
+                  id="auth-forgot-password-open"
+                  class="text-[11px] text-gray-400 hover:text-white underline"
+                  onclick="window.__openPasswordResetModal && window.__openPasswordResetModal()"
+                >
                   Esqueceu a senha?
-                </span>
+                </a>
               </div>
             </div>
             <p id="auth-error-login" class="text-xs err hidden"></p>
@@ -285,6 +308,44 @@
               </button>
             </p>
           </form>
+
+          <!-- Após clicar no link do e-mail (type=recovery): definir nova senha nesta mesma URL -->
+          <div id="auth-recovery-panel" class="space-y-3 mt-2 hidden" aria-live="polite">
+            <div class="space-y-1 text-center md:text-left">
+              <h3 class="text-sm font-semibold text-[#76e1b5]">Definir nova senha</h3>
+              <p class="text-xs text-gray-400">Você abriu o link enviado por e-mail. Escolha uma nova senha para continuar.</p>
+            </div>
+            <label class="text-xs font-medium block">
+              Nova senha
+              <input
+                type="password"
+                id="auth-recovery-password"
+                class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+                placeholder="mínimo 6 caracteres"
+                minlength="6"
+                autocomplete="new-password"
+              />
+            </label>
+            <label class="text-xs font-medium block">
+              Confirmar senha
+              <input
+                type="password"
+                id="auth-recovery-password-confirm"
+                class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+                placeholder="repita a senha"
+                minlength="6"
+                autocomplete="new-password"
+              />
+            </label>
+            <p id="auth-recovery-error" class="text-xs err hidden"></p>
+            <button
+              type="button"
+              id="auth-recovery-submit"
+              class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#76e1b5] text-[#1c1437] text-sm font-semibold py-2.5"
+            >
+              Salvar nova senha
+            </button>
+          </div>
 
           <p id="auth-gate-config-warn" class="text-[11px] muted text-center hidden">
             Defina <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> em <code>config.js</code> para usar login.
@@ -672,6 +733,38 @@
     </div>
   </main>
 
+  <!-- Modal fora do #onboarding-app: na tela de login o app fica hidden e o modal precisa ser visível -->
+  <div id="password-reset-modal" class="hidden" aria-modal="true" role="dialog" aria-labelledby="password-reset-modal-title">
+    <div class="modal-card card rounded-xl p-6 space-y-4">
+      <div class="space-y-1">
+        <h2 id="password-reset-modal-title" class="text-lg font-bold">Recuperar senha</h2>
+        <p class="text-sm muted">Digite o e-mail da sua conta para receber o link de redefinição.</p>
+      </div>
+      <label class="text-sm block">
+        E-mail
+        <input
+          type="email"
+          id="password-reset-email"
+          class="mt-1 w-full rounded-md bg-black/30 border border-white/15 px-3 py-2 text-sm"
+          placeholder="voce@empresa.com"
+          autocomplete="email"
+        />
+      </label>
+      <p id="password-reset-status" class="text-xs muted"></p>
+      <div class="flex flex-col sm:flex-row gap-2 flex-wrap">
+        <button type="button" id="password-reset-send" class="btn-primary flex-1 min-w-[140px] px-4 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold text-sm">
+          Enviar link de redefinição
+        </button>
+        <button type="button" id="password-reset-close" class="flex-1 min-w-[140px] px-4 py-2.5 rounded border border-white/15 hover:bg-white/10 text-sm">
+          Cancelar
+        </button>
+        <a href="#" class="flex-1 min-w-[140px] inline-flex items-center justify-center px-4 py-2.5 rounded border border-white/15 hover:bg-white/10 text-sm">
+          Fechar
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- config.js define window.SUPABASE_URL e window.SUPABASE_ANON_KEY (copie de config.example.js se não existir) -->
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -684,7 +777,38 @@
 
     var supabaseAuthClient = null;
     if (typeof window.SUPABASE_URL === "string" && window.SUPABASE_URL.trim() && typeof window.SUPABASE_ANON_KEY === "string" && window.SUPABASE_ANON_KEY.trim() && typeof supabase !== "undefined") {
-      supabaseAuthClient = supabase.createClient(window.SUPABASE_URL.trim(), window.SUPABASE_ANON_KEY.trim());
+      supabaseAuthClient = supabase.createClient(window.SUPABASE_URL.trim(), window.SUPABASE_ANON_KEY.trim(), {
+        auth: {
+          detectSessionInUrl: true,
+        },
+      });
+    }
+
+    function showAuthRecoveryPanel() {
+      var tabs = document.getElementById("auth-mode-tabs");
+      var fl = document.getElementById("auth-form-login");
+      var fs = document.getElementById("auth-form-signup");
+      var rp = document.getElementById("auth-recovery-panel");
+      var err = document.getElementById("auth-recovery-error");
+      if (tabs) tabs.classList.add("hidden");
+      if (fl) fl.classList.add("hidden");
+      if (fs) fs.classList.add("hidden");
+      if (rp) rp.classList.remove("hidden");
+      if (err) {
+        err.textContent = "";
+        err.classList.add("hidden");
+      }
+    }
+
+    function hideAuthRecoveryPanel() {
+      var tabs = document.getElementById("auth-mode-tabs");
+      var fl = document.getElementById("auth-form-login");
+      var fs = document.getElementById("auth-form-signup");
+      var rp = document.getElementById("auth-recovery-panel");
+      if (rp) rp.classList.add("hidden");
+      if (tabs) tabs.classList.remove("hidden");
+      if (fl) fl.classList.remove("hidden");
+      if (fs) fs.classList.add("hidden");
     }
 
     function showAuthGate() {
@@ -1877,7 +2001,23 @@
         initSupabaseAuth();
         return;
       }
+      supabaseAuthClient.auth.onAuthStateChange(function (event, session) {
+        if (event === "PASSWORD_RECOVERY") {
+          showAuthRecoveryPanel();
+          showAuthGate();
+        }
+      });
       supabaseAuthClient.auth.getSession().then(async function (result) {
+        await new Promise(function (r) {
+          setTimeout(r, 100);
+        });
+        var rp = document.getElementById("auth-recovery-panel");
+        if (rp && !rp.classList.contains("hidden")) {
+          showAuthGate();
+          renderWizard();
+          initSupabaseAuth();
+          return;
+        }
         if (result.data?.session) {
           runtimeConfig.token = result.data.session.access_token;
           runtimeConfig.baseUrl = (typeof window.SUPABASE_URL === "string" ? window.SUPABASE_URL.trim() : "").replace(/\/+$/, "") + "/functions/v1";
@@ -1912,6 +2052,300 @@
 
     setupPasswordToggle("auth-password-login", "auth-password-login-toggle");
     setupPasswordToggle("auth-password-signup", "auth-password-signup-toggle");
+
+    document.getElementById("auth-recovery-submit")?.addEventListener("click", function () {
+      var errEl = document.getElementById("auth-recovery-error");
+      var p1 = (document.getElementById("auth-recovery-password")?.value || "").trim();
+      var p2 = (document.getElementById("auth-recovery-password-confirm")?.value || "").trim();
+      if (errEl) {
+        errEl.textContent = "";
+        errEl.classList.add("hidden");
+      }
+      if (p1.length < 6) {
+        if (errEl) {
+          errEl.textContent = "A senha deve ter pelo menos 6 caracteres.";
+          errEl.classList.remove("hidden");
+        }
+        return;
+      }
+      if (p1 !== p2) {
+        if (errEl) {
+          errEl.textContent = "As senhas não coincidem.";
+          errEl.classList.remove("hidden");
+        }
+        return;
+      }
+      if (!supabaseAuthClient) return;
+      var btn = document.getElementById("auth-recovery-submit");
+      setButtonLoading(btn, true, "Salvando…");
+      supabaseAuthClient.auth.updateUser({ password: p1 }).then(async function (res) {
+        setButtonLoading(btn, false);
+        if (res.error) {
+          if (errEl) {
+            errEl.textContent = humanizeAuthError(res.error);
+            errEl.classList.remove("hidden");
+          }
+          return;
+        }
+        hideAuthRecoveryPanel();
+        try {
+          history.replaceState(null, "", window.location.pathname + window.location.search);
+        } catch (histErr) { /* ignore */ }
+        var sess = await supabaseAuthClient.auth.getSession();
+        if (sess.data?.session?.access_token) {
+          runtimeConfig.token = sess.data.session.access_token;
+          runtimeConfig.baseUrl = (typeof window.SUPABASE_URL === "string" ? window.SUPABASE_URL.trim() : "").replace(/\/+$/, "") + "/functions/v1";
+          var apiBase = document.getElementById("api-base");
+          if (apiBase) apiBase.value = runtimeConfig.baseUrl;
+          setText("token-state", "Token: da sessão (preenchido automaticamente)");
+          await ensureTenant();
+          showOnboarding();
+          initSupabaseAuth();
+          renderWizard();
+          callLogSession().catch(function () {});
+        }
+      }).catch(function (e) {
+        setButtonLoading(btn, false);
+        if (errEl) {
+          errEl.textContent = humanizeAuthError(e);
+          errEl.classList.remove("hidden");
+        }
+      });
+    });
+
+    function openPasswordResetModal(prefillEmail) {
+      var modal = document.getElementById("password-reset-modal");
+      var input = document.getElementById("password-reset-email");
+      var statusEl = document.getElementById("password-reset-status");
+      if (!modal || !input) return;
+      input.value = (prefillEmail || "").trim();
+      if (statusEl) {
+        statusEl.textContent = "";
+        statusEl.className = "text-xs muted";
+      }
+      modal.classList.remove("hidden");
+      setTimeout(function () { input.focus(); }, 0);
+    }
+    window.__openPasswordResetModal = function () {
+      var prefill = (document.getElementById("auth-email-login")?.value || "").trim();
+      openPasswordResetModal(prefill);
+    };
+
+    function closePasswordResetModal() {
+      var modal = document.getElementById("password-reset-modal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    function setPasswordResetStatus(text, kind) {
+      var el = document.getElementById("password-reset-status");
+      if (!el) return;
+      el.textContent = text || "";
+      el.className = "text-xs " + (kind === "ok" ? "ok" : kind === "err" ? "err" : "muted");
+    }
+
+    /** Texto amigável a partir do JSON da Edge Function password-reset-request. */
+    function userFacingPasswordResetBody(parsed, sdkFallback) {
+      if (parsed && typeof parsed === "object") {
+        if (parsed.error === "EMAIL_NOT_FOUND") {
+          return parsed.message || "Não encontramos uma conta cadastrada com esse e-mail. Verifique se digitou corretamente ou crie uma conta.";
+        }
+        if (parsed.error === "INVALID_EMAIL") {
+          return parsed.message || "Digite um e-mail válido.";
+        }
+        if (parsed.error === "RECOVER_TIMEOUT" || parsed.error === "RECOVER_FAILED") {
+          return (
+            parsed.message ||
+            "Não conseguimos enviar o link agora. Tente de novo em alguns minutos. Se persistir, fale com o suporte."
+          );
+        }
+        if (parsed.error === "CHECK_FAILED") {
+          return (
+            parsed.message ||
+            "Não foi possível verificar o e-mail no servidor. Confira os logs da Edge Function e se a migration check_auth_user_email_exists foi aplicada."
+          );
+        }
+        if (parsed.error === "SERVER_CONFIG" || parsed.error === "INTERNAL") {
+          return parsed.message || "Serviço temporariamente indisponível. Tente novamente em instantes.";
+        }
+        if (typeof parsed.message === "string" && parsed.message.trim()) {
+          return parsed.message.trim();
+        }
+      }
+      var fb = typeof sdkFallback === "string" ? sdkFallback.trim() : "";
+      if (/non-2xx|edge function returned/i.test(fb)) {
+        return "Não foi possível enviar o e-mail de recuperação agora. Tente de novo em alguns minutos.";
+      }
+      return fb || "Não foi possível concluir o pedido. Tente novamente.";
+    }
+
+    /** Mensagem legível mesmo quando o Supabase devolve objeto vazio ou AuthError estranho. */
+    function humanizeAuthError(err) {
+      if (err == null) return "Erro desconhecido. Tente novamente.";
+      if (typeof err === "string") {
+        var s = err.trim();
+        if (/non-2xx|edge function returned/i.test(s)) {
+          return "Não foi possível enviar o e-mail de recuperação agora. Tente de novo em alguns minutos.";
+        }
+        return s && s !== "{}" ? s : "Falha na comunicação. Tente de novo.";
+      }
+      if (err.name === "AbortError") {
+        return "Tempo esgotado (rede lenta ou bloqueio). Desative VPN/extensões, teste outra rede ou confira se o projeto Supabase está acessível.";
+      }
+      var m = err.message || err.msg || err.error_description;
+      if (typeof m === "string" && m.trim() && m.trim() !== "{}") {
+        if (/non-2xx|edge function returned/i.test(m.trim())) {
+          return "Não foi possível enviar o e-mail de recuperação agora. Tente de novo em alguns minutos.";
+        }
+        return m.trim();
+      }
+      if (typeof err.error === "string" && err.error.trim()) return err.error.trim();
+      if (err.error && typeof err.error === "object") {
+        var ed = err.error.message || err.error.msg || err.error.error_description;
+        if (typeof ed === "string" && ed.trim()) return ed.trim();
+      }
+      if (typeof err.status === "number") {
+        return "Erro do servidor de autenticação (HTTP " + err.status + "). No Supabase: Authentication → URL Configuration → inclua esta URL em Redirect URLs.";
+      }
+      try {
+        var j = JSON.stringify(err);
+        if (j && j !== "{}" && j !== "null") return j;
+      } catch (e) {}
+      return "Não foi possível enviar o e-mail. No painel Supabase: Authentication → URL Configuration (Site URL e Redirect URLs), e verifique se o envio de e-mail (SMTP / provedor) está ativo.";
+    }
+
+    /** redirect_to do GoTrue: deve existir em Supabase → Authentication → Redirect URLs (veja docs/SUPABASE_AUTH_REDIRECT_URLS.md). */
+    function getPasswordResetRedirectTo() {
+      if (typeof window.SUPABASE_PASSWORD_RESET_REDIRECT === "string") {
+        var fixed = window.SUPABASE_PASSWORD_RESET_REDIRECT.trim();
+        if (fixed) return fixed;
+      }
+      return window.location.origin + window.location.pathname + window.location.search;
+    }
+
+    /**
+     * Edge Function password-reset-request: verifica se o e-mail existe em auth.users (service_role)
+     * e só então chama GoTrue /recover. Assim podemos informar "e-mail não encontrado" com segurança no backend.
+     */
+    async function passwordResetRequestViaEdge(email, redirectTo) {
+      var base = typeof window.SUPABASE_URL === "string" ? window.SUPABASE_URL.trim().replace(/\/+$/, "") : "";
+      var key = typeof window.SUPABASE_ANON_KEY === "string" ? window.SUPABASE_ANON_KEY.trim() : "";
+      if (!base || !key) {
+        throw new Error("Defina SUPABASE_URL e SUPABASE_ANON_KEY em config.js.");
+      }
+      var fnUrl = base + "/functions/v1/password-reset-request";
+      /* A função responde rápido (recover em background). Margem para RPC + rede. Não usar functions.invoke() (timeout curto). */
+      var CLIENT_MS = 45000;
+      var timeoutMsg =
+        "A conexão demorou demais e não concluímos o pedido. Verifique sua internet e tente de novo em instantes.";
+
+      var ctrl = new AbortController();
+      var tid;
+      var timeoutP = new Promise(function (_, rej) {
+        tid = setTimeout(function () {
+          try {
+            ctrl.abort();
+          } catch (abErr) { /* ignore */ }
+          var e = new Error(timeoutMsg);
+          e.name = "AbortError";
+          rej(e);
+        }, CLIENT_MS);
+      });
+
+      var run = async function () {
+        var res = await fetch(fnUrl, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": key,
+            "Authorization": "Bearer " + key
+          },
+          body: JSON.stringify({ email: email, redirectTo: redirectTo || undefined }),
+          signal: ctrl.signal
+        });
+        var txt = await res.text();
+        var json = {};
+        if (txt) {
+          try { json = JSON.parse(txt); } catch (parseErr) { json = {}; }
+        }
+        if (json.error === "EMAIL_NOT_FOUND") {
+          throw new Error(json.message || "Não encontramos uma conta com esse e-mail.");
+        }
+        if (!res.ok) {
+          var desc =
+            userFacingPasswordResetBody(json, "") ||
+            (typeof json.message === "string" && json.message) ||
+            (typeof json.error === "string" && json.error) ||
+            ("Erro " + res.status + (res.status === 404 ? ". Publique a Edge Function password-reset-request e rode a migration check_auth_user_email_exists." : ""));
+          var fakeErr = new Error(desc);
+          fakeErr.status = res.status;
+          throw fakeErr;
+        }
+        return typeof json.message === "string" && json.message.trim()
+          ? json.message.trim()
+          : "Enviamos o link de redefinição para o seu e-mail.";
+      };
+
+      try {
+        return await Promise.race([run(), timeoutP]);
+      } finally {
+        clearTimeout(tid);
+      }
+    }
+
+    async function sendPasswordResetEmail() {
+      var btn = document.getElementById("password-reset-send");
+      var input = document.getElementById("password-reset-email");
+      if (!input) return;
+
+      var email = input.value.trim();
+      if (!email) {
+        setPasswordResetStatus("Informe seu e-mail para continuar.", "err");
+        input.focus();
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setPasswordResetStatus("Digite um e-mail válido.", "err");
+        input.focus();
+        return;
+      }
+      if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+        setPasswordResetStatus("Configure config.js com SUPABASE_URL e SUPABASE_ANON_KEY.", "err");
+        return;
+      }
+
+      setButtonLoading(btn, true, "Enviando…");
+      try {
+        var redirectTo = getPasswordResetRedirectTo();
+        var okMsg = await passwordResetRequestViaEdge(email, redirectTo);
+        setPasswordResetStatus(okMsg, "ok");
+      } catch (err) {
+        var msg = humanizeAuthError(err);
+        var lower = msg.toLowerCase();
+        if (lower.includes("rate limit") || lower.includes("too many") || lower.includes("email rate")) {
+          msg = "Muitas tentativas. Aguarde alguns minutos e tente de novo.";
+        }
+        setPasswordResetStatus(msg, "err");
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    document.getElementById("auth-forgot-password-open")?.addEventListener("click", function () {
+      window.__openPasswordResetModal();
+    });
+    document.getElementById("password-reset-close")?.addEventListener("click", closePasswordResetModal);
+    document.getElementById("password-reset-send")?.addEventListener("click", sendPasswordResetEmail);
+    document.getElementById("password-reset-email")?.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendPasswordResetEmail();
+      }
+    });
+    document.getElementById("password-reset-modal")?.addEventListener("click", function (e) {
+      if (e.target && e.target.id === "password-reset-modal") closePasswordResetModal();
+    });
 
     document.getElementById("auth-form-login").addEventListener("submit", async function (e) {
       e.preventDefault();

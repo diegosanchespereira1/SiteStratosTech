@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StratosBot — redirecionando…</title>
+  <script>
+    /* Links do Supabase (reset, magic link) podem cair em http://localhost:3000/ com tokens no #hash.
+       Repassa hash e query para onboarding.html, onde o Supabase JS trata a sessão. */
+    (function () {
+      var target = "onboarding.html";
+      var h = window.location.hash || "";
+      var q = window.location.search || "";
+      if (h) target += h;
+      else if (q) target += q;
+      window.location.replace(target);
+    })();
+  </script>
+</head>
+<body style="background:#050010;color:#ccc;font-family:system-ui,sans-serif;padding:2rem;">
+  <p>Redirecionando para o onboarding…</p>
+  <p><a href="onboarding.html" style="color:#76e1b5">Abrir onboarding.html</a></p>
+</body>
+</html>
