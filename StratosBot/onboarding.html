@@ -120,11 +120,6 @@
       box-shadow: 0 0 0 3px rgba(84, 205, 169, 0.22);
     }
     .auth-input:disabled { opacity: 0.5; cursor: not-allowed; }
-    /* Altura útil abaixo do header; vh como fallback, dvh em browsers recentes */
-    .auth-gate-minh {
-      min-height: calc(100vh - 4.25rem);
-      min-height: calc(100dvh - 4.25rem);
-    }
     /* Carrossel hero (coluna esquerda) */
     .auth-hero-viewport {
       overflow: hidden;
@@ -183,18 +178,46 @@
     @media (prefers-reduced-motion: reduce) {
       .auth-hero-track { transition: none; }
     }
+    /* Logo topo — alinhado a stratosbot.html (glassmorphism nav) */
+    .onboarding-logo-glow {
+      box-shadow: 0 0 20px rgba(118, 225, 181, 0.3);
+    }
+    .onboarding-nav-glass {
+      background: rgba(22, 22, 26, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    /* Altura do header fixo = h-16 (4rem) / md:h-20 (5rem), igual stratosbot.html */
+    .auth-gate-minh {
+      min-height: calc(100vh - 4rem);
+      min-height: calc(100dvh - 4rem);
+    }
+    @media (min-width: 768px) {
+      .auth-gate-minh {
+        min-height: calc(100vh - 5rem);
+        min-height: calc(100dvh - 5rem);
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-white/10">
-    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="stratosbot.html" class="font-bold tracking-tight text-lg">STRATOS <span class="text-[#76e1b5]">BOT</span></a>
-      <div class="flex items-center gap-3">
-        <a href="stratosbot.html" class="text-sm text-gray-300 hover:text-white">Voltar ao site</a>
-        <button type="button" id="auth-sign-out" class="text-sm text-gray-400 hover:text-white hidden">Sair</button>
+<body class="min-h-screen overflow-x-hidden pt-16 font-sans antialiased md:pt-20">
+  <nav class="onboarding-nav-glass fixed top-0 z-50 flex h-16 w-full items-center border-b border-white/5 md:h-20" aria-label="Principal">
+    <div class="container mx-auto flex items-center justify-between px-4 sm:px-6">
+      <a href="stratosbot.html" class="flex items-center gap-2 text-gray-100">
+        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[#76e1b5] onboarding-logo-glow">
+          <svg class="h-5 w-5 text-[#1c1437]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+          </svg>
+        </div>
+        <span class="text-lg font-extrabold tracking-tight sm:text-xl">STRATOS<span class="text-[#76e1b5]"> BOT</span></span>
+      </a>
+      <div class="flex items-center gap-3 sm:gap-8">
+        <a href="stratosbot.html" class="text-sm font-medium text-gray-400 transition-colors hover:text-[#76e1b5]">Voltar ao site</a>
+        <button type="button" id="auth-sign-out" class="text-sm font-medium text-gray-400 transition-colors hover:text-[#76e1b5] hidden">Sair</button>
       </div>
     </div>
-  </header>
+  </nav>
 
   <!-- Auth em largura total (sem card / sem max-width); 2 colunas a partir de md (tablet e desktop) -->
   <section id="auth-gate" class="w-full bg-white">
