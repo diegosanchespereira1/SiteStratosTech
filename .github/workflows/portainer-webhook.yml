@@ -1,16 +1,10 @@
-name: Portainer Webhook
-
 on:
   push:
-    branches:
-      - stratosbot-landing-stack
+    branches: [stratosbot-landing-stack]
 
 jobs:
   notify:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
-      - name: Trigger Portainer stack redeploy webhook
-        run: |
-          curl --fail --show-error --silent \
-            -X POST \
-            https://portainer.polygonconsulting.com.br/api/stacks/webhooks/dd091d4a-02a9-4cb3-bb9e-712f89d6d118
+      - run: |
+          curl --fail --show-error --silent -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
