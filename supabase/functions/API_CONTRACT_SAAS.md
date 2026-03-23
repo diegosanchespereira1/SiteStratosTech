@@ -37,7 +37,7 @@ Carrega configuração salva do tenant com token mascarado.
 ## Billing
 
 ### POST `/create-checkout-session`
-Body:
+Body (`planCode` deve existir em `public.plans` com `stripe_price_id` preenchido; ex.: `starter`, `pro`, `scale`):
 ```json
 {
   "planCode": "starter",

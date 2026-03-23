@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleCors, jsonResponse } from "../_shared/http.ts";
+import { getStripeApiVersion } from "../_shared/stripe_api_version.ts";
 import { writeOperationLog } from "../_shared/ops_log.ts";
 import { createAdminClient } from "../_shared/supabase.ts";
 
@@ -21,25 +22,36 @@ async function signHmacSHA256(payload: string, secret: string): Promise<string> 
   return hex(signature);
 }
 
+/** Stripe recomenda tolerância ao timestamp (replay); ver https://docs.stripe.com/webhooks/signature */
+const WEBHOOK_TIMESTAMP_TOLERANCE_SEC = 300;
+
 async function isValidWebhook(rawBody: string, header: string, secret: string): Promise<boolean> {
   if (!header || !secret) return false;
 
   const parts = header.split(",").map((x) => x.trim());
   const timestampPart = parts.find((p) => p.startsWith("t="));
-  const signaturePart = parts.find((p) => p.startsWith("v1="));
+  const signatureParts = parts.filter((p) => p.startsWith("v1="));
 
-  if (!timestampPart || !signaturePart) return false;
+  if (!timestampPart || signatureParts.length === 0) return false;
   const timestamp = timestampPart.replace("t=", "");
-  const signature = signaturePart.replace("v1=", "");
+  const tsNum = parseInt(timestamp, 10);
+  if (Number.isNaN(tsNum)) return false;
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - tsNum) > WEBHOOK_TIMESTAMP_TOLERANCE_SEC) return false;
+
   const signedPayload = `${timestamp}.${rawBody}`;
   const expected = await signHmacSHA256(signedPayload, secret);
 
-  if (expected.length !== signature.length) return false;
-  let diff = 0;
-  for (let i = 0; i < expected.length; i += 1) {
-    diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+  for (const sp of signatureParts) {
+    const signature = sp.replace("v1=", "");
+    if (expected.length !== signature.length) continue;
+    let diff = 0;
+    for (let i = 0; i < expected.length; i += 1) {
+      diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+    }
+    if (diff === 0) return true;
   }
-  return diff === 0;
+  return false;
 }
 
 function mapStripeStatus(status?: string): string {
@@ -81,6 +93,41 @@ async function markBillingOnboardingComplete(
   );
 }
 
+/** https://docs.stripe.com/payments/checkout/fulfillment — dados fiáveis da API (payload do evento pode ser mínimo). */
+async function retrieveCheckoutSession(sessionId: string): Promise<Record<string, unknown> | null> {
+  const key = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+  if (!key || !sessionId) return null;
+  const ver = getStripeApiVersion();
+  const url =
+    `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}` +
+    `?expand[]=subscription`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Stripe-Version": ver,
+    },
+  });
+  if (!res.ok) return null;
+  return (await res.json()) as Record<string, unknown>;
+}
+
+function tenantIdFromCheckoutSession(sess: Record<string, unknown>): string | null {
+  const meta = sess.metadata as Record<string, string> | undefined;
+  const fromMeta = String(meta?.tenant_id ?? "").trim();
+  if (fromMeta) return fromMeta;
+  const ref = String(sess.client_reference_id ?? "").trim();
+  if (ref) return ref;
+  return null;
+}
+
+function idFromExpandable(field: unknown): string | null {
+  if (typeof field === "string" && field.length > 0) return field;
+  if (field && typeof field === "object" && "id" in field) {
+    return String((field as { id: string }).id);
+  }
+  return null;
+}
+
 serve(async (req: Request) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -115,10 +162,40 @@ serve(async (req: Request) => {
     }
 
     const obj = event?.data?.object;
-    const tenantId =
-      obj?.metadata?.tenant_id ??
-      obj?.subscription_details?.metadata?.tenant_id ??
-      null;
+    let tenantId: string | null = null;
+    let checkoutSessionResolved: Record<string, unknown> | null = null;
+
+    if (eventType === "checkout.session.completed") {
+      const payloadSession = obj as Record<string, unknown>;
+      const sid = String(payloadSession.id ?? "");
+      let session = payloadSession;
+      const retrieved = await retrieveCheckoutSession(sid);
+      if (retrieved) session = retrieved;
+      checkoutSessionResolved = session;
+
+      const paymentStatus = String(session.payment_status ?? "");
+      if (paymentStatus === "unpaid") {
+        const { error: insUnpaid } = await supabase.from("billing_events").insert({
+          tenant_id: tenantIdFromCheckoutSession(session),
+          source: "stripe",
+          external_event_id: eventId,
+          event_type: eventType,
+          payload: event,
+          processed_at: new Date().toISOString(),
+        });
+        if (insUnpaid && !String(insUnpaid.message).toLowerCase().includes("duplicate")) {
+          return jsonResponse(500, { ok: false, error: insUnpaid.message });
+        }
+        return jsonResponse(200, { ok: true, ignored: true, reason: "checkout_session_unpaid" });
+      }
+
+      tenantId = tenantIdFromCheckoutSession(session);
+    } else {
+      tenantId =
+        obj?.metadata?.tenant_id ??
+        obj?.subscription_details?.metadata?.tenant_id ??
+        null;
+    }
 
     const { error: eventInsertError } = await supabase.from("billing_events").insert({
       tenant_id: tenantId,
@@ -134,19 +211,20 @@ serve(async (req: Request) => {
     }
 
     if (!tenantId) {
-      return jsonResponse(200, { ok: true, ignored: true, reason: "tenant_id ausente no metadata" });
+      return jsonResponse(200, { ok: true, ignored: true, reason: "tenant_id_ausente_metadata_ou_client_reference_id" });
     }
 
-    if (eventType === "checkout.session.completed") {
-      const sessionObj = event.data.object;
-      const planCode = sessionObj.metadata?.plan_code;
+    if (eventType === "checkout.session.completed" && checkoutSessionResolved) {
+      const session = checkoutSessionResolved;
+      const meta = session.metadata as Record<string, string> | undefined;
+      const planCode = meta?.plan_code;
       const planId = await resolvePlanIdByCode(supabase, planCode);
 
       const upsertRow: Record<string, unknown> = {
         tenant_id: tenantId,
-        stripe_customer_id: sessionObj.customer ?? null,
-        stripe_subscription_id: sessionObj.subscription ?? null,
-        stripe_checkout_session_id: sessionObj.id ?? null,
+        stripe_customer_id: idFromExpandable(session.customer),
+        stripe_subscription_id: idFromExpandable(session.subscription),
+        stripe_checkout_session_id: session.id ?? null,
         status: "active",
       };
       if (planId) upsertRow.plan_id = planId;

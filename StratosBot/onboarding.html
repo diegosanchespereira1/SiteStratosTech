@@ -199,6 +199,54 @@
         min-height: calc(100dvh - 5rem);
       }
     }
+    /* Overlay Stripe: não depende do Tailwind CDN (evita ecrã “partido” se o CSS atrasar) */
+    #stripe-return-overlay.stripe-return-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      box-sizing: border-box;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+      background: rgba(12, 16, 24, 0.98);
+      color: #e5e7eb;
+    }
+    #stripe-return-overlay.stripe-return-overlay.stripe-return-overlay--visible {
+      display: flex !important;
+    }
+    #stripe-return-overlay .stripe-return-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #76e1b5;
+      margin: 0;
+    }
+    #stripe-return-overlay .stripe-return-sub {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.72);
+      margin: 0.5rem 0 0;
+      max-width: 22rem;
+    }
+    #stripe-return-overlay .stripe-return-spin {
+      margin-top: 1.5rem;
+      width: 2.25rem;
+      height: 2.25rem;
+      border: 2px solid #76e1b5;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: stripe-spin 0.7s linear infinite;
+    }
+    @keyframes stripe-spin {
+      to { transform: rotate(360deg); }
+    }
+    .billing-provisioning-spin {
+      animation: stripe-spin 0.7s linear infinite;
+    }
+    body.stripe-return-overlay-active {
+      overflow: hidden;
+    }
   </style>
 </head>
 <body class="min-h-screen overflow-x-hidden pt-16 font-sans antialiased md:pt-20">
@@ -218,6 +266,13 @@
       </div>
     </div>
   </nav>
+
+  <!-- Cobre login/onboarding ao voltar do Stripe (CSS próprio; não depende do Tailwind) -->
+  <div id="stripe-return-overlay" class="stripe-return-overlay" role="status" aria-live="polite" aria-hidden="true">
+    <p class="stripe-return-title">A concluir o pagamento…</p>
+    <p class="stripe-return-sub">A sincronizar a sua conta e o estado da assinatura.</p>
+    <div class="stripe-return-spin" aria-hidden="true"></div>
+  </div>
 
   <!-- Auth em largura total (sem card / sem max-width); 2 colunas a partir de md (tablet e desktop) -->
   <section id="auth-gate" class="w-full bg-white">
@@ -639,12 +694,50 @@
       <div id="panel-step-1" class="card rounded-xl p-5 space-y-4 wizard-panel hidden">
         <div>
           <h2 class="text-lg font-semibold">Assinatura</h2>
-          <p class="text-sm muted mt-1">Ative seu plano para liberar o robô e o WhatsApp.</p>
+          <p id="billing-subtitle-default" class="text-sm muted mt-1">Ative seu plano para liberar o robô e o WhatsApp.</p>
+          <p id="billing-subtitle-paid" class="text-sm muted mt-1 hidden ok">Pagamento confirmado. Segue para conectar o WhatsApp.</p>
         </div>
-        <p class="text-sm">Clique no botão abaixo para escolher seu plano e concluir o pagamento de forma segura.</p>
-        <p id="billing-return-hint" class="text-sm hidden min-h-[1.25rem]" role="status"></p>
-        <div class="flex flex-wrap gap-3 items-center">
-          <button type="button" id="wizard-run-billing" data-step="billing" data-action="run" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold">Ativar assinatura</button>
+        <p id="billing-intro-checkout" class="text-sm">Escolha um plano abaixo. Ao clicar em <strong>Ativar assinatura</strong>, o sistema prepara o pagamento e <strong>abre o site da Stripe</strong> (página segura) para você inserir o cartão. Depois do pagamento você volta automaticamente para esta página.</p>
+        <!-- Pós-Stripe (como ChatGPT/Gemini): sucesso imediato, sem lista de preços até o servidor confirmar -->
+        <div id="billing-provisioning-card" class="hidden rounded-xl border border-[#76e1b5]/40 bg-[#76e1b5]/8 px-4 py-4 space-y-3" role="status">
+          <div class="flex items-start gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#76e1b5]/25 text-[#76e1b5]" aria-hidden="true">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div class="min-w-0 flex-1 space-y-1">
+              <p class="text-sm font-semibold text-[#76e1b5]">Pagamento concluído</p>
+              <p class="text-sm muted leading-relaxed">A Stripe confirmou o pagamento. Estamos ativando sua assinatura — em instantes você segue para o WhatsApp.</p>
+            </div>
+          </div>
+          <div id="billing-provisioning-sync-row" class="flex items-center gap-2 text-xs muted pt-1 border-t border-white/10">
+            <span id="billing-provisioning-spinner" class="billing-provisioning-spin inline-block h-4 w-4 shrink-0 rounded-full border-2 border-[#76e1b5] border-t-transparent" aria-hidden="true"></span>
+            <span id="billing-provisioning-status">Sincronizando com o servidor…</span>
+          </div>
+          <div id="billing-provisioning-actions" class="hidden flex flex-wrap gap-2 pt-2">
+            <button type="button" id="billing-retry-sync" class="rounded-lg border border-[#76e1b5]/50 bg-[#76e1b5]/15 px-3 py-1.5 text-xs font-medium text-[#76e1b5] hover:bg-[#76e1b5]/25">
+              Tentar sincronizar de novo
+            </button>
+            <button type="button" id="billing-reload-page" class="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/10">
+              Atualizar página
+            </button>
+          </div>
+        </div>
+        <div id="billing-completed-card" class="hidden rounded-xl border border-[#76e1b5]/35 bg-[#76e1b5]/10 px-4 py-3 space-y-1">
+          <p class="text-sm font-semibold text-[#76e1b5]">Assinatura ativa</p>
+          <p id="billing-completed-detail" class="text-sm muted"></p>
+        </div>
+        <div id="billing-flow" class="space-y-4">
+          <div class="space-y-2">
+            <p class="text-sm font-medium">Plano</p>
+            <p id="billing-plan-loading" class="text-sm muted hidden">A carregar planos…</p>
+            <p id="billing-plan-empty" class="text-sm err hidden min-h-[1.25rem] rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2" role="status"></p>
+            <div id="billing-plan-options" class="space-y-2" role="radiogroup" aria-label="Plano de assinatura"></div>
+          </div>
+          <p id="billing-checkout-status" class="text-sm hidden min-h-[1.25rem] rounded-md border border-white/10 bg-white/5 px-3 py-2" role="status"></p>
+          <p id="billing-checkout-error" class="text-sm hidden min-h-[1.25rem] err rounded-md border border-red-400/30 bg-red-500/10 px-3 py-2" role="alert"></p>
+        </div>
+        <div class="flex flex-wrap gap-3 items-center" id="billing-actions-row">
+          <button type="button" id="wizard-run-billing" data-step="billing" data-action="run" class="btn-primary px-5 py-2.5 rounded bg-[#76e1b5] text-[#1c1437] font-semibold" disabled>Ativar assinatura</button>
           <button type="button" id="wizard-next-1" class="px-5 py-2.5 rounded border border-white/15 hover:bg-white/10 font-medium">Já ativei, continuar</button>
         </div>
         <div class="flex gap-3 pt-2">
@@ -654,6 +747,9 @@
 
       <!-- Passo 2: Conectar WhatsApp -->
       <div id="panel-step-2" class="card rounded-xl p-5 space-y-4 wizard-panel hidden">
+        <p id="whatsapp-after-pay-banner" class="hidden text-sm ok rounded-lg border border-[#76e1b5]/30 bg-[#76e1b5]/10 px-3 py-2" role="status">
+          Pagamento concluído. Conecte o WhatsApp abaixo para continuar.
+        </p>
         <div>
           <h2 class="text-lg font-semibold">Conectar seu WhatsApp</h2>
           <p class="text-sm muted mt-1">O robô vai atender pelos contatos deste número. Conecte o WhatsApp do celular que você usa no dia a dia.</p>
@@ -1005,10 +1101,13 @@
     };
 
     var supabaseAuthClient = null;
+    /** Planos com stripe_price_id (cache do passo Assinatura). */
+    var billingPlansCache = [];
     if (typeof window.SUPABASE_URL === "string" && window.SUPABASE_URL.trim() && typeof window.SUPABASE_ANON_KEY === "string" && window.SUPABASE_ANON_KEY.trim() && typeof supabase !== "undefined") {
       supabaseAuthClient = supabase.createClient(window.SUPABASE_URL.trim(), window.SUPABASE_ANON_KEY.trim(), {
         auth: {
           detectSessionInUrl: true,
+          persistSession: true,
         },
       });
     }
@@ -1115,6 +1214,9 @@
     function authHeaders() {
       const headers = { "Content-Type": "application/json" };
       if (runtimeConfig.token) headers["Authorization"] = `Bearer ${runtimeConfig.token}`;
+      // O gateway das Edge Functions do Supabase exige apikey (anon) junto do JWT do usuário.
+      const anon = typeof window.SUPABASE_ANON_KEY === "string" ? window.SUPABASE_ANON_KEY.trim() : "";
+      if (anon) headers["apikey"] = anon;
       return headers;
     }
 
@@ -1143,6 +1245,263 @@
       return fetch(url, { ...options, signal: ctrl.signal }).finally(function () { clearTimeout(id); });
     }
 
+    function updateBillingActivateButton() {
+      var btn = document.getElementById("wizard-run-billing");
+      if (!btn) return;
+      var plans = billingPlansCache || [];
+      var selected = document.querySelector('input[name="billing-plan"]:checked');
+      var canPay = plans.length > 0 && (selected || plans.length === 1);
+      btn.disabled = !canPay;
+    }
+
+    function getSelectedBillingPlanCode() {
+      var sel = document.querySelector('input[name="billing-plan"]:checked');
+      if (sel) return sel.value;
+      if (billingPlansCache && billingPlansCache.length === 1) return billingPlansCache[0].code;
+      return "";
+    }
+
+    function renderBillingPlanRadios(plans, allRowsMissingPrice) {
+      var wrap = document.getElementById("billing-plan-options");
+      var emptyEl = document.getElementById("billing-plan-empty");
+      if (emptyEl) {
+        emptyEl.classList.add("hidden");
+        emptyEl.textContent = "";
+      }
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      if (!plans.length) {
+        if (emptyEl) {
+          if (allRowsMissingPrice) {
+            emptyEl.textContent = "Os planos existem na base de dados, mas nenhum tem stripe_price_id. No Supabase → SQL Editor: update public.plans set stripe_price_id = 'price_...' where code = 'starter'; (use o Price ID do Stripe.) Ver docs/STRIPE_INTEGRACAO.md.";
+          } else {
+            emptyEl.textContent = "Nenhum plano ativo encontrado. Peça ao administrador para verificar a tabela public.plans.";
+          }
+          emptyEl.classList.remove("hidden");
+        }
+        updateBillingActivateButton();
+        return;
+      }
+      plans.forEach(function (p, idx) {
+        var label = document.createElement("label");
+        label.className = "flex items-start gap-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2 cursor-pointer hover:border-[#76e1b5]/40";
+        var input = document.createElement("input");
+        input.type = "radio";
+        input.name = "billing-plan";
+        input.value = p.code;
+        input.id = "billing-plan-" + p.code;
+        input.className = "mt-1";
+        if (idx === 0) input.checked = true;
+        input.addEventListener("change", updateBillingActivateButton);
+        var span = document.createElement("span");
+        var title = document.createElement("span");
+        title.className = "font-medium";
+        title.textContent = p.name || p.code;
+        var codeSpan = document.createElement("span");
+        codeSpan.className = "text-xs muted";
+        codeSpan.textContent = " (" + p.code + ")";
+        var br = document.createElement("br");
+        var priceLine = null;
+        if (p.display_price_brl && String(p.display_price_brl).trim()) {
+          priceLine = document.createElement("span");
+          priceLine.className = "text-sm text-[#76e1b5] font-semibold block mt-0.5";
+          priceLine.textContent = String(p.display_price_brl).trim();
+        }
+        var br2 = document.createElement("br");
+        var sub = document.createElement("span");
+        sub.className = "text-xs muted";
+        sub.textContent = "Até " + (p.monthly_message_limit || 0) + " mensagens/mês · " + (p.max_whatsapp_instances || 0) + " WhatsApp(s)";
+        span.appendChild(title);
+        span.appendChild(codeSpan);
+        span.appendChild(br);
+        if (priceLine) span.appendChild(priceLine);
+        span.appendChild(br2);
+        span.appendChild(sub);
+        label.appendChild(input);
+        label.appendChild(span);
+        wrap.appendChild(label);
+      });
+      updateBillingActivateButton();
+    }
+
+    async function loadBillingPlans() {
+      var loadingEl = document.getElementById("billing-plan-loading");
+      var emptyEl = document.getElementById("billing-plan-empty");
+      var wrap = document.getElementById("billing-plan-options");
+      if (loadingEl) loadingEl.classList.remove("hidden");
+      if (emptyEl) {
+        emptyEl.classList.add("hidden");
+        emptyEl.textContent = "";
+      }
+      if (wrap) wrap.innerHTML = "";
+      billingPlansCache = [];
+      updateBillingActivateButton();
+
+      if (!runtimeConfig.token || typeof window.SUPABASE_URL !== "string" || !window.SUPABASE_URL.trim()) {
+        if (loadingEl) loadingEl.classList.add("hidden");
+        if (emptyEl) {
+          emptyEl.textContent = "Faça login para carregar os planos.";
+          emptyEl.classList.remove("hidden");
+        }
+        return;
+      }
+      var anon = typeof window.SUPABASE_ANON_KEY === "string" ? window.SUPABASE_ANON_KEY.trim() : "";
+      if (!anon) {
+        if (loadingEl) loadingEl.classList.add("hidden");
+        if (emptyEl) {
+          emptyEl.textContent = "Configure SUPABASE_ANON_KEY em config.js.";
+          emptyEl.classList.remove("hidden");
+        }
+        return;
+      }
+
+      try {
+        var base = window.SUPABASE_URL.trim().replace(/\/+$/, "");
+        // Sem filtro PostgREST "not.is.null" (varia entre versões); filtramos no cliente.
+        var restUrl = base + "/rest/v1/plans?active=eq.true&select=code,name,monthly_message_limit,max_whatsapp_instances,stripe_price_id,display_price_brl&order=name.asc";
+        var res = await fetch(restUrl, {
+          headers: {
+            apikey: anon,
+            Authorization: "Bearer " + runtimeConfig.token,
+            Accept: "application/json",
+          },
+        });
+        var json = await res.json();
+        if (!res.ok) throw new Error(json.message || json.error || JSON.stringify(json));
+        var raw = Array.isArray(json) ? json : [];
+        var withPrice = raw.filter(function (p) {
+          return p && typeof p.stripe_price_id === "string" && p.stripe_price_id.trim().length > 0;
+        });
+        var plans = withPrice.map(function (p) {
+          return {
+            code: p.code,
+            name: p.name,
+            monthly_message_limit: p.monthly_message_limit,
+            max_whatsapp_instances: p.max_whatsapp_instances,
+            display_price_brl: p.display_price_brl,
+          };
+        });
+        billingPlansCache = plans;
+        renderBillingPlanRadios(plans, raw.length > 0 && withPrice.length === 0);
+      } catch (e) {
+        billingPlansCache = [];
+        renderBillingPlanRadios([]);
+        if (emptyEl) {
+          emptyEl.textContent = "Não foi possível carregar os planos. " + (e.message || String(e));
+          emptyEl.classList.remove("hidden");
+        }
+      } finally {
+        if (loadingEl) loadingEl.classList.add("hidden");
+        updateBillingActivateButton();
+      }
+    }
+
+    function setBillingCheckoutUi(statusText, errorText) {
+      var st = document.getElementById("billing-checkout-status");
+      var er = document.getElementById("billing-checkout-error");
+      if (st) {
+        st.classList.remove("ok", "warn", "muted");
+        if (statusText) {
+          st.textContent = statusText;
+          st.classList.remove("hidden");
+        } else {
+          st.textContent = "";
+          st.classList.add("hidden");
+        }
+      }
+      if (er) {
+        if (errorText) {
+          er.textContent = errorText;
+          er.classList.remove("hidden");
+        } else {
+          er.textContent = "";
+          er.classList.add("hidden");
+        }
+      }
+    }
+
+    function hasStripeReturnQuery() {
+      try {
+        var u = new URL(window.location.href);
+        var s = u.searchParams.get("stripe");
+        return s === "success" || s === "canceled";
+      } catch (e) {
+        return false;
+      }
+    }
+
+    var STRIPE_CHECKOUT_PENDING_TTL_MS = 15 * 60 * 1000;
+
+    function isStripeCheckoutPending() {
+      try {
+        if (sessionStorage.getItem("stratos_stripe_checkout_pending") !== "1") return false;
+        var at = parseInt(sessionStorage.getItem("stratos_stripe_checkout_pending_at") || "0", 10);
+        if (!at) {
+          sessionStorage.removeItem("stratos_stripe_checkout_pending");
+          return false;
+        }
+        if (Date.now() - at > STRIPE_CHECKOUT_PENDING_TTL_MS) {
+          sessionStorage.removeItem("stratos_stripe_checkout_pending");
+          sessionStorage.removeItem("stratos_stripe_checkout_pending_at");
+          return false;
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function setStripeCheckoutPending(on) {
+      try {
+        if (on) {
+          sessionStorage.setItem("stratos_stripe_checkout_pending", "1");
+          sessionStorage.setItem("stratos_stripe_checkout_pending_at", String(Date.now()));
+        } else {
+          sessionStorage.removeItem("stratos_stripe_checkout_pending");
+          sessionStorage.removeItem("stratos_stripe_checkout_pending_at");
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    function showStripeReturnOverlay() {
+      var el = document.getElementById("stripe-return-overlay");
+      if (!el) return;
+      el.classList.add("stripe-return-overlay--visible");
+      el.setAttribute("aria-hidden", "false");
+      document.body.classList.add("stripe-return-overlay-active");
+      var title = el.querySelector(".stripe-return-title");
+      var sub = el.querySelector(".stripe-return-sub");
+      try {
+        var s = new URL(window.location.href).searchParams.get("stripe");
+        if (title) title.textContent = s === "canceled" ? "A voltar ao checkout…" : "A concluir o pagamento…";
+        if (sub) {
+          sub.textContent =
+            s === "canceled"
+              ? "Pode escolher outro plano e tentar de novo."
+              : "A sincronizar a sua conta e o estado da assinatura.";
+        }
+      } catch (e) {
+        if (title) title.textContent = "A sincronizar…";
+      }
+    }
+
+    function hideStripeReturnOverlay() {
+      var el = document.getElementById("stripe-return-overlay");
+      if (el) {
+        el.classList.remove("stripe-return-overlay--visible");
+        el.setAttribute("aria-hidden", "true");
+      }
+      document.body.classList.remove("stripe-return-overlay-active");
+    }
+
+    /** Esconde login e wizard durante o sync Stripe (evita conteúdo “sem layout” por baixo do overlay). */
+    function prepareStripeReturnLoadingUi() {
+      var gate = document.getElementById("auth-gate");
+      var app = document.getElementById("onboarding-app");
+      if (gate) gate.classList.add("hidden");
+      if (app) app.classList.add("hidden");
+    }
+
     function billingCheckoutUrls() {
       try {
         var u1 = new URL(window.location.href);
@@ -1160,24 +1519,53 @@
         var u = new URL(window.location.href);
         var s = u.searchParams.get("stripe");
         if (s !== "success" && s !== "canceled") return;
+        if (!runtimeConfig.baseUrl || !runtimeConfig.token) return;
+
         u.searchParams.delete("stripe");
         var qs = u.searchParams.toString();
         var clean = u.pathname + (qs ? "?" + qs : "") + u.hash;
         if (typeof history !== "undefined" && history.replaceState) {
           history.replaceState({}, "", clean);
         }
-        if (runtimeConfig.baseUrl && runtimeConfig.token) {
+
+        if (s === "success") {
+          setStripeCheckoutPending(true);
+          try {
+            sessionStorage.removeItem("stratos_stripe_sync_gave_up");
+          } catch (e) { /* ignore */ }
+          stopStripeBillingBackgroundSync();
+          var billingReady = await syncStepsFromBackendFastForStripe(2400, 320);
+          if (!billingReady) {
+            startStripeBillingBackgroundSync();
+          } else {
+            setStripeCheckoutPending(false);
+          }
+        } else {
           await syncStepsFromBackend();
         }
-        var hint = document.getElementById("billing-return-hint");
-        if (hint) {
-          hint.classList.remove("hidden", "ok", "warn", "err", "muted");
-          if (s === "success") {
-            hint.textContent = "Pagamento concluído. Progresso do onboarding sincronizado com o servidor.";
-            hint.classList.add("ok");
-          } else {
-            hint.textContent = "Checkout cancelado. Você pode tentar de novo com \"Ativar assinatura\".";
-            hint.classList.add("muted");
+
+        setBillingCheckoutUi("", "");
+
+        if (s === "success") {
+          var stOk = loadState();
+          if (stOk.billing) {
+            setStripeCheckoutPending(false);
+            try {
+              sessionStorage.setItem("stratos_stripe_just_paid", "1");
+            } catch (e2) { /* ignore */ }
+            stOk.wizardStep = 2;
+            saveState(stOk);
+          } else if (isStripeCheckoutPending()) {
+            var stP = loadState();
+            stP.wizardStep = 1;
+            saveState(stP);
+          }
+        } else {
+          var stEl = document.getElementById("billing-checkout-status");
+          if (stEl) {
+            stEl.textContent = "Checkout cancelado. Pode escolher outro plano e tentar de novo.";
+            stEl.classList.remove("hidden");
+            stEl.classList.add("muted");
           }
         }
       } catch (e) { /* ignore */ }
@@ -1186,22 +1574,229 @@
     async function syncStepsFromBackend() {
       if (!runtimeConfig.baseUrl || !runtimeConfig.token) return false;
       try {
-        const res = await fetch(`${runtimeConfig.baseUrl.replace(/\/+$/, "")}/onboarding-status`, {
-          method: "GET",
-          headers: authHeaders()
-        });
+        const res = await fetchWithTimeout(
+          `${runtimeConfig.baseUrl.replace(/\/+$/, "")}/onboarding-status`,
+          {
+            method: "GET",
+            headers: authHeaders()
+          },
+          12000
+        );
+        if (!res.ok) {
+          if (res.status === 401) setStripeCheckoutPending(false);
+          return false;
+        }
         const data = await safeJson(res);
         if (!data.ok || !Array.isArray(data.steps)) return false;
-        const next = {};
+        const prev = loadState();
+        const next = Object.assign({}, prev);
         for (const step of data.steps) {
           if (step && typeof step.stepCode === "string") {
             next[step.stepCode] = step.status === "completed";
+          }
+        }
+        if (data.currentPlan && typeof data.currentPlan === "object") {
+          next.activePlanName = typeof data.currentPlan.name === "string" ? data.currentPlan.name : "";
+          next.activePlanCode = typeof data.currentPlan.code === "string" ? data.currentPlan.code : "";
+          if (data.currentPlan.displayPriceBrl != null && data.currentPlan.displayPriceBrl !== "") {
+            next.activePlanDisplayPrice = data.currentPlan.displayPriceBrl;
+          }
+        }
+        var sub = (data.subscriptionStatus && String(data.subscriptionStatus).toLowerCase()) || "";
+        var paidFromSubscription =
+          sub === "active" ||
+          sub === "trialing" ||
+          sub === "past_due" ||
+          data.hasPaidSubscription === true;
+        if (paidFromSubscription) {
+          next.billing = true;
+          if (!prev.billing) {
+            persistStepToBackend("billing", true).catch(function () {});
           }
         }
         saveState(next);
         return true;
       } catch {
         return false;
+      }
+    }
+
+    /** Sincronização rápida enquanto o overlay está visível (máx. ~maxMs; não bloqueia minutos). */
+    async function syncStepsFromBackendFastForStripe(maxMs, gapMs) {
+      maxMs = typeof maxMs === "number" ? maxMs : 2400;
+      gapMs = typeof gapMs === "number" ? gapMs : 320;
+      var deadline = Date.now() + maxMs;
+      while (Date.now() < deadline) {
+        await syncStepsFromBackend();
+        if (loadState().billing) return true;
+        if (Date.now() + gapMs > deadline) break;
+        await new Promise(function (r) {
+          setTimeout(r, gapMs);
+        });
+      }
+      return !!loadState().billing;
+    }
+
+    /** Máximo de tentativas de sync pós-Stripe (~20–25 s no total); depois para e oferece ações manuais. */
+    var STRIPE_BILLING_SYNC_MAX_ATTEMPTS = 10;
+    var STRIPE_BILLING_SYNC_INTERVAL_MS = 2000;
+
+    function stopStripeBillingBackgroundSync() {
+      if (window.__stratosStripeBillingPoll != null) {
+        clearTimeout(window.__stratosStripeBillingPoll);
+        window.__stratosStripeBillingPoll = null;
+      }
+    }
+
+    function resetProvisioningSyncUI() {
+      var sp = document.getElementById("billing-provisioning-spinner");
+      var actions = document.getElementById("billing-provisioning-actions");
+      if (sp) sp.classList.remove("hidden");
+      if (actions) actions.classList.add("hidden");
+    }
+
+    function applyProvisioningStoppedUi() {
+      var sp = document.getElementById("billing-provisioning-spinner");
+      var actions = document.getElementById("billing-provisioning-actions");
+      var statusEl = document.getElementById("billing-provisioning-status");
+      if (sp) sp.classList.add("hidden");
+      if (statusEl) {
+        statusEl.textContent =
+          "Não foi possível confirmar no servidor a tempo. Use os botões abaixo ou fale com o suporte se o pagamento já aparecer na Stripe.";
+      }
+      if (actions) actions.classList.remove("hidden");
+    }
+
+    function showProvisioningSyncStopped() {
+      stopStripeBillingBackgroundSync();
+      try {
+        sessionStorage.setItem("stratos_stripe_sync_gave_up", "1");
+      } catch (e) { /* ignore */ }
+      applyProvisioningStoppedUi();
+    }
+
+    /** Após fechar o overlay: confirmação em segundo plano (sem bloquear a UI). */
+    function startStripeBillingBackgroundSync() {
+      stopStripeBillingBackgroundSync();
+      try {
+        if (sessionStorage.getItem("stratos_stripe_sync_gave_up") === "1") {
+          applyProvisioningStoppedUi();
+          return;
+        }
+      } catch (e) { /* ignore */ }
+      resetProvisioningSyncUI();
+      var attempts = 0;
+      var max = STRIPE_BILLING_SYNC_MAX_ATTEMPTS;
+      function schedule(delay) {
+        window.__stratosStripeBillingPoll = setTimeout(async function () {
+          if (!runtimeConfig.token) {
+            stopStripeBillingBackgroundSync();
+            return;
+          }
+          attempts++;
+          var statusEl = document.getElementById("billing-provisioning-status");
+          if (statusEl) {
+            statusEl.textContent = "Sincronizando… (" + attempts + "/" + max + ")";
+          }
+          try {
+            await syncStepsFromBackend();
+          } catch (e) {
+            /* timeout/rede: segue para próxima tentativa ou paragem */
+          }
+          if (loadState().billing) {
+            stopStripeBillingBackgroundSync();
+            setStripeCheckoutPending(false);
+            try {
+              sessionStorage.setItem("stratos_stripe_just_paid", "1");
+            } catch (e2) {}
+            var st = loadState();
+            st.wizardStep = 2;
+            saveState(st);
+            setBillingCheckoutUi("", "");
+            renderWizard();
+            return;
+          }
+          if (attempts >= max) {
+            showProvisioningSyncStopped();
+            return;
+          }
+          schedule(STRIPE_BILLING_SYNC_INTERVAL_MS);
+        }, delay);
+      }
+      schedule(0);
+    }
+
+    function updateBillingStepView() {
+      var state = loadState();
+      var paid = !!state.billing;
+      var checkoutPending = isStripeCheckoutPending();
+      var flow = document.getElementById("billing-flow");
+      var card = document.getElementById("billing-completed-card");
+      var provisioning = document.getElementById("billing-provisioning-card");
+      var intro = document.getElementById("billing-intro-checkout");
+      var subDef = document.getElementById("billing-subtitle-default");
+      var subPaid = document.getElementById("billing-subtitle-paid");
+      var detail = document.getElementById("billing-completed-detail");
+      var actionsRow = document.getElementById("billing-actions-row");
+      var runBtn = document.getElementById("wizard-run-billing");
+      var nextBtn = document.getElementById("wizard-next-1");
+      if (paid) {
+        setStripeCheckoutPending(false);
+        if (provisioning) provisioning.classList.add("hidden");
+        if (flow) flow.classList.add("hidden");
+        if (intro) intro.classList.add("hidden");
+        if (card) card.classList.remove("hidden");
+        if (subDef) subDef.classList.add("hidden");
+        if (subPaid) subPaid.classList.remove("hidden");
+        if (actionsRow) actionsRow.classList.add("hidden");
+        var label = (state.activePlanName || "").trim();
+        var code = (state.activePlanCode || "").trim();
+        var price = state.activePlanDisplayPrice;
+        var priceStr = price != null && String(price).trim() !== "" ? String(price).trim() : "";
+        if (detail) {
+          var parts = [];
+          if (label) parts.push(label);
+          if (code) parts.push(code);
+          var head = parts.length ? parts.join(" · ") : "Plano ativo";
+          detail.textContent = priceStr
+            ? head + " — " + priceStr + "/mês. Segue para conectar o WhatsApp."
+            : head + ". Segue para conectar o WhatsApp.";
+        }
+        if (runBtn) {
+          runBtn.classList.add("hidden");
+          runBtn.disabled = true;
+        }
+        if (nextBtn) nextBtn.classList.add("hidden");
+      } else if (checkoutPending) {
+        if (flow) flow.classList.add("hidden");
+        if (intro) intro.classList.add("hidden");
+        if (card) card.classList.add("hidden");
+        if (provisioning) provisioning.classList.remove("hidden");
+        if (subDef) subDef.classList.add("hidden");
+        if (subPaid) subPaid.classList.remove("hidden");
+        if (actionsRow) actionsRow.classList.add("hidden");
+        if (runBtn) {
+          runBtn.classList.add("hidden");
+          runBtn.disabled = true;
+        }
+        if (nextBtn) nextBtn.classList.add("hidden");
+        try {
+          if (sessionStorage.getItem("stratos_stripe_sync_gave_up") === "1") {
+            applyProvisioningStoppedUi();
+          }
+        } catch (e) { /* ignore */ }
+      } else {
+        if (provisioning) provisioning.classList.add("hidden");
+        if (flow) flow.classList.remove("hidden");
+        if (intro) intro.classList.remove("hidden");
+        if (card) card.classList.add("hidden");
+        if (subDef) subDef.classList.remove("hidden");
+        if (subPaid) subPaid.classList.add("hidden");
+        if (actionsRow) actionsRow.classList.remove("hidden");
+        if (detail) detail.textContent = "";
+        if (runBtn) runBtn.classList.remove("hidden");
+        if (nextBtn) nextBtn.classList.remove("hidden");
+        updateBillingActivateButton();
       }
     }
 
@@ -1242,19 +1837,45 @@
       const base = runtimeConfig.baseUrl.replace(/\/+$/, "");
       try {
         if (stepCode === "billing") {
+          var planCode = getSelectedBillingPlanCode();
+          if (!planCode) {
+            setBillingCheckoutUi("", "Selecione um plano ou aguarde o carregamento da lista.");
+            if (runBtn) setButtonLoading(runBtn, false);
+            return;
+          }
+          setBillingCheckoutUi("Conectando ao servidor para abrir o pagamento na Stripe…", "");
           var urls = billingCheckoutUrls();
           const res = await fetchWithTimeout(base + "/create-checkout-session", {
             method: "POST",
             headers: authHeaders(),
             body: JSON.stringify({
-              planCode: "starter",
+              planCode: planCode,
               successUrl: urls.successUrl,
               cancelUrl: urls.cancelUrl
             })
           });
           const data = await safeJson(res);
-          if (data.checkoutUrl) window.location.href = data.checkoutUrl;
-          else throw new Error(data.error || "Checkout não retornou URL.");
+          var checkoutUrl = typeof data.checkoutUrl === "string" ? data.checkoutUrl.trim()
+            : (typeof data.url === "string" ? data.url.trim() : "");
+          if (!res.ok || data.ok === false) {
+            var errMsg = data.error || ("Erro HTTP " + res.status);
+            if (res.status === 401) {
+              errMsg = "Sessão inválida ou expirada. Faça login de novo. Se o problema continuar, confira se config.js tem SUPABASE_ANON_KEY (o Supabase exige esse header nas funções).";
+            } else if (String(data.error || "").indexOf("stripe_price_id") !== -1 || String(data.error || "").indexOf("Plano invalido") !== -1) {
+              errMsg = "O plano \"" + planCode + "\" não tem preço Stripe configurado (stripe_price_id) ou não existe. Peça ao administrador para atualizar public.plans no Supabase.";
+            } else if (String(data.error || "").indexOf("STRIPE_SECRET_KEY") !== -1) {
+              errMsg = "Pagamento indisponível: a chave Stripe não está configurada no servidor (secret STRIPE_SECRET_KEY).";
+            }
+            setBillingCheckoutUi("", errMsg);
+            return;
+          }
+          if (!checkoutUrl || checkoutUrl.indexOf("https://") !== 0) {
+            var detail = data.details && typeof data.details === "object" ? " Detalhe: " + (data.details.message || JSON.stringify(data.details).slice(0, 120)) : "";
+            setBillingCheckoutUi("", "Não recebemos o link do checkout da Stripe." + detail);
+            return;
+          }
+          setBillingCheckoutUi("Redirecionando para a página segura da Stripe para pagamento…", "");
+          window.location.assign(checkoutUrl);
           return;
         }
 
@@ -1360,6 +1981,31 @@
           formEl.classList.remove("hidden");
         }
       }
+      if (current === 1 && !state.billing && !isStripeCheckoutPending()) {
+        loadBillingPlans();
+      }
+      if (current === 2) {
+        var banner = document.getElementById("whatsapp-after-pay-banner");
+        if (banner) {
+          var justPaid = false;
+          try {
+            justPaid = sessionStorage.getItem("stratos_stripe_just_paid") === "1";
+          } catch (e) { /* ignore */ }
+          if (justPaid && loadState().billing) {
+            banner.classList.remove("hidden");
+            var nm = (loadState().activePlanName || "").trim();
+            banner.textContent = nm
+              ? "Pagamento confirmado (" + nm + "). Conecte o WhatsApp abaixo."
+              : "Pagamento confirmado. Conecte o WhatsApp abaixo.";
+            try {
+              sessionStorage.removeItem("stratos_stripe_just_paid");
+            } catch (e2) { /* ignore */ }
+          } else {
+            banner.classList.add("hidden");
+          }
+        }
+      }
+      updateBillingStepView();
     }
 
     var qrRefreshIntervalId = null;
@@ -2132,6 +2778,35 @@
     document.getElementById("wizard-back-1")?.addEventListener("click", function () { setWizardStepIndex(0); });
     document.getElementById("wizard-next-1")?.addEventListener("click", function () { setWizardStepIndex(2); });
 
+    document.getElementById("billing-retry-sync")?.addEventListener("click", async function () {
+      if (!runtimeConfig.token) return;
+      try {
+        sessionStorage.removeItem("stratos_stripe_sync_gave_up");
+      } catch (e) { /* ignore */ }
+      resetProvisioningSyncUI();
+      var statusEl = document.getElementById("billing-provisioning-status");
+      if (statusEl) statusEl.textContent = "Sincronizando…";
+      await syncStepsFromBackend();
+      if (loadState().billing) {
+        setStripeCheckoutPending(false);
+        try {
+          sessionStorage.setItem("stratos_stripe_just_paid", "1");
+        } catch (e) {}
+        var stOk = loadState();
+        stOk.wizardStep = 2;
+        saveState(stOk);
+        renderWizard();
+        return;
+      }
+      startStripeBillingBackgroundSync();
+    });
+
+    document.getElementById("billing-reload-page")?.addEventListener("click", function () {
+      try {
+        location.reload();
+      } catch (e) {}
+    });
+
     document.getElementById("wizard-back-2")?.addEventListener("click", function () { setWizardStepIndex(1); });
     document.getElementById("wizard-next-2")?.addEventListener("click", function () { setWizardStepIndex(3); });
 
@@ -2248,11 +2923,18 @@
       var apiBase = document.getElementById("api-base");
       if (apiBase) apiBase.value = runtimeConfig.baseUrl;
       setText("token-state", "Token: da sessão (preenchido automaticamente)");
-      // Mostra o app imediatamente; tarefas de backend rodam em background.
+      await ensureTenant();
+      var stripeReturn = hasStripeReturnQuery();
+      if (stripeReturn) {
+        showStripeReturnOverlay();
+        prepareStripeReturnLoadingUi();
+        await applyStripeReturnParams();
+        hideStripeReturnOverlay();
+      } else {
+        await syncStepsFromBackend();
+      }
       showOnboarding();
-      await applyStripeReturnParams();
       renderWizard();
-      ensureTenant().catch(function () {});
       callLogSession().catch(function () {});
     }
 
@@ -2271,12 +2953,12 @@
           showAuthGate();
         }
       });
+      var stripeReturn = hasStripeReturnQuery();
+      if (stripeReturn) showStripeReturnOverlay();
       supabaseAuthClient.auth.getSession().then(async function (result) {
-        await new Promise(function (r) {
-          setTimeout(r, 100);
-        });
         var rp = document.getElementById("auth-recovery-panel");
         if (rp && !rp.classList.contains("hidden")) {
+          hideStripeReturnOverlay();
           showAuthGate();
           renderWizard();
           initSupabaseAuth();
@@ -2289,14 +2971,34 @@
           if (apiBase) apiBase.value = runtimeConfig.baseUrl;
           setText("token-state", "Token: da sessão (preenchido automaticamente)");
           await ensureTenant();
+          if (stripeReturn) {
+            prepareStripeReturnLoadingUi();
+            await applyStripeReturnParams();
+            hideStripeReturnOverlay();
+          } else {
+            await syncStepsFromBackend();
+            if (isStripeCheckoutPending() && !loadState().billing) {
+              try {
+                if (sessionStorage.getItem("stratos_stripe_sync_gave_up") === "1") {
+                  applyProvisioningStoppedUi();
+                } else {
+                  startStripeBillingBackgroundSync();
+                }
+              } catch (e) {
+                startStripeBillingBackgroundSync();
+              }
+            }
+          }
           showOnboarding();
           initSupabaseAuth();
-          await applyStripeReturnParams();
+          callLogSession().catch(function () {});
         } else {
+          hideStripeReturnOverlay();
           showAuthGate();
         }
         renderWizard();
       }).catch(function () {
+        hideStripeReturnOverlay();
         showAuthGate();
         renderWizard();
       });
@@ -2687,7 +3389,29 @@
     });
 
     document.getElementById("auth-sign-out").addEventListener("click", function () {
+      stopStripeBillingBackgroundSync();
+      setStripeCheckoutPending(false);
+      try {
+        sessionStorage.removeItem("stratos_stripe_sync_gave_up");
+      } catch (e) { /* ignore */ }
       if (supabaseAuthClient) supabaseAuthClient.auth.signOut().then(function () { showAuthGate(); });
+    });
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState !== "visible" || !runtimeConfig.token) return;
+      if (!isStripeCheckoutPending()) return;
+      syncStepsFromBackend().then(function () {
+        if (loadState().billing) {
+          setStripeCheckoutPending(false);
+          try {
+            sessionStorage.setItem("stratos_stripe_just_paid", "1");
+          } catch (e) {}
+          var st = loadState();
+          st.wizardStep = 2;
+          saveState(st);
+          renderWizard();
+        }
+      });
     });
 
     (function initAuthHeroCarousel() {

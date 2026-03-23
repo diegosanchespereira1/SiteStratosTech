@@ -56,6 +56,7 @@ Use o arquivo `supabase/functions/.env.example` como referência; copie para `.e
 ### Stripe
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_API_VERSION` *(opcional; default no código, alinhado ao pacote `stripe`)*
 
 Passo a passo (Dashboard Stripe, SQL `plans.stripe_price_id`, webhook, deploy): **[docs/STRIPE_INTEGRACAO.md](../docs/STRIPE_INTEGRACAO.md)**.
 

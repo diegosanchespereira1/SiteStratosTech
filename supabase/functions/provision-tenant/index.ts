@@ -92,17 +92,28 @@ serve(async (req: Request) => {
       });
     }
 
-    const { data: starterPlan } = await supabase
+    const { data: starterMonthly } = await supabase
       .from("plans")
       .select("id")
-      .eq("code", "starter")
+      .eq("code", "starter_monthly")
       .eq("active", true)
       .maybeSingle();
 
-    if (starterPlan?.id) {
+    let starterPlanId: string | undefined = starterMonthly?.id as string | undefined;
+    if (!starterPlanId) {
+      const { data: starterLegacy } = await supabase
+        .from("plans")
+        .select("id")
+        .eq("code", "starter")
+        .eq("active", true)
+        .maybeSingle();
+      starterPlanId = starterLegacy?.id as string | undefined;
+    }
+
+    if (starterPlanId) {
       await supabase.from("subscriptions").insert({
         tenant_id: tenant.id,
-        plan_id: starterPlan.id,
+        plan_id: starterPlanId,
         status: "inactive",
       });
     }
