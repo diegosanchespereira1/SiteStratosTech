@@ -1,0 +1,23 @@
+{
+  "name": "test",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.combinedMessage }}",
+        "options": {
+          "systemMessage": "HEAD\n\n---\n\n# REGRAS DE ATENDIMENTO\n1. x\n2. y\n\n---\n\n# TRANSFERÊNCIA PARA ATENDENTE\nTAIL"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [-192, 1760],
+      "id": "cc4b628f-96ed-487e-9c78-73e3863079fc",
+      "name": "Agente Principal"
+    }
+  ],
+  "connections": {},
+  "settings": {},
+  "meta": {},
+  "pinData": {}
+}

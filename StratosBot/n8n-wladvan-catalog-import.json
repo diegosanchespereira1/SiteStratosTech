@@ -1,0 +1,77 @@
+{
+  "name": "Wladvan — Importar catálogo (Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wladvan-catalog-import",
+        "options": {}
+      },
+      "id": "wladvan-import-webhook",
+      "name": "Webhook Import Catálogo",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "webhookId": "wladvan-catalog-import"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Saída com nomes de colunas iguais à tabela Supabase (CSV).\n * Upsert em «CÓD INTERNO» (on_conflict na URL).\n */\nconst item = $input.first().json;\nconst body = item.body ?? item;\nconst expected = $env.WLADVAN_CATALOG_IMPORT_SECRET;\nconst hdrs = item.headers || {};\nconst secret =\n  hdrs['x-wladvan-import-secret'] ||\n  hdrs['X-Wladvan-Import-Secret'] ||\n  body.import_secret;\nif (!expected || String(secret) !== String(expected)) {\n  throw new Error('Unauthorized: defina X-Wladvan-Import-Secret ou import_secret válido');\n}\nconst products = body.products;\nif (!Array.isArray(products) || products.length === 0) {\n  throw new Error('Body deve conter products[] com ao menos um item');\n}\nfunction normSku(p) {\n  const v = p.sku ?? p.cod_interno ?? p['CÓD INTERNO'] ?? p['COD INTERNO'];\n  return v != null && String(v).trim() !== '' ? String(v).trim() : null;\n}\nfunction normName(p) {\n  return String(p.name ?? p.produto ?? p.PRODUTO ?? '').trim();\n}\nconst rows = products.map(function (p) {\n  const rawPrice = p.price_brl ?? p.preco ?? p.PRECO;\n  let price_brl = null;\n  if (rawPrice !== undefined && rawPrice !== null && String(rawPrice).trim() !== '') {\n    price_brl = Number(rawPrice);\n  }\n  const st = p.stock_total ?? p.estoque_total ?? p['ESTOQUE TOTAL'];\n  let stock_total = null;\n  if (st !== undefined && st !== null && String(st).trim() !== '') {\n    stock_total = Number(String(st).replace(',', '.'));\n  }\n  const pst = p.product_status ?? p.status ?? p.STATUS;\n  const active =\n    p.active === false\n      ? false\n      : pst != null && String(pst).toUpperCase().indexOf('INAT') >= 0\n        ? false\n        : true;\n  const mf =\n    p.manufacturer_code != null && String(p.manufacturer_code).trim() !== ''\n      ? String(p.manufacturer_code).trim()\n      : p.cod_fabricante != null && String(p.cod_fabricante).trim() !== ''\n        ? String(p.cod_fabricante).trim()\n        : null;\n  const row = {\n    'CÓD INTERNO': normSku(p),\n    'PRODUTO': normName(p),\n    'CÓD FABRICANTE': mf,\n    STATUS: pst != null ? String(pst).trim() : null,\n    'ESTOQUE TOTAL': stock_total != null && !Number.isNaN(stock_total) ? stock_total : null,\n    active,\n  };\n  if (price_brl != null) row.price_brl = price_brl;\n  if (p.description != null) row.description = String(p.description);\n  if (p.brand != null) row.brand = String(p.brand);\n  if (p.vehicle_models != null) row.vehicle_models = String(p.vehicle_models);\n  if (p.category != null) row.category = String(p.category);\n  return row;\n});\nfor (const r of rows) {\n  if (!r['PRODUTO']) throw new Error('Cada item precisa de PRODUTO');\n  if (r['CÓD INTERNO'] == null) throw new Error('Cada item precisa de CÓD INTERNO');\n  if (r.price_brl != null && (Number.isNaN(r.price_brl) || r.price_brl < 0)) {\n    throw new Error('price_brl inválido para ' + r['CÓD INTERNO']);\n  }\n}\nreturn [{ json: { rows, count: rows.length } }];"
+      },
+      "id": "wladvan-import-validate",
+      "name": "Validar e normalizar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/wladvan_catalog_products?on_conflict=C%C3%93D%20INTERNO",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.rows) }}",
+        "options": {}
+      },
+      "id": "wladvan-import-upsert",
+      "name": "Upsert Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [480, 0]
+    }
+  ],
+  "connections": {
+    "Webhook Import Catálogo": {
+      "main": [[{ "node": "Validar e normalizar", "type": "main", "index": 0 }]]
+    },
+    "Validar e normalizar": {
+      "main": [[{ "node": "Upsert Supabase", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateDescription": "Colunas alinhadas ao CSV Wladvan. Upsert on_conflict=CÓD INTERNO (URL-encoded). Variáveis: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, WLADVAN_CATALOG_IMPORT_SECRET."
+  },
+  "settings": { "executionOrder": "v1" }
+}

@@ -1,0 +1,64 @@
+Integração do fluxo «Chatwoot AI Agent - Wladvan» (ID wXXxwzckJy3vuADB) com Supabase
+================================================================================
+
+0) JSON pronto para importar (v14 — Supabase Tool + memória Postgres)
+   - Ficheiro: StratosBot/n8n-workflow-wladvan-v14-postgres-memory.json
+   - Memória persistente em banco: nó «Postgres Memory - Agente» com chave de sessão
+     `chatwoot_<conversationId>`, tabela `wladvan_chat_histories`.
+   - No n8n: criar/selecionar credencial **Postgres** apontando para o banco do Supabase
+     (host/db/user/password/ssl) e associar no nó de memória.
+   - A tabela da memória é criada automaticamente pelo nó se não existir.
+
+0.1) JSON legado (v11 — RPC + prompt)
+   - Ficheiro: StratosBot/n8n-workflow-wladvan-v11-supabase.json
+   - Contém: nó «buscar_catalogo_wladvan» (HTTP Request Tool → POST /rpc/search_wladvan_products),
+     prompt do «Agente Principal» com secção «CATÁLOGO SUPABASE», e ligação ai_tool ao agente.
+     Mantém as tuas ligações existentes (ex.: Supabase Vector Store + Embeddings, se já estiverem no fluxo).
+   - No n8n: menu → Import from File → escolher esse JSON (ou colar). No nó «buscar_catalogo_wladvan»,
+     a URL já está fixa (projeto Supabase). Substitui o texto «COLE_AQUI_A_SERVICE_ROLE_KEY_DO_SUPABASE»
+     nos headers **apikey** e **Authorization** (Bearer + a mesma chave) pela **service_role** do painel
+     Supabase (Settings → API). Não uses a chave publishable do browser.
+   - Para regenerar a partir de um export teu: 
+     python3 StratosBot/scripts/apply_wladvan_supabase_tool.py teu_export.json > StratosBot/n8n-workflow-wladvan-v11-supabase.json
+  - «Invalid URL» no toolHttpRequest (n8n 2.x): o campo **JSON** do body não deve começar por `=` (isso
+    ativa modo expressão e `{search_query}` deixa de ser placeholder da tool). O JSON v11 usa texto
+    literal no body e URL absoluta fixa no nó.
+
+1) Banco (migrations: …27230000, …28120000, …28140000_wladvan_catalog_csv_column_names)
+   - Tabela: public.wladvan_catalog_products
+   - Nomes das colunas são iguais ao CSV (import no Table Editor do Supabase):
+     «CÓD INTERNO», «CÓD FABRICANTE», «PRODUTO», «STATUS», «ESTOQUE TOTAL»
+   - Outras colunas: price_brl, description, brand, vehicle_models, category, active (opcionais).
+   - O relatório de referência não tem preço: price_brl é opcional.
+   - RPC search_wladvan_products devolve aliases em inglês (sku, name, …) para não quebrar o agente.
+   - Chame a RPC com JWT **service_role** nos headers (como no nó do fluxo v11).
+
+2) Credenciais no nó (sem variável de ambiente no JSON v11)
+  - URL fixa no nó: `https://eefnsjulakraiwcehrkt.supabase.co/rest/v1/rpc/search_wladvan_products`.
+   - **apikey** e **Authorization**: colar o JWT **service_role** (Supabase → Project Settings → API).
+     O mesmo valor em apikey; em Authorization: «Bearer » + o mesmo JWT.
+   - Se mudares de projeto Supabase, altera a URL no nó e as duas chaves.
+   - WLADVAN_CATALOG_IMPORT_SECRET (outro fluxo): pode continuar em env ou onde preferires — só o import.
+
+3) Se preferires configurar à mão (equivalente ao JSON v11)
+   - Nó «buscar_catalogo_wladvan», tipo @n8n/n8n-nodes-langchain.toolHttpRequest v1.1, POST para a URL
+     acima, corpo JSON com placeholder {search_query}.
+   - Ligar ai_tool desse nó ao «Agente Principal».
+
+4) Prompt
+   - O JSON v11 já substitui o bloco «# REGRAS DE ATENDIMENTO» por regras que obrigam a usar a ferramenta
+     buscar_catalogo_wladvan antes de falar em estoque/preço/código.
+
+5) Importação de dados (fluxo auxiliar)
+   - Importe no n8n o ficheiro: StratosBot/n8n-wladvan-catalog-import.json
+   - Ative o workflow e copie a URL do webhook de produção.
+   - Chamada exemplo:
+
+     curl -X POST 'https://SEU-N8N/webhook/wladvan-catalog-import' \\
+       -H 'Content-Type: application/json' \\
+       -H 'X-Wladvan-Import-Secret: SEU_SEGREDO' \\
+       -d '{"products":[{"sku":"PEC-001","name":"Pastilha freio dianteira","price_brl":189.9,"brand":"Bosch","vehicle_models":"HR 2018"}]}'
+
+6) Notas
+   - O token do Chatwoot que está hardcoded nos nós HTTP deve migrar para credencial ou $env (boa prática).
+   - Se a busca for lenta com dezenas de milhares de linhas, considere ampliar índices ou uma RPC com pg_trgm similarity (avançado).

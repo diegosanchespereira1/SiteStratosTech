@@ -1,0 +1,92 @@
+{
+  "name": "Alerta erro n8n → Chatwoot",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a8f3c2b1-4e5d-4c6b-9a0f-111111111101",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Conversa-alerta: edite o fallback ou defina CHATWOOT_ALERT_CONVERSATION_ID no ambiente (self-hosted).\n */\nconst CONVERSATION_ID =\n  (typeof process !== 'undefined' && process.env && process.env.CHATWOOT_ALERT_CONVERSATION_ID)\n    ? String(process.env.CHATWOOT_ALERT_CONVERSATION_ID)\n    : 'SUBSTITUIR_ID_CONVERSA';\n\nconst ACCOUNT_ID = 1;\nconst BASE_URL = 'https://chat.stratostech.com.br';\n\nconst item = $input.first().json;\nconst wf = item.workflow || {};\nconst err = item.error || (item.execution && item.execution.error) || {};\nconst exec = item.execution || {};\n\nconst nodeName = (err.node && err.node.name) ? err.node.name : '';\nconst errMsg = err.message || err.description || JSON.stringify(err || {});\nconst stack = err.stack ? String(err.stack).slice(0, 2500) : '';\n\nconst lines = [\n  '🚨 *Erro em workflow n8n*',\n  '',\n  `*Workflow:* ${wf.name || '(sem nome)'} (${wf.id || '-'})`,\n  `*Execução:* ${exec.id || '-'}`,\n];\n\nif (nodeName) {\n  lines.push(`*Nó:* ${nodeName}`);\n}\n\nlines.push('', '*Erro:*', String(errMsg));\n\nif (stack) {\n  lines.push('', '*Stack:*', stack);\n}\n\nconst content = lines.join('\\n');\n\nreturn [{\n  json: {\n    baseUrl: BASE_URL,\n    accountId: ACCOUNT_ID,\n    conversationId: CONVERSATION_ID,\n    content,\n  },\n}];"
+      },
+      "id": "b9e4d3c2-5f6e-5d7c-0b1f-222222222202",
+      "name": "Montar mensagem Chatwoot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.baseUrl }}/api/v1/accounts/{{ $json.accountId }}/conversations/{{ $json.conversationId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $env.CHATWOOT_API_ACCESS_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ content: $json.content, message_type: 'outgoing', private: true }) }}",
+        "options": {}
+      },
+      "id": "c0f5e4d3-6a7f-6e8d-1c2f-333333333303",
+      "name": "Enviar alerta Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        480,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Montar mensagem Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar mensagem Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Enviar alerta Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateDescription": "Fluxo de erro global: Error Trigger → POST /messages no Chatwoot. Configure no n8n: variável CHATWOOT_API_ACCESS_TOKEN; no código, o conversationId da conversa-alerta; em cada workflow crítico, Settings → Error workflow → este fluxo. Mensagem private:true (nota interna).",
+    "instanceId": ""
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
